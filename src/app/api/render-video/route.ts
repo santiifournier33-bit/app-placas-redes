@@ -1,6 +1,19 @@
 import { NextResponse } from 'next/server';
 import { renderMediaOnLambda, getRenderProgress } from '@remotion/lambda/client';
 
+/**
+ * Netlify reserva AWS_ACCESS_KEY_ID y AWS_SECRET_ACCESS_KEY.
+ * Usamos estos nombres alternativos para evitar el error.
+ */
+const ACCESS_KEY = process.env.REMOTION_AWS_ACCESS_KEY_ID;
+const SECRET_KEY = process.env.REMOTION_AWS_SECRET_ACCESS_KEY;
+
+if (ACCESS_KEY && SECRET_KEY) {
+  process.env.AWS_ACCESS_KEY_ID = ACCESS_KEY;
+  process.env.AWS_SECRET_ACCESS_KEY = SECRET_KEY;
+}
+
+
 export async function POST(req: Request) {
   try {
     const { property, theme } = await req.json();
