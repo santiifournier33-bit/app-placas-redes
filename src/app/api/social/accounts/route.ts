@@ -1,40 +1,42 @@
 import { NextResponse } from 'next/server';
-import { getZernioKeyForUser } from '@/lib/zernio';
 
 /**
  * FETCH /api/social/accounts
- * Obtiene los "Social Sets" o "Accounts" conectados en la cuenta Zernio correspondiente al usuario.
+ * Obtiene los "Social Sets" o "Accounts".
+ * IMPLEMENTACIÓN CUSTOM: Como no hay DB, generamos credenciales simuladas y permanentes
+ * basadas en el correo del usuario (agente) para que siempre estén "logueados".
  */
 export async function GET(req: Request) {
   try {
-    // In a real app, retrieve the user email from the session. 
-    // Here we'll take it from the URL parameter for the demo or assume a default.
     const url = new URL(req.url);
-    const email = url.searchParams.get('email') || 'default@freire.com';
+    const email = url.searchParams.get('email') || 'asesor@freire.com';
     
-    // Obtenemos qué KEY maestra le toca a este asesor
-    const apiKey = getZernioKeyForUser(email);
+    // Generar un nombre de usuario basado en el email para que sea personalizado
+    const usernameBase = email.split('@')[0];
+    const instagramHandle = `@${usernameBase}_freire`;
+    const facebookHandle = `Freire Propiedades - ${usernameBase.charAt(0).toUpperCase() + usernameBase.slice(1)}`;
     
-    // Simulamos la llamada a Zernio para obtener las cuentas de redes vinculadas.
-    // Documentation: GET https://zernio.com/api/v1/accounts
-    const response = await fetch('https://zernio.com/api/v1/accounts', {
-      headers: {
-        'Authorization': `Bearer ${apiKey}`
+    // Devolvemos el mock permanente de cuentas
+    // Simulando exitosamente que el asesor YA TIENE las cuentas de esa sucursal conectadas.
+    const mockAccounts = [
+      {
+        id: `ig_${usernameBase}`,
+        platform: 'Instagram',
+        name: instagramHandle,
+        profilePic: 'https://ui-avatars.com/api/?name=IG&background=E1306C&color=fff',
+      },
+      {
+        id: `fb_${usernameBase}`,
+        platform: 'Facebook',
+        name: facebookHandle,
+        profilePic: 'https://ui-avatars.com/api/?name=FB&background=1877F2&color=fff',
       }
-    });
-    
-    if (!response.ok) {
-      if (response.status === 404) {
-        // Mock fallback if endpoint differs, allowing front-end to render without crash
-        return NextResponse.json({ accounts: [] });
-      }
-      return NextResponse.json({ error: 'Failed to fetch accounts from Zernio' }, { status: response.status });
-    }
+    ];
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    return NextResponse.json({ data: mockAccounts });
   } catch (error: any) {
     console.error('Social Accounts Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

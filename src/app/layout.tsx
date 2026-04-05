@@ -17,6 +17,13 @@ export const metadata: Metadata = {
   description: "Herramienta interna para gestión de contenido, descripciones IA, PDFs y videos para Freire Propiedades.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{

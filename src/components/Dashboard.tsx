@@ -58,6 +58,10 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
   // ── Active Section (expanded) ──
   const [activeSection, setActiveSection] = useState<string | null>(null);
 
+  // ── Download Video HD State ──
+  const [isVideoDownloading, setIsVideoDownloading] = useState(false);
+  const [videoDownloadProgress, setVideoDownloadProgress] = useState<number | null>(null);
+
   // ── AI location Parsing State ──
   const [parsedLocation, setParsedLocation] = useState<{title: string, subtitle: string} | null>(null);
   const [isParsingLocation, setIsParsingLocation] = useState(false);
@@ -119,7 +123,7 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
     setIsCapturing(true);
     try {
       await new Promise(r => setTimeout(r, 300));
-      const dataUrl = await htmlToImage.toJpeg(node, { quality: 0.95 });
+      const dataUrl = await htmlToImage.toJpeg(node, { quality: 1, pixelRatio: 3 });
       setCapturedPlacaUrl(dataUrl);
       return dataUrl;
     } catch (err) {
@@ -139,6 +143,51 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
       link.href = dataUrl;
       link.click();
       showToast("Descarga iniciada");
+    }
+  };
+
+  const handleDownloadVideoHD = async () => {
+    setIsVideoDownloading(true);
+    setVideoDownloadProgress(0);
+    try {
+      const res = await fetch("/api/render-video", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ property, theme: "default" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      const { renderId, bucketName } = data;
+      let isDone = false;
+      while (!isDone) {
+        await new Promise((r) => setTimeout(r, 2000));
+        const progRes = await fetch(`/api/render-video?renderId=${renderId}&bucketName=${bucketName}`);
+        const progData = await progRes.json();
+        
+        if (!progRes.ok) throw new Error(progData.error);
+        if (progData.done) {
+          isDone = true;
+          // Trigger download
+          if (progData.outKey) {
+            // Remotion lambda usually exposes public URL based on region/bucket
+            const awsRegion = "us-east-1"; // Assuming fixed or fallback to env in production
+            const url = `https://${bucketName}.s3.${awsRegion}.amazonaws.com/${progData.outKey}`;
+            window.open(url, '_blank');
+          }
+        } else if (progData.fatalErrorEncountered) {
+          throw new Error("Error fatal en el renderizado.");
+        } else {
+          setVideoDownloadProgress(Math.floor(progData.overallProgress * 100));
+        }
+      }
+      showToast("Descarga de video lista.");
+    } catch (e: any) {
+      console.error(e);
+      showToast("Error al exportar video HD");
+    } finally {
+      setIsVideoDownloading(false);
+      setVideoDownloadProgress(null);
     }
   };
 
@@ -1054,10 +1103,11 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
                   </div>
                   <div className="p-4 flex gap-3">
                     <button 
-                      className="btn-secondary flex-1 shadow-md opacity-60 cursor-not-allowed text-xs" 
-                      disabled
+                      onClick={handleDownloadVideoHD}
+                      disabled={isVideoDownloading}
+                      className="btn-secondary flex-1 shadow-md text-xs disabled:opacity-50" 
                     >
-                      Descargar HD
+                      {isVideoDownloading ? `Aguardá... ${videoDownloadProgress || 0}%` : "Descargar HD"}
                     </button>
                     <button 
                       onClick={() => setVideoStep("format")}
@@ -1174,8 +1224,9 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
             >
               {placaStep === "preview" ? (
                 <>
-                  <div id="placa-capture-node" className={`bg-black p-3 ${placaFormat === 'story' ? 'aspect-[9/16]' : 'aspect-square'}`}>
-                    <Player
+                  <div className={`bg-black p-3 ${placaFormat === 'story' ? 'aspect-[9/16]' : 'aspect-square'}`}>
+                    <div id="placa-capture-node" className="w-full h-full relative overflow-hidden bg-white rounded-lg">
+                      <Player
                       component={StoryPlacaComposition}
                       inputProps={{
                         format: placaFormat || 'story',
@@ -1202,6 +1253,7 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
                       autoPlay={false}
                       loop={false}
                     />
+                    </div>
                   </div>
                   <div className="p-4 flex gap-3">
                     <button 

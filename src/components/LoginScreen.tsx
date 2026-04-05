@@ -49,19 +49,20 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-surface flex flex-col items-center justify-center p-6 z-50">
-      {/* Background styling elements */}
-      <div className="absolute inset-0 bg-navy-radial pointer-events-none" />
-      <div className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] rounded-full bg-gradient-to-br from-primary/[0.03] to-transparent blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-gradient-to-tr from-secondary/[0.04] to-transparent blur-[80px] pointer-events-none" />
+    <div className="fixed inset-0 bg-surface overflow-y-auto z-50">
+      <div className="min-h-full flex flex-col items-center justify-center p-4 py-8 relative">
+        {/* Background styling elements */}
+        <div className="absolute inset-0 bg-navy-radial pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[80wv] h-[80wv] max-w-[600px] max-h-[600px] rounded-full bg-gradient-to-br from-primary/[0.03] to-transparent blur-[80px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[60wv] h-[60wv] max-w-[400px] max-h-[400px] rounded-full bg-gradient-to-tr from-secondary/[0.04] to-transparent blur-[60px] pointer-events-none" />
 
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-[420px] bg-white rounded-[24px] shadow-modal border border-outline-variant overflow-hidden relative z-10"
-      >
-        {/* Header styling */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full max-w-[420px] bg-white rounded-[24px] shadow-modal border border-outline-variant overflow-hidden relative z-10 my-auto"
+        >
+          {/* Header styling */}
         <div className="pt-10 pb-8 px-8 text-center bg-surface-container-lowest border-b border-outline-variant relative overflow-hidden">
           <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary via-secondary to-accent" />
           
@@ -156,6 +157,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           </p>
         </div>
       </motion.div>
+      </div>
     </div>
   );
 }
