@@ -1,0 +1,39 @@
+{
+  "name": "app-placas-redes",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@google/genai": "^1.48.0",
+    "@react-pdf/renderer": "^4.3.2",
+    "@remotion/bundler": "^4.0.445",
+    "@remotion/lambda": "^4.0.445",
+    "@remotion/player": "^4.0.445",
+    "@remotion/transitions": "^4.0.445",
+    "animejs": "^4.3.6",
+    "framer-motion": "^12.38.0",
+    "html-to-image": "^1.11.13",
+    "iconsax-react": "^0.0.8",
+    "lucide-react": "^1.7.0",
+    "next": "16.2.2",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "remotion": "^4.0.445"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/animejs": "^3.1.13",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.2",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
