@@ -20,6 +20,7 @@ export async function POST(req: Request) {
 
     const functionName = process.env.REMOTION_AWS_FUNCTION_NAME;
     const serveUrl = process.env.REMOTION_AWS_SERVE_URL;
+    const region = (process.env.REMOTION_AWS_REGION as any) || "us-east-1";
 
     if (!functionName || !serveUrl) {
       return NextResponse.json({ 
@@ -28,35 +29,22 @@ export async function POST(req: Request) {
       }, { status: 500 });
     }
 
-    try {
-      const renderPromise = renderMediaOnLambda({
-        region: (process.env.REMOTION_AWS_REGION as any) || "us-east-1",
-        functionName,
-        serveUrl,
-        composition: "PropertyReel",
-        inputProps: {
-          property,
-          theme: theme || 'default',
-        },
-        codec: "h264",
-        imageFormat: "jpeg",
-        maxRetries: 1,
-        privacy: "public",
-      });
+    const { renderId, bucketName } = await renderMediaOnLambda({
+      region,
+      functionName,
+      serveUrl,
+      composition: "PropertyReel",
+      inputProps: {
+        property,
+        theme: theme || 'default',
+      },
+      codec: "h264",
+      imageFormat: "jpeg",
+      maxRetries: 1,
+      privacy: "public",
+    });
 
-      // Mute the local windows hang by timeout
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("TimeoutLocal")), 5000));
-      
-      const { renderId, bucketName: returnedBucket } = await Promise.race([renderPromise, timeoutPromise]) as any;
-      return NextResponse.json({ renderId, bucketName: returnedBucket });
-      
-    } catch (err: any) {
-      if (err.message === "TimeoutLocal") {
-         console.warn("[LOCAL DEV] AWS Lambda did not respond in 5s. Falling back to local mock render.");
-         return NextResponse.json({ renderId: "mock-render-" + Date.now(), bucketName: "mock-bucket" });
-      }
-      throw err;
-    }
+    return NextResponse.json({ renderId, bucketName });
   } catch (error: any) {
     console.error("Error iniciando Remotion Lambda:", error);
     return NextResponse.json({ error: error.message || 'Error iniciando render' }, { status: 500 });
@@ -74,42 +62,48 @@ export async function GET(req: Request) {
     }
 
     const functionName = process.env.REMOTION_AWS_FUNCTION_NAME;
+    const region = (process.env.REMOTION_AWS_REGION as any) || "us-east-1";
 
     if (!functionName) {
       return NextResponse.json({ error: 'Configuración de AWS incompleta.' }, { status: 500 });
-    }
-
-    // Mock handling
-    if (bucketName === "mock-bucket") {
-       return NextResponse.json({
-         done: true,
-         overallProgress: 1,
-         outKey: "mock-video.mp4",
-         renderId,
-         bucketName,
-         fatalErrorEncountered: false,
-         errors: []
-       });
     }
 
     const progress = await getRenderProgress({
       renderId,
       bucketName,
       functionName,
-      region: (process.env.REMOTION_AWS_REGION as any) || "us-east-1",
+      region,
     });
 
-    if (progress.errors && progress.errors.length > 0) {
-      console.warn("Remotion render reported errors:", progress.errors);
-    }
     if (progress.fatalErrorEncountered) {
       console.error("Remotion render FATAL error:", progress.errors);
+      return NextResponse.json({
+        done: true,
+        error: 'Error fatal en el render',
+        errors: progress.errors,
+        fatalErrorEncountered: true,
+      });
     }
 
-    // In local development, return a mock output if AWS is returning nothing due to S3 policy.
-    // If progress is returned successfully but AWS doesn't have the outKey, we inject a mock file 
-    // strictly for the demo when done.
-    return NextResponse.json(progress);
+    if (progress.done) {
+      // Build the real S3 download URL from outputFile
+      return NextResponse.json({
+        done: true,
+        overallProgress: 1,
+        outputFile: progress.outputFile,
+        outputSizeInBytes: progress.outputSizeInBytes,
+        renderId,
+        bucketName,
+      });
+    }
+
+    // Still rendering — return progress
+    return NextResponse.json({
+      done: false,
+      overallProgress: progress.overallProgress,
+      renderId,
+      bucketName,
+    });
   } catch (error: any) {
     console.error("Error obteniendo progreso:", error);
     return NextResponse.json({ error: error.message || 'Error en progreso' }, { status: 500 });

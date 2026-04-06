@@ -173,19 +173,20 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
           
           if (!progRes.ok) throw new Error(progData.error || "Error parseando progreso de AWS");
           
-          if (progData.done) {
-            isDone = true;
-            // Trigger download
-            if (progData.outKey) {
-              const awsRegion = "us-east-1";
-              const url = `https://${bucketName}.s3.${awsRegion}.amazonaws.com/${progData.outKey}`;
-              window.open(url, '_blank');
-              showToast("Descarga de video lista.");
-            }
-          } else if (progData.fatalErrorEncountered) {
+          if (progData.fatalErrorEncountered) {
             console.error("AWS Remotion Fatal Error:", progData.errors);
             alert("Error fatal de AWS al generar el video. Por favor reporta esto al soporte técnico.");
             throw new Error("AWS lambda falló internamente.");
+          } else if (progData.done) {
+            isDone = true;
+            // Trigger download — outputFile is the full S3 URL from Remotion
+            const videoUrl = progData.outputFile || progData.outKey;
+            if (videoUrl) {
+              window.open(videoUrl, '_blank');
+              showToast("Descarga de video lista.");
+            } else {
+              alert("El video se renderizó pero no se obtuvo la URL de descarga.");
+            }
           } else {
             const currentProgress = Math.floor(progData.overallProgress * 100);
             setVideoDownloadProgress(currentProgress);
