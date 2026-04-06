@@ -102,6 +102,8 @@ export function SocialPublisherForm({
   const [socialAccounts, setSocialAccounts] = useState<any[]>([]);
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
   const [oauthUrl, setOauthUrl] = useState<string | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [connectPlatform, setConnectPlatform] = useState<string>("instagram");
   const [renderProgress, setRenderProgress] = useState<number | null>(null);
 
   // ── Inline copy generation ──
@@ -113,6 +115,14 @@ export function SocialPublisherForm({
 
   useEffect(() => {
     fetchSocialAccounts();
+    // Check if returning from OAuth
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('oauth_success') === 'true') {
+      // Re-fetch accounts after OAuth callback
+      fetchSocialAccounts();
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -121,14 +131,9 @@ export function SocialPublisherForm({
     setIsLoadingAccounts(true);
     try {
       const email = property.agent?.email || "default@freire.com";
-      const localKey = `zernio_accounts_${email}`;
-      const saved = localStorage.getItem(localKey);
-      
-      if (saved) {
-        setSocialAccounts(JSON.parse(saved));
-      } else {
-        setSocialAccounts([]);
-      }
+      const res = await fetch(`/api/social/accounts?email=${encodeURIComponent(email)}`);
+      const data = await res.json();
+      setSocialAccounts(data.data || []);
     } catch (e) {
       console.error(e);
       setSocialAccounts([]);
@@ -179,28 +184,31 @@ export function SocialPublisherForm({
     setPublishText(content);
   };
 
-  const handleAuthLinking = async () => {
-    // Simulamos que pedimos un pop-up OAuth
-    setOauthUrl("simulating_oauth");
-  };
-
-  const handleSimulateOAuthSuccess = () => {
-    const email = property.agent?.email || "default@freire.com";
-    const usernameBase = email.split('@')[0];
-    
-    const newAccounts = [
-      { id: `ig_${usernameBase}`, platform: "Instagram", name: `@${usernameBase}_freire` },
-      { id: `fb_${usernameBase}`, platform: "Facebook", name: `Freire Prop. - ${usernameBase}` },
-      { id: `wa_${usernameBase}`, platform: "WhatsApp", name: `+54 9 11 1234-5678` },
-      { id: `tk_${usernameBase}`, platform: "TikTok", name: `@${usernameBase}_freire` },
-    ];
-
-    // Guarda en localStorage usando el correo
-    const localKey = `zernio_accounts_${email}`;
-    localStorage.setItem(localKey, JSON.stringify(newAccounts));
-
-    setSocialAccounts(newAccounts);
-    setOauthUrl(null);
+  const handleAuthLinking = async (platform: string = "instagram") => {
+    setIsConnecting(true);
+    try {
+      const email = property.agent?.email || "default@freire.com";
+      const res = await fetch(`/api/social/auth?email=${encodeURIComponent(email)}&platform=${platform}`);
+      const data = await res.json();
+      if (data.url) {
+        // Open OAuth in a popup
+        const popup = window.open(data.url, 'zernio_oauth', 'width=600,height=700,scrollbars=yes');
+        // Poll for popup close to re-fetch accounts
+        const pollTimer = setInterval(() => {
+          if (popup?.closed) {
+            clearInterval(pollTimer);
+            setIsConnecting(false);
+            fetchSocialAccounts();
+          }
+        }, 1000);
+      } else {
+        setOauthUrl("error");
+        setIsConnecting(false);
+      }
+    } catch (e) {
+      console.error('Auth linking error:', e);
+      setIsConnecting(false);
+    }
   };
 
   // ── WhatsApp native share ──
@@ -402,7 +410,7 @@ export function SocialPublisherForm({
         <div className="w-[80px]" />
       </div>
 
-      {/* ── OAuth Popup (overlay) ── */}
+      {/* ── Connect Platform Overlay ── */}
       {oauthUrl && (
         <div className="absolute inset-0 z-50 bg-surface flex flex-col">
           <div className="p-4 border-b flex justify-between items-center shrink-0">
@@ -413,13 +421,29 @@ export function SocialPublisherForm({
           </div>
           <div className="flex-1 flex flex-col items-center justify-center p-6 bg-surface-variant/30 text-center">
             <Global size={48} className="text-[#2563EB] mb-4" variant="Bulk" />
-            <h2 className="text-xl font-bold mb-2 text-primary">Portal Privado de Conexión</h2>
-            <p className="text-sm text-on-surface-variant mb-6 max-w-sm">
-              En producción, aquí verás la pantalla de login nativa de Instagram, Facebook o TikTok sin salir de la App.
+            <h2 className="text-xl font-bold mb-2 text-primary">Conectar una Red Social</h2>
+            <p className="text-sm text-on-surface-variant mb-4 max-w-sm">
+              Elegí la plataforma que querés vincular. Se abrirá una ventana para autorizar el acceso.
             </p>
-            <button onClick={handleSimulateOAuthSuccess} className="btn-primary !bg-[#2563EB] !border-[#2563EB] hover:!bg-[#1D4ED8]">
-              Simular Conexión Exitosa
-            </button>
+            <div className="flex flex-col gap-2 w-full max-w-xs">
+              {(["instagram", "facebook", "tiktok"] as const).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => { setOauthUrl(null); handleAuthLinking(p); }}
+                  disabled={isConnecting}
+                  className="btn-primary !bg-[#2563EB] !border-[#2563EB] hover:!bg-[#1D4ED8] flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {p === "instagram" && "📷"} {p === "facebook" && "📘"} {p === "tiktok" && "🎵"}
+                  {" "}{p.charAt(0).toUpperCase() + p.slice(1)}
+                </button>
+              ))}
+            </div>
+            {isConnecting && (
+              <div className="mt-4 flex items-center gap-2 text-sm text-on-surface-variant">
+                <div className="h-4 w-4 border-2 border-[#2563EB]/30 border-t-[#2563EB] rounded-full animate-spin" />
+                Abriendo ventana de autorización…
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -458,7 +482,7 @@ export function SocialPublisherForm({
               {socialAccounts.length === 0 ? (
                 <div className="bg-surface-variant/50 border border-outline-variant rounded-xl p-4 text-center">
                   <p className="text-sm text-on-surface-variant mb-3">No tenés redes sociales vinculadas aún.</p>
-                  <button onClick={handleAuthLinking} className="btn-primary !bg-[#2563EB] !border-[#2563EB] text-xs">
+                  <button onClick={() => setOauthUrl("connect")} className="btn-primary !bg-[#2563EB] !border-[#2563EB] text-xs">
                     Vincular Instagram / Facebook / TikTok
                   </button>
                 </div>

@@ -9,13 +9,17 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@aws-sdk/client-lambda": "^3.1024.0",
+    "@aws-sdk/client-sts": "^3.1024.0",
     "@google/genai": "^1.48.0",
     "@react-pdf/renderer": "^4.3.2",
     "@remotion/bundler": "^4.0.445",
     "@remotion/lambda": "^4.0.445",
     "@remotion/player": "^4.0.445",
     "@remotion/transitions": "^4.0.445",
+    "@zernio/node": "^0.2.42",
     "animejs": "^4.3.6",
+    "aws-sdk": "^2.1693.0",
     "framer-motion": "^12.38.0",
     "html-to-image": "^1.11.13",
     "iconsax-react": "^0.0.8",

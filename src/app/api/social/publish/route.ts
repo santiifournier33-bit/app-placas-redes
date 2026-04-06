@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getZernioKeyForUser } from '@/lib/zernio';
+import Zernio from '@zernio/node';
 
 /**
  * POST /api/social/publish
- * Envía el contenido a las redes sociales usando Zernio.
+ * Publishes content to social media via the Zernio SDK.
  */
 export async function POST(req: Request) {
   try {
@@ -14,43 +15,38 @@ export async function POST(req: Request) {
     }
 
     const apiKey = getZernioKeyForUser(email || 'default@freire.com');
+    const client = new Zernio({ apiKey });
 
-    // Construir Payload para Zernio
-    const payload: any = {
-      text,
-      socialAccountIds: socialAccountIds || [],
-    };
+    // Build platforms array from socialAccountIds
+    // The Zernio SDK posts.createPost expects { body: { ... } }
+    const body: any = {};
 
-    if (profileId) {
-      payload.profileId = profileId;
+    if (text) {
+      body.post = text;
     }
 
     if (mediaUrls && mediaUrls.length > 0) {
-      // Zernio uses direct arrays of URLs for auto-downloading media
-      payload.mediaUrls = mediaUrls;
+      body.mediaUrls = mediaUrls;
     }
 
-    const response = await fetch('https://zernio.com/api/v1/post', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await response.json().catch(() => null);
-
-    if (!response.ok) {
-      return NextResponse.json({ 
-        error: 'Failed to publish via Zernio', 
-        details: data 
-      }, { status: response.status });
+    if (socialAccountIds && socialAccountIds.length > 0) {
+      body.socialAccountIds = socialAccountIds;
     }
+
+    if (profileId) {
+      body.profileId = profileId;
+    }
+
+    // Use the SDK to create a post
+    const postRes = await client.posts.createPost({ body });
+    const data = postRes.data || postRes;
 
     return NextResponse.json({ success: true, data });
   } catch (error: any) {
     console.error('Social Publish Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message, details: error.details },
+      { status: error.statusCode || 500 }
+    );
   }
 }
