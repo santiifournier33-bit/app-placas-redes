@@ -115,7 +115,12 @@ export const StoryPlacaComposition: React.FC<{
         {/* Logo at the top of the header */}
         <Img 
           src="/logo-blanco-oficial.png" 
-          style={{ height: isPost ? '180px' : '280px', objectFit: 'contain', marginBottom: isPost ? '20px' : '30px' }} 
+          style={{ 
+            height: isPost ? '140px' : '190px', 
+            objectFit: 'contain', 
+            marginTop: isPost ? '25px' : '35px',
+            marginBottom: isPost ? '20px' : '30px' 
+          }} 
         />
         
         {/* Separator line */}

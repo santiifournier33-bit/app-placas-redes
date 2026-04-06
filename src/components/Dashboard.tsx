@@ -160,31 +160,54 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
 
       const { renderId, bucketName } = data;
       let isDone = false;
-      while (!isDone) {
+      let attempts = 0;
+      const MAX_ATTEMPTS = 60; // 2 minutes approx (60 * 2s)
+
+      while (!isDone && attempts < MAX_ATTEMPTS) {
+        attempts++;
         await new Promise((r) => setTimeout(r, 2000));
-        const progRes = await fetch(`/api/render-video?renderId=${renderId}&bucketName=${bucketName}`);
-        const progData = await progRes.json();
         
-        if (!progRes.ok) throw new Error(progData.error);
-        if (progData.done) {
-          isDone = true;
-          // Trigger download
-          if (progData.outKey) {
-            // Remotion lambda usually exposes public URL based on region/bucket
-            const awsRegion = "us-east-1"; // Assuming fixed or fallback to env in production
-            const url = `https://${bucketName}.s3.${awsRegion}.amazonaws.com/${progData.outKey}`;
-            window.open(url, '_blank');
+        try {
+          const progRes = await fetch(`/api/render-video?renderId=${renderId}&bucketName=${bucketName}`);
+          const progData = await progRes.json();
+          
+          if (!progRes.ok) throw new Error(progData.error || "Error parseando progreso de AWS");
+          
+          if (progData.done) {
+            isDone = true;
+            // Trigger download
+            if (progData.outKey) {
+              const awsRegion = "us-east-1";
+              const url = `https://${bucketName}.s3.${awsRegion}.amazonaws.com/${progData.outKey}`;
+              window.open(url, '_blank');
+              showToast("Descarga de video lista.");
+            }
+          } else if (progData.fatalErrorEncountered) {
+            console.error("AWS Remotion Fatal Error:", progData.errors);
+            alert("Error fatal de AWS al generar el video. Por favor reporta esto al soporte técnico.");
+            throw new Error("AWS lambda falló internamente.");
+          } else {
+            const currentProgress = Math.floor(progData.overallProgress * 100);
+            setVideoDownloadProgress(currentProgress);
+            
+            // Verificamos si no está avanzando después de muchos intentos.
+            if (currentProgress === 0 && attempts > 15) {
+              console.warn("Posible problema con Remotion Lambda: lleva más de 30 segundos en 0%. Podría deberse a falta de update de sitios en AWS.");
+            }
           }
-        } else if (progData.fatalErrorEncountered) {
-          throw new Error("Error fatal en el renderizado.");
-        } else {
-          setVideoDownloadProgress(Math.floor(progData.overallProgress * 100));
+        } catch (pollErr: any) {
+             console.error("Error consultando estado en AWS:", pollErr);
+             throw new Error("Fallo de comunicación continua con AWS.");
         }
       }
-      showToast("Descarga de video lista.");
+
+      if (!isDone) {
+        alert("El renderizado tardó demasiado y paró por seguridad. Inténtalo de nuevo más tarde o verifica la consola para errores.");
+        throw new Error("Timeout en render.");
+      }
     } catch (e: any) {
       console.error(e);
-      showToast("Error al exportar video HD");
+      showToast(`Error al exportar video HD: ${e.message}`);
     } finally {
       setIsVideoDownloading(false);
       setVideoDownloadProgress(null);

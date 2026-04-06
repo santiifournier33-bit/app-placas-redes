@@ -121,15 +121,17 @@ export function SocialPublisherForm({
     setIsLoadingAccounts(true);
     try {
       const email = property.agent?.email || "default@freire.com";
-      const res = await fetch(`/api/social/accounts?email=${encodeURIComponent(email)}`);
-      const data = await res.json();
-      if (data.data) {
-        setSocialAccounts(Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []));
+      const localKey = `zernio_accounts_${email}`;
+      const saved = localStorage.getItem(localKey);
+      
+      if (saved) {
+        setSocialAccounts(JSON.parse(saved));
       } else {
-        setSocialAccounts(Array.isArray(data) ? data : []);
+        setSocialAccounts([]);
       }
     } catch (e) {
       console.error(e);
+      setSocialAccounts([]);
     } finally {
       setIsLoadingAccounts(false);
     }
@@ -178,21 +180,27 @@ export function SocialPublisherForm({
   };
 
   const handleAuthLinking = async () => {
-    try {
-      const email = property.agent?.email || "default@freire.com";
-      const res = await fetch(`/api/social/auth?email=${encodeURIComponent(email)}`);
-      const data = await res.json();
-      if (data.url) setOauthUrl(data.url);
-    } catch (e) { console.error(e); }
+    // Simulamos que pedimos un pop-up OAuth
+    setOauthUrl("simulating_oauth");
   };
 
   const handleSimulateOAuthSuccess = () => {
+    const email = property.agent?.email || "default@freire.com";
+    const usernameBase = email.split('@')[0];
+    
+    const newAccounts = [
+      { id: `ig_${usernameBase}`, platform: "Instagram", name: `@${usernameBase}_freire` },
+      { id: `fb_${usernameBase}`, platform: "Facebook", name: `Freire Prop. - ${usernameBase}` },
+      { id: `wa_${usernameBase}`, platform: "WhatsApp", name: `+54 9 11 1234-5678` },
+      { id: `tk_${usernameBase}`, platform: "TikTok", name: `@${usernameBase}_freire` },
+    ];
+
+    // Guarda en localStorage usando el correo
+    const localKey = `zernio_accounts_${email}`;
+    localStorage.setItem(localKey, JSON.stringify(newAccounts));
+
+    setSocialAccounts(newAccounts);
     setOauthUrl(null);
-    setSocialAccounts([
-      { id: "ig-123", platform: "Instagram", username: "freirerealestate" },
-      { id: "fb-789", platform: "Facebook", username: "freire.propiedades" },
-      { id: "tk-456", platform: "TikTok", username: "freirerealestate" },
-    ]);
   };
 
   // ── WhatsApp native share ──

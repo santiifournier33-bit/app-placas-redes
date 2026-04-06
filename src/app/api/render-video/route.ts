@@ -73,6 +73,13 @@ export async function GET(req: Request) {
       region: (process.env.REMOTION_AWS_REGION as any) || "us-east-1",
     });
 
+    if (progress.errors && progress.errors.length > 0) {
+      console.warn("Remotion render reported errors:", progress.errors);
+    }
+    if (progress.fatalErrorEncountered) {
+      console.error("Remotion render FATAL error:", progress.errors);
+    }
+
     return NextResponse.json(progress);
   } catch (error: any) {
     console.error("Error obteniendo progreso:", error);
