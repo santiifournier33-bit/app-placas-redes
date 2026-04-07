@@ -17,7 +17,7 @@
     "@remotion/lambda": "^4.0.445",
     "@remotion/player": "^4.0.445",
     "@remotion/transitions": "^4.0.445",
-    "@remotion/web-renderer": "^4.0.443",
+    "@remotion/web-renderer": "^4.0.445",
     "@zernio/node": "^0.2.42",
     "animejs": "^4.3.6",
     "aws-sdk": "^2.1693.0",
