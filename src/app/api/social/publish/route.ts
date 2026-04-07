@@ -18,7 +18,6 @@ export async function POST(req: Request) {
     const client = new Zernio({ apiKey });
 
     // Build platforms array from socialAccountIds
-    // The Zernio SDK posts.createPost expects { body: { ... } }
     const body: any = {};
 
     if (text) {
@@ -26,10 +25,62 @@ export async function POST(req: Request) {
     }
 
     if (mediaUrls && mediaUrls.length > 0) {
-      body.mediaUrls = mediaUrls;
+      // Process Data URIs into tmpfiles URL so Zernio backend can download it over HTTP
+      const processedMedia = [];
+      for (const m of mediaUrls) {
+        if (m.startsWith('data:image/')) {
+          try {
+            const base64Data = m.split(',')[1];
+            const mimeMatch = m.match(/^data:(image\/\w+);base64,/);
+            const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+            const buffer = Buffer.from(base64Data, 'base64');
+            const blob = new Blob([buffer], { type: mime });
+            const formData = new FormData();
+            formData.append('file', blob, 'placa.jpg');
+
+            const uploadRes = await fetch('https://tmpfiles.org/api/v1/upload', {
+              method: 'POST',
+              body: formData
+            });
+            const d = await uploadRes.json();
+            if (d?.data?.url) {
+              // Convert to direct download link
+              processedMedia.push(d.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/'));
+            } else {
+              processedMedia.push(m);
+            }
+          } catch (e) {
+            console.error("Failed to upload base64 to tmpfiles:", e);
+            processedMedia.push(m);
+          }
+        } else {
+          processedMedia.push(m);
+        }
+      }
+      body.mediaUrls = processedMedia;
     }
 
     if (socialAccountIds && socialAccountIds.length > 0) {
+      // Fetch accounts to get their platforms so we can format them for Zernio's API
+      const pId = profileId ? { query: { profileId } } : undefined;
+      const accountsRes = await client.accounts.listAccounts(pId);
+      const accounts = (accountsRes.data as any)?.accounts || [];
+
+      // Zernio expects `platforms: [{ platform: 'instagram', accountId: '...' }]` 
+      // instead of raw `socialAccountIds` in many recent SDK versions
+      const platforms = [];
+      for (const id of socialAccountIds) {
+        const found = accounts.find((a: any) => a._id === id || a.id === id);
+        if (found) {
+          platforms.push({ platform: found.platform, accountId: id });
+        } else {
+          // fallback
+          platforms.push({ platform: 'instagram', accountId: id });
+        }
+      }
+      body.platforms = platforms;
+      
+      // Keep old property just in case older SDK version prefers it
       body.socialAccountIds = socialAccountIds;
     }
 

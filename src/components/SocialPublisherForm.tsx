@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Global, CloseCircle, TickCircle, ArrowLeft, Magicpen, InfoCircle
+  Global, CloseCircle, TickCircle, ArrowLeft, Magicpen, InfoCircle, Instagram, Facebook
 } from "iconsax-react";
 
 type CopyVariant = { title: string; subtitle: string; content: string };
@@ -423,18 +423,37 @@ export function SocialPublisherForm({
               Elegí la plataforma que querés vincular. Se abrirá una ventana para autorizar el acceso.
             </p>
             <div className="flex flex-col gap-2 w-full max-w-xs">
-              {(["instagram", "facebook", "tiktok"] as const).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => { setOauthUrl(null); handleAuthLinking(p); }}
-                  disabled={isConnecting}
-                  className="btn-primary !bg-[#2563EB] !border-[#2563EB] hover:!bg-[#1D4ED8] flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  {p === "instagram" && "📷"} {p === "facebook" && "📘"} {p === "tiktok" && "🎵"}
-                  {" "}{p.charAt(0).toUpperCase() + p.slice(1)}
-                </button>
-              ))}
+              {(["instagram", "facebook", "tiktok"] as const).map((p) => {
+                let Icon;
+                if (p === "instagram") Icon = <Instagram size={18} variant="Bold" className="text-white" />;
+                else if (p === "facebook") Icon = <Facebook size={18} variant="Bold" className="text-white" />;
+                else Icon = (
+                  <svg className="w-[18px] h-[18px] fill-white" viewBox="0 0 448 512">
+                    <path d="M448 209.9a210.1 210.1 0 0 1 -122.8-39.3V349.4A162.6 162.6 0 1 1 185 188.3V278.2a74.6 74.6 0 1 0 52.2 71.2V0l88 0a121.2 121.2 0 0 0 1.9 22.2h0A122.2 122.2 0 0 0 381 102.4a121.4 121.4 0 0 0 67 20.1z"/>
+                  </svg>
+                );
+
+                return (
+                  <button
+                    key={p}
+                    onClick={() => { setOauthUrl(null); handleAuthLinking(p); }}
+                    disabled={isConnecting}
+                    className="btn-primary !bg-[#2563EB] !border-[#2563EB] hover:!bg-[#1D4ED8] flex items-center justify-center gap-2.5 disabled:opacity-50 text-white shadow-sm"
+                  >
+                    {Icon}
+                    {" "}{p.charAt(0).toUpperCase() + p.slice(1)}
+                  </button>
+                );
+              })}
             </div>
+            
+            <button 
+              onClick={() => setOauthUrl(null)} 
+              className="mt-6 flex items-center gap-2 text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors"
+            >
+              <ArrowLeft size={16} /> Volver al menú
+            </button>
+
             {isConnecting && (
               <div className="mt-4 flex items-center gap-2 text-sm text-on-surface-variant">
                 <div className="h-4 w-4 border-2 border-[#2563EB]/30 border-t-[#2563EB] rounded-full animate-spin" />
@@ -495,15 +514,19 @@ export function SocialPublisherForm({
                           )
                         }
                         className={`px-3 py-2 border rounded-xl flex items-center gap-1.5 text-xs font-medium transition-colors duration-200 ${
-                          publishNetworks.includes(acc.id)
-                            ? "bg-[#2563EB] text-white border-[#2563EB]"
-                            : "bg-surface text-on-surface-variant border-outline-variant hover:border-[#2563EB]/50"
-                        }`}
-                      >
-                        {acc.platform === "Instagram" && "📷"}
-                        {acc.platform === "Facebook" && "📘"}
-                        {acc.platform === "TikTok" && "🎵"}
-                        {acc.platform} — {acc.username || acc.name}
+                        publishNetworks.includes(acc.id)
+                          ? "bg-[#2563EB] text-white border-[#2563EB]"
+                          : "bg-surface text-on-surface-variant border-outline-variant hover:border-[#2563EB]/50"
+                      }`}
+                    >
+                      {acc.platform === "Instagram" && <Instagram size={14} variant="Bold" className={publishNetworks.includes(acc.id) ? "text-white" : "text-[#2563EB]"} />}
+                      {acc.platform === "Facebook" && <Facebook size={14} variant="Bold" className={publishNetworks.includes(acc.id) ? "text-white" : "text-[#2563EB]"} />}
+                      {acc.platform === "TikTok" && (
+                        <svg className={`w-[12px] h-[12px] ${publishNetworks.includes(acc.id) ? "fill-white" : "fill-[#2563EB]"}`} viewBox="0 0 448 512">
+                           <path d="M448 209.9a210.1 210.1 0 0 1 -122.8-39.3V349.4A162.6 162.6 0 1 1 185 188.3V278.2a74.6 74.6 0 1 0 52.2 71.2V0l88 0a121.2 121.2 0 0 0 1.9 22.2h0A122.2 122.2 0 0 0 381 102.4a121.4 121.4 0 0 0 67 20.1z"/>
+                        </svg>
+                      )}
+                      {acc.platform} — {acc.username || acc.name}
                       </button>
                     ))}
                   </div>

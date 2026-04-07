@@ -27,14 +27,21 @@ export async function GET(req: Request) {
     const accounts = (accountsRes.data as any)?.accounts || [];
 
     // Normalize to a simple shape for the frontend
-    const normalized = accounts.map((acc: any) => ({
-      id: acc._id || acc.id,
-      platform: capitalize(acc.platform),
-      name: acc.username || acc.displayName || acc.platform,
-      username: acc.username,
-      profilePicture: acc.profilePicture,
-      profileId: acc.profileId,
-    }));
+    const normalized = accounts
+      .filter((acc: any) => {
+        // Ignoramos cuentas que Zernio marca como desconectadas, expiradas o con error
+        const s = (acc.status || "").toLowerCase();
+        return s !== 'disconnected' && s !== 'error' && s !== 'unauthorized' && s !== 'expired' && s !== 'pending';
+      })
+      .map((acc: any) => ({
+        id: acc._id || acc.id,
+        platform: capitalize(acc.platform),
+        name: acc.username || acc.displayName || acc.platform,
+        username: acc.username,
+        profilePicture: acc.profilePicture,
+        profileId: acc.profileId,
+        status: acc.status || "active",
+      }));
 
     return NextResponse.json({ data: normalized });
   } catch (error: any) {
