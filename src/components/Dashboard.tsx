@@ -248,7 +248,7 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
               surface_covered: property.surface_covered || 0,
               photos: currentVideoPhotos,
             },
-            audioUrl: selectedAudio || undefined,
+            audioUrl: undefined, // TEMPORARY DISABLE TO DEBUG Wasm Assertion Failed
           }
         },
         inputProps: {
@@ -266,7 +266,7 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
             surface_covered: property.surface_covered || 0,
             photos: currentVideoPhotos,
           },
-          audioUrl: selectedAudio || undefined,
+          audioUrl: undefined, // TEMPORARY DISABLE
         },
         videoCodec: "h264",
         container: "mp4",
