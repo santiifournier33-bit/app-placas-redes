@@ -79,6 +79,8 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
   const [oauthUrl, setOauthUrl] = useState<string | null>(null);
   const [capturedPlacaUrl, setCapturedPlacaUrl] = useState<string | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [renderedVideoUrl, setRenderedVideoUrl] = useState<string | null>(null);
+  const [isRenderingForPublish, setIsRenderingForPublish] = useState(false);
 
   // ── Toast State ──
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -218,117 +220,73 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
     }
   };
 
+  const renderVideoToBlob = async (onProgress?: (p: number) => void): Promise<Blob | null> => {
+    const videoProps = {
+      property: {
+        ...property,
+        price: property.operations?.[0]?.prices?.[0]?.price || 0,
+        currency: property.operations?.[0]?.prices?.[0]?.currency || "USD",
+        operation_type: property.operations?.[0]?.operation_type || "Venta",
+        surface: property.surface || 0,
+        surface_covered: property.surface_covered || 0,
+        photos: currentVideoPhotos,
+      },
+      audioUrl: selectedAudio || undefined,
+    };
+    const compositionConfig = {
+      id: "PropertyReel",
+      component: PropertyComposition,
+      width: 1080,
+      height: 1920,
+      fps: 30,
+      durationInFrames: (Math.max(1, currentVideoPhotos.length) + 1) * 90,
+      defaultProps: videoProps,
+    };
+
+    let renderResult;
+    try {
+      renderResult = await renderMediaOnWeb({
+        composition: compositionConfig,
+        inputProps: videoProps,
+        videoCodec: "h264",
+        container: "mp4",
+        onProgress: ({ progress }: { progress: number }) => onProgress?.(Math.floor(progress * 100)),
+      });
+    } catch (h264Error: any) {
+      console.warn("H264 render failed, falling back to vp8/webm:", h264Error);
+      renderResult = await renderMediaOnWeb({
+        composition: compositionConfig,
+        inputProps: videoProps,
+        videoCodec: "vp8",
+        container: "webm",
+        onProgress: ({ progress }: { progress: number }) => onProgress?.(Math.floor(progress * 100)),
+      });
+    }
+
+    return renderResult.getBlob();
+  };
+
   const handleDownloadVideoBrowser = async () => {
     setIsVideoDownloading(true);
     setVideoDownloadProgress(0);
 
     try {
       showToast("Analizando dispositivo para renderizado local...");
+      const blob = await renderVideoToBlob((p) => setVideoDownloadProgress(p));
+      if (!blob) throw new Error("No se pudo renderizar el video");
 
-      let renderResult;
-      try {
-        renderResult = await renderMediaOnWeb({
-          composition: {
-            id: "PropertyReel",
-            component: PropertyComposition,
-            width: 1080,
-            height: 1920,
-            fps: 30,
-            durationInFrames: (Math.max(1, currentVideoPhotos.length) + 1) * 90,
-            defaultProps: {
-              property: {
-                ...property,
-                price: property.operations?.[0]?.prices?.[0]?.price || 0,
-                currency: property.operations?.[0]?.prices?.[0]?.currency || "USD",
-                operation_type: property.operations?.[0]?.operation_type || "Venta",
-                surface: property.surface || 0,
-                surface_covered: property.surface_covered || 0,
-                photos: currentVideoPhotos,
-              },
-              audioUrl: selectedAudio || undefined,
-            }
-          },
-          inputProps: {
-            property: {
-              ...property,
-              price: property.operations?.[0]?.prices?.[0]?.price || 0,
-              currency: property.operations?.[0]?.prices?.[0]?.currency || "USD",
-              operation_type: property.operations?.[0]?.operation_type || "Venta",
-              surface: property.surface || 0,
-              surface_covered: property.surface_covered || 0,
-              photos: currentVideoPhotos,
-            },
-            audioUrl: selectedAudio || undefined,
-          },
-          videoCodec: "h264",
-          container: "mp4",
-          onProgress: ({ progress }: { progress: number }) => {
-            setVideoDownloadProgress(Math.floor(progress * 100));
-          },
-        });
-      } catch (h264Error: any) {
-        console.warn("H264 render failed, falling back to vp8/webm:", h264Error);
-        // Fallback a vp8/webm que no requiere encode H264 por hardware
-        renderResult = await renderMediaOnWeb({
-          composition: {
-            id: "PropertyReel",
-            component: PropertyComposition,
-            width: 1080,
-            height: 1920,
-            fps: 30,
-            durationInFrames: (Math.max(1, currentVideoPhotos.length) + 1) * 90,
-            defaultProps: {
-              property: {
-                ...property,
-                price: property.operations?.[0]?.prices?.[0]?.price || 0,
-                currency: property.operations?.[0]?.prices?.[0]?.currency || "USD",
-                operation_type: property.operations?.[0]?.operation_type || "Venta",
-                surface: property.surface || 0,
-                surface_covered: property.surface_covered || 0,
-                photos: currentVideoPhotos,
-              },
-              audioUrl: selectedAudio || undefined,
-            }
-          },
-          inputProps: {
-            property: {
-              ...property,
-              price: property.operations?.[0]?.prices?.[0]?.price || 0,
-              currency: property.operations?.[0]?.prices?.[0]?.currency || "USD",
-              operation_type: property.operations?.[0]?.operation_type || "Venta",
-              surface: property.surface || 0,
-              surface_covered: property.surface_covered || 0,
-              photos: currentVideoPhotos,
-            },
-            audioUrl: selectedAudio || undefined,
-          },
-          videoCodec: "vp8",
-          container: "webm",
-          onProgress: ({ progress }: { progress: number }) => {
-            setVideoDownloadProgress(Math.floor(progress * 100));
-          },
-        });
-      }
-
-      const blob = await renderResult.getBlob();
       const url = URL.createObjectURL(blob);
-
-      // Descarga automática sin abrir nueva pestaña
       const a = document.createElement('a');
       a.href = url;
       a.download = `Reel-${property.address ? property.address.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'propiedad'}.mp4`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      
-      // Opcional: revocar la URL después de un tiempo para liberar memoria
       setTimeout(() => URL.revokeObjectURL(url), 10000);
-
       showToast("Descarga de video lista.");
     } catch (e: any) {
       console.error("Error renderizando localmente:", e);
-      // Fallback a simulación visual si falta el bundle de remotion
-      if (e.message.includes("Could not load bundle") || e.message.includes("Failed to fetch")) {
+      if (e.message?.includes("Could not load bundle") || e.message?.includes("Failed to fetch")) {
         console.warn("Falta el bundle de remotion local, procediendo con simulación visual para testeo de UX");
         let progress = 0;
         const interval = setInterval(() => {
@@ -348,7 +306,60 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
       }
     } finally {
       setIsVideoDownloading(false);
-      // setVideoDownloadProgress(null); // Descomentar en entorno real
+    }
+  };
+
+  const handleVideoWhatsAppShare = async () => {
+    setIsVideoDownloading(true);
+    setVideoDownloadProgress(0);
+    try {
+      showToast("Preparando video para WhatsApp...");
+      const blob = await renderVideoToBlob((p) => setVideoDownloadProgress(p));
+      if (!blob) throw new Error("No se pudo renderizar el video");
+
+      const file = new File([blob], `freire-video.mp4`, { type: blob.type || "video/mp4" });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({
+          title: property.address || "Freire Propiedades",
+          files: [file],
+        });
+      } else {
+        alert("Tu dispositivo no soporta compartir archivos directamente. Usá el botón Descargar HD y adjuntá el video a WhatsApp manualmente.");
+      }
+    } catch (e: any) {
+      if (e?.name !== "AbortError") {
+        console.error("Error compartiendo video:", e);
+        showToast("No se pudo compartir el video");
+      }
+    } finally {
+      setIsVideoDownloading(false);
+      setVideoDownloadProgress(null);
+    }
+  };
+
+  const handlePlacaWhatsAppShare = async () => {
+    const dataUrl = await capturePlacaNode();
+    if (!dataUrl) return;
+    try {
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], `freire-placa.jpg`, { type: "image/jpeg" });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({
+          title: property.address || "Freire Propiedades",
+          files: [file],
+        });
+      } else {
+        // Desktop fallback: descargar
+        const a = document.createElement("a");
+        a.href = dataUrl;
+        a.download = `freire-placa.jpg`;
+        a.click();
+        showToast("En computadora, adjuntá la imagen descargada a WhatsApp Web.");
+      }
+    } catch (e: any) {
+      if (e?.name !== "AbortError") {
+        console.error("Error compartiendo placa:", e);
+      }
     }
   };
 
@@ -1262,24 +1273,27 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
                       loop
                     />
                   </div>
-                  <div className="p-4 flex gap-3">
-                    <button 
-                      onClick={handleDownloadVideoBrowser}
-                      disabled={isVideoDownloading}
-                      className="btn-secondary flex-1 shadow-md text-xs disabled:opacity-50" 
-                    >
-                      {isVideoDownloading ? `Aguardá... Renderizando en navegador (${videoDownloadProgress || 0}%)` : "Descargar HD (Navegador)"}
-                    </button>
-                    <button 
-                      onClick={handleDownloadVideoAWS}
-                      disabled={isVideoDownloading}
-                      className="btn-tertiary flex-1 shadow-md text-xs disabled:opacity-50 !bg-gray-100 hidden" 
-                    >
-                      {isVideoDownloading ? `...` : "Descargar HD (AWS)"}
-                    </button>
-                    <button 
-                      onClick={() => setVideoStep("format")}
-                      className="btn-primary !bg-[#2563EB] !border-[#2563EB] hover:!bg-[#1D4ED8] flex-1 shadow-md text-xs"
+                  <div className="p-4 flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleDownloadVideoBrowser}
+                        disabled={isVideoDownloading}
+                        className="btn-secondary flex-1 shadow-md text-xs disabled:opacity-50"
+                      >
+                        {isVideoDownloading ? `Renderizando... (${videoDownloadProgress || 0}%)` : "⬇ Descargar HD"}
+                      </button>
+                      <button
+                        onClick={handleVideoWhatsAppShare}
+                        disabled={isVideoDownloading}
+                        className="btn-secondary flex-1 shadow-md text-xs disabled:opacity-50 flex items-center justify-center gap-1.5 !border-[#25D366] !text-[#25D366] hover:!bg-[#25D366]/10"
+                      >
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.888-.788-1.489-1.761-1.663-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                        WhatsApp
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => { setRenderedVideoUrl(null); setVideoStep("format"); }}
+                      className="btn-primary !bg-[#2563EB] !border-[#2563EB] hover:!bg-[#1D4ED8] w-full shadow-md text-xs"
                     >
                       Publicar en Redes
                     </button>
@@ -1328,26 +1342,51 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
                     </div>
                   </button>
                   <div className="flex gap-3">
-                    <button onClick={() => setVideoStep("preview")} className="btn-tertiary flex-1 justify-center text-xs">
+                    <button onClick={() => setVideoStep("preview")} className="btn-tertiary flex-1 justify-center text-xs" disabled={isRenderingForPublish}>
                       ← Volver
                     </button>
                     <button
-                      onClick={() => setVideoStep("publish")}
-                      disabled={videoPublishFormats.length === 0}
-                      className="btn-primary !bg-[#2563EB] !border-[#2563EB] hover:!bg-[#1D4ED8] flex-1 justify-center text-xs disabled:opacity-50"
+                      onClick={async () => {
+                        setIsRenderingForPublish(true);
+                        setRenderedVideoUrl(null);
+                        try {
+                          const blob = await renderVideoToBlob();
+                          if (blob) {
+                            const formData = new FormData();
+                            formData.append('reqtype', 'fileupload');
+                            formData.append('fileToUpload', blob, 'video.mp4');
+                            const res = await fetch('https://catbox.moe/user/api.php', { method: 'POST', body: formData });
+                            const url = await res.text();
+                            if (url?.startsWith('https://')) setRenderedVideoUrl(url.trim());
+                          }
+                        } catch (e) {
+                          console.error("Error preparing video for publish:", e);
+                        } finally {
+                          setIsRenderingForPublish(false);
+                          setVideoStep("publish");
+                        }
+                      }}
+                      disabled={videoPublishFormats.length === 0 || isRenderingForPublish}
+                      className="btn-primary !bg-[#2563EB] !border-[#2563EB] hover:!bg-[#1D4ED8] flex-1 justify-center text-xs disabled:opacity-50 flex items-center gap-2"
                     >
-                      Continuar →
+                      {isRenderingForPublish ? (
+                        <>
+                          <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Preparando...
+                        </>
+                      ) : "Continuar →"}
                     </button>
                   </div>
                 </div>
               ) : (
                 <div className="h-[80vh] flex flex-col">
-                  <SocialPublisherForm 
+                  <SocialPublisherForm
                     property={property}
                     copyVariants={copyVariants}
                     mediaType="video"
                     contentFormat={videoPublishFormats.includes("reel") ? "reel" : "story"}
                     contentFormats={videoPublishFormats}
+                    renderedVideoUrl={renderedVideoUrl}
                     onBack={() => setVideoStep("format")}
                     onPublishSuccess={() => {
                         setShowVideoModal(false);
@@ -1355,100 +1394,6 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
                         showToast("¡Video publicado exitosamente en tus redes!");
                     }}
                     onCopyGenerated={(v) => setCopyVariants(v)}
-                    onRenderVideo={async (onProgress) => {
-                      try {
-                        let renderResult;
-                        try {
-                          renderResult = await renderMediaOnWeb({
-                            composition: {
-                              id: "PropertyReel",
-                              component: PropertyComposition,
-                              width: 1080,
-                              height: 1920,
-                              fps: 30,
-                              durationInFrames: (Math.max(1, currentVideoPhotos.length) + 1) * 90,
-                              defaultProps: {
-                                property: {
-                                  ...property,
-                                  price: property.operations?.[0]?.prices?.[0]?.price || 0,
-                                  currency: property.operations?.[0]?.prices?.[0]?.currency || "USD",
-                                  operation_type: property.operations?.[0]?.operation_type || "Venta",
-                                  surface: property.surface || 0,
-                                  surface_covered: property.surface_covered || 0,
-                                  photos: currentVideoPhotos,
-                                },
-                                audioUrl: selectedAudio || undefined,
-                              }
-                            },
-                            inputProps: {
-                              property: {
-                                ...property,
-                                price: property.operations?.[0]?.prices?.[0]?.price || 0,
-                                currency: property.operations?.[0]?.prices?.[0]?.currency || "USD",
-                                operation_type: property.operations?.[0]?.operation_type || "Venta",
-                                surface: property.surface || 0,
-                                surface_covered: property.surface_covered || 0,
-                                photos: currentVideoPhotos,
-                              },
-                              audioUrl: selectedAudio || undefined,
-                            },
-                            videoCodec: "h264",
-                            container: "mp4",
-                            onProgress: ({ progress }: { progress: number }) => onProgress(Math.floor(progress * 100)),
-                          });
-                        } catch (h264Error) {
-                          console.warn("H264 render failed, falling back to vp8/webm:", h264Error);
-                          renderResult = await renderMediaOnWeb({
-                            composition: {
-                              id: "PropertyReel",
-                              component: PropertyComposition,
-                              width: 1080,
-                              height: 1920,
-                              fps: 30,
-                              durationInFrames: (Math.max(1, currentVideoPhotos.length) + 1) * 90,
-                              defaultProps: {
-                                property: {
-                                  ...property,
-                                  price: property.operations?.[0]?.prices?.[0]?.price || 0,
-                                  currency: property.operations?.[0]?.prices?.[0]?.currency || "USD",
-                                  operation_type: property.operations?.[0]?.operation_type || "Venta",
-                                  surface: property.surface || 0,
-                                  surface_covered: property.surface_covered || 0,
-                                  photos: currentVideoPhotos,
-                                },
-                                audioUrl: selectedAudio || undefined,
-                              }
-                            },
-                            inputProps: {
-                              property: {
-                                ...property,
-                                price: property.operations?.[0]?.prices?.[0]?.price || 0,
-                                currency: property.operations?.[0]?.prices?.[0]?.currency || "USD",
-                                operation_type: property.operations?.[0]?.operation_type || "Venta",
-                                surface: property.surface || 0,
-                                surface_covered: property.surface_covered || 0,
-                                photos: currentVideoPhotos,
-                              },
-                              audioUrl: selectedAudio || undefined,
-                            },
-                            videoCodec: "vp8",
-                            container: "webm",
-                            onProgress: ({ progress }: { progress: number }) => onProgress(Math.floor(progress * 100)),
-                          });
-                        }
-                        
-                        const blob = await renderResult.getBlob();
-                        return new Promise((resolve, reject) => {
-                          const reader = new FileReader();
-                          reader.onloadend = () => resolve(reader.result as string);
-                          reader.onerror = reject;
-                          reader.readAsDataURL(blob);
-                        });
-                      } catch (err) {
-                        console.error("Local render failed:", err);
-                        return null;
-                      }
-                    }}
                   />
                 </div>
               )}
@@ -1517,21 +1462,31 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
                     />
                     </div>
                   </div>
-                  <div className="p-4 flex gap-3">
-                    <button 
-                      onClick={handleExportPlaca}
-                      disabled={isCapturing}
-                      className="btn-secondary flex-1 shadow-md text-xs disabled:opacity-50" 
-                    >
-                      {isCapturing ? "Aguardá..." : "⬇ Descargar JPG"}
-                    </button>
-                    <button 
+                  <div className="p-4 flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleExportPlaca}
+                        disabled={isCapturing}
+                        className="btn-secondary flex-1 shadow-md text-xs disabled:opacity-50"
+                      >
+                        {isCapturing ? "Aguardá..." : "⬇ Descargar JPG"}
+                      </button>
+                      <button
+                        onClick={handlePlacaWhatsAppShare}
+                        disabled={isCapturing}
+                        className="btn-secondary flex-1 shadow-md text-xs disabled:opacity-50 flex items-center justify-center gap-1.5 !border-[#25D366] !text-[#25D366] hover:!bg-[#25D366]/10"
+                      >
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.888-.788-1.489-1.761-1.663-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                        WhatsApp
+                      </button>
+                    </div>
+                    <button
                       onClick={async () => {
                         const dataUrl = await capturePlacaNode();
                         if (dataUrl) setPlacaStep("publish");
                       }}
                       disabled={isCapturing}
-                      className="btn-primary !bg-[#2563EB] !border-[#2563EB] hover:!bg-[#1D4ED8] flex-1 shadow-md text-xs disabled:opacity-50"
+                      className="btn-primary !bg-[#2563EB] !border-[#2563EB] hover:!bg-[#1D4ED8] w-full shadow-md text-xs disabled:opacity-50"
                     >
                       Publicar en Redes
                     </button>
@@ -1539,12 +1494,12 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
                 </>
               ) : (
                 <div className="h-[80vh] flex flex-col">
-                  <SocialPublisherForm 
+                  <SocialPublisherForm
                     property={property}
                     copyVariants={copyVariants}
                     mediaType="placa"
                     contentFormat={placaFormat || "story"}
-                    mediaThumb={placaUrl}
+                    mediaThumb={capturedPlacaUrl}
                     onBack={() => setPlacaStep("preview")}
                     onPublishSuccess={() => {
                         setShowPlacaModal(false);

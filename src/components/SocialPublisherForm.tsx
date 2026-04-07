@@ -18,12 +18,12 @@ interface SocialPublisherFormProps {
   /** Multiple formats selected (used for videos where user picks story + reel) */
   contentFormats?: ("story" | "reel")[];
   mediaThumb?: string | null;
+  /** Public URL of a pre-rendered video (for Zernio publishing) */
+  renderedVideoUrl?: string | null;
   onBack: () => void;
   onPublishSuccess: () => void;
   /** Callback to update parent copyVariants after inline generation */
   onCopyGenerated?: (variants: CopyVariants) => void;
-  /** Callback to render video in the browser and return a data URI. Used for video publishing. */
-  onRenderVideo?: (onProgress: (pct: number) => void) => Promise<string | null>;
 }
 
 // ── Copy inclusion rules ──
@@ -87,10 +87,10 @@ export function SocialPublisherForm({
   contentFormat,
   contentFormats,
   mediaThumb,
+  renderedVideoUrl,
   onBack,
   onPublishSuccess,
   onCopyGenerated,
-  onRenderVideo,
 }: SocialPublisherFormProps) {
   // Resolve the active formats list
   const activeFormats: string[] = contentFormats && contentFormats.length > 0
@@ -104,6 +104,7 @@ export function SocialPublisherForm({
   const [isPublishing, setIsPublishing] = useState(false);
   const [socialAccounts, setSocialAccounts] = useState<any[]>([]);
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
+  const [profileId, setProfileId] = useState<string | null>(null);
   const [oauthUrl, setOauthUrl] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectPlatform, setConnectPlatform] = useState<string>("instagram");
@@ -136,7 +137,11 @@ export function SocialPublisherForm({
       const email = property.agent?.email || "default@freire.com";
       const res = await fetch(`/api/social/accounts?email=${encodeURIComponent(email)}`);
       const data = await res.json();
-      setSocialAccounts(data.data || []);
+      const accounts = data.data || [];
+      setSocialAccounts(accounts);
+      // Extract profileId from the first account for use in publish calls
+      const firstProfileId = accounts[0]?.profileId;
+      if (firstProfileId) setProfileId(firstProfileId);
     } catch (e) {
       console.error(e);
       setSocialAccounts([]);
@@ -242,69 +247,31 @@ export function SocialPublisherForm({
   // ── WhatsApp native share ──
   const handleWhatsAppShare = async () => {
     try {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       const rules = COPY_RULES[contentFormat] || COPY_RULES.post;
       const includeText = rules["WhatsApp"];
       const shareText = includeText ? publishText : "";
-      const propertyTitle = property.address || "Propiedad Freire";
 
       if (mediaThumb) {
-        // Convert data URI or URL to a proper File object
-        let blob: Blob;
-        let mimeType = "image/jpeg";
-        let ext = "jpg";
+        const response = await fetch(mediaThumb);
+        const blob = await response.blob();
+        const file = new File([blob], `freire-${mediaType}.jpg`, { type: blob.type });
 
-        if (mediaThumb.startsWith("data:")) {
-          // Parse data URI directly to avoid fetch issues with large data URIs
-          const mimeMatch = mediaThumb.match(/^data:([\w/]+);base64,/);
-          mimeType = mimeMatch ? mimeMatch[1] : "image/jpeg";
-          ext = mimeType.includes("video") ? "mp4" : mimeType.includes("png") ? "png" : "jpg";
-          const base64 = mediaThumb.split(",")[1];
-          const binary = atob(base64);
-          const bytes = new Uint8Array(binary.length);
-          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-          blob = new Blob([bytes], { type: mimeType });
-        } else {
-          const response = await fetch(mediaThumb);
-          blob = await response.blob();
-          mimeType = blob.type || "image/jpeg";
-          ext = mimeType.includes("video") ? "mp4" : "jpg";
-        }
-
-        const file = new File([blob], `freire-${mediaType}.${ext}`, { type: mimeType });
-
-        // Try navigator.share with files (works on mobile & some desktop browsers)
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        if (navigator.canShare && navigator.canShare({ files: [file] }) && isMobile) {
           await navigator.share({
-            title: propertyTitle,
+            title: property.address || "Propiedad Freire",
             text: shareText,
             files: [file],
           });
           return;
         }
-
-        // Fallback for desktop: download the file and open WhatsApp with text
-        const downloadUrl = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = downloadUrl;
-        a.download = `freire-${mediaType}.${ext}`;
-        a.click();
-        URL.revokeObjectURL(downloadUrl);
-
-        // Then open WhatsApp with the text
-        const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText || `Mirá esta propiedad: ${propertyTitle}`)}`;
-        window.open(waUrl, "_blank");
-        return;
       }
 
-      // No media — just open WhatsApp with text
-      const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText || `Mirá esta propiedad: ${propertyTitle}`)}`;
+      // Fallback: open WhatsApp with text only
+      const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText || `Mirá esta propiedad: ${property.address}`)}`;
       window.open(waUrl, "_blank");
     } catch (e) {
       console.error("WhatsApp share error:", e);
-      // If share was cancelled by user, don't show an error
-      if ((e as any)?.name !== "AbortError") {
-        alert("No se pudo compartir. Intentá descargar el archivo y compartirlo manualmente.");
-      }
     }
   };
 
@@ -361,24 +328,26 @@ export function SocialPublisherForm({
     setIsPublishing(true);
     setRenderProgress(null);
 
-    // mediaThumb can be a data URI (base64) or a public URL
-    let finalMediaUrls: string[] = mediaThumb ? [mediaThumb] : [];
+    // For video: use the pre-rendered public URL; for placa: use the captured image
+    let finalMediaUrls: string[] = [];
+    if (mediaType === "video") {
+      if (renderedVideoUrl) {
+        finalMediaUrls = [renderedVideoUrl];
+      } else if (mediaThumb) {
+        finalMediaUrls = [mediaThumb];
+      }
+    } else {
+      finalMediaUrls = mediaThumb ? [mediaThumb] : [];
+    }
+
+    if (mediaType === "video" && hasZernio && !renderedVideoUrl) {
+      setIsPublishing(false);
+      setRenderProgress(null);
+      alert("El video aún se está preparando. Esperá un momento y volvé a intentar.");
+      return;
+    }
 
     try {
-      // For video publishing: render the video locally first if no media is provided
-      if (mediaType === "video" && finalMediaUrls.length === 0 && onRenderVideo && hasZernio) {
-        setRenderProgress(0);
-        const videoDataUri = await onRenderVideo((pct) => setRenderProgress(pct));
-        if (!videoDataUri) {
-          alert("No se pudo renderizar el video. Intentá de nuevo.");
-          setIsPublishing(false);
-          setRenderProgress(null);
-          return;
-        }
-        finalMediaUrls = [videoDataUri];
-        setRenderProgress(100);
-      }
-
       // 1. Publish to Zernio (social networks)
       if (hasZernio) {
         const email = property.agent?.email || "default@freire.com";
@@ -400,27 +369,25 @@ export function SocialPublisherForm({
         }
 
         // Accounts that get copy in ANY format → send with copy
-        // Accounts that NEVER get copy → send without
+        // Accounts that NEVER get copy in any format → send without
         const finalWithCopy = Array.from(accountsWithCopy);
         const finalWithoutCopy = Array.from(accountsWithoutCopy).filter(id => !accountsWithCopy.has(id));
 
-        let publishError: string | null = null;
-
-        if (finalWithCopy.length > 0) {
+        if (finalWithCopy.length > 0 && publishText) {
           const res = await fetch("/api/social/publish", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               email,
-              text: publishText || "",
+              text: publishText,
               socialAccountIds: finalWithCopy,
               mediaUrls: finalMediaUrls,
-              contentFormat: activeFormats[0] || contentFormat,
+              profileId,
             }),
           });
-          const data = await res.json();
           if (!res.ok) {
-            publishError = data.error || "Error al publicar con copy";
+            const errData = await res.json();
+            throw new Error(errData.error || "Error publicando en redes sociales");
           }
         }
 
@@ -433,20 +400,13 @@ export function SocialPublisherForm({
               text: "",
               socialAccountIds: finalWithoutCopy,
               mediaUrls: finalMediaUrls,
-              contentFormat: activeFormats[0] || contentFormat,
+              profileId,
             }),
           });
-          const data = await res.json();
-          if (!res.ok && !publishError) {
-            publishError = data.error || "Error al publicar sin copy";
+          if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.error || "Error publicando en redes sociales");
           }
-        }
-
-        if (publishError) {
-          alert(`Error de publicación: ${publishError}`);
-          setIsPublishing(false);
-          setRenderProgress(null);
-          return;
         }
       }
 
@@ -457,8 +417,8 @@ export function SocialPublisherForm({
 
       onPublishSuccess();
     } catch (e: any) {
-      console.error("Publish error:", e);
-      alert(`Error de red: ${e.message || "Intentá de nuevo"}`);
+      console.error(e);
+      alert(e.message || "Error de red. Intentá de nuevo");
     } finally {
       setIsPublishing(false);
       setRenderProgress(null);
