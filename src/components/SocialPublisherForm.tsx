@@ -300,13 +300,10 @@ export function SocialPublisherForm({
     try {
       // Si es video, necesitamos compilar el MP4 en AWS antes de enviar a Zernio
       if (mediaType === "video" && hasZernio) {
-        const videoUrl = await handleVideoRender();
-        if (!videoUrl) {
-          setIsPublishing(false);
-          setRenderProgress(null);
-          return;
-        }
-        finalMediaUrls = [videoUrl];
+        setIsPublishing(false);
+        setRenderProgress(null);
+        alert("Atención: Hemos migrado el motor de video a renderizado local. Para Instagram Reels y TikTok, por favor usa el botón 'Descargar HD' primero y sube el archivo descargado directamente a la red social deseada. La auto-publicación de videos se restaurará pronto.");
+        return;
       }
 
       // 1. Publish to Zernio (social networks)
@@ -483,31 +480,36 @@ export function SocialPublisherForm({
                 <div className="bg-surface-variant/50 border border-outline-variant rounded-xl p-4 text-center">
                   <p className="text-sm text-on-surface-variant mb-3">No tenés redes sociales vinculadas aún.</p>
                   <button onClick={() => setOauthUrl("connect")} className="btn-primary !bg-[#2563EB] !border-[#2563EB] text-xs">
-                    Vincular Instagram / Facebook / TikTok
+                    Vincular cuenta nueva
                   </button>
                 </div>
               ) : (
-                <div className="flex flex-wrap gap-2">
-                  {socialAccounts.map((acc: any) => (
-                    <button
-                      key={acc.id}
-                      onClick={() =>
-                        setPublishNetworks((prev) =>
-                          prev.includes(acc.id) ? prev.filter((id) => id !== acc.id) : [...prev, acc.id]
-                        )
-                      }
-                      className={`px-3 py-2 border rounded-xl flex items-center gap-1.5 text-xs font-medium transition-colors duration-200 ${
-                        publishNetworks.includes(acc.id)
-                          ? "bg-[#2563EB] text-white border-[#2563EB]"
-                          : "bg-surface text-on-surface-variant border-outline-variant hover:border-[#2563EB]/50"
-                      }`}
-                    >
-                      {acc.platform === "Instagram" && "📷"}
-                      {acc.platform === "Facebook" && "📘"}
-                      {acc.platform === "TikTok" && "🎵"}
-                      {acc.platform} — {acc.username || acc.name}
-                    </button>
-                  ))}
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-wrap gap-2">
+                    {socialAccounts.map((acc: any) => (
+                      <button
+                        key={acc.id}
+                        onClick={() =>
+                          setPublishNetworks((prev) =>
+                            prev.includes(acc.id) ? prev.filter((id) => id !== acc.id) : [...prev, acc.id]
+                          )
+                        }
+                        className={`px-3 py-2 border rounded-xl flex items-center gap-1.5 text-xs font-medium transition-colors duration-200 ${
+                          publishNetworks.includes(acc.id)
+                            ? "bg-[#2563EB] text-white border-[#2563EB]"
+                            : "bg-surface text-on-surface-variant border-outline-variant hover:border-[#2563EB]/50"
+                        }`}
+                      >
+                        {acc.platform === "Instagram" && "📷"}
+                        {acc.platform === "Facebook" && "📘"}
+                        {acc.platform === "TikTok" && "🎵"}
+                        {acc.platform} — {acc.username || acc.name}
+                      </button>
+                    ))}
+                  </div>
+                  <button onClick={() => setOauthUrl("connect")} className="btn-tertiary self-start text-[11px] font-semibold flex items-center gap-1 opacity-80">
+                    + Vincular otra cuenta
+                  </button>
                 </div>
               )}
             </div>

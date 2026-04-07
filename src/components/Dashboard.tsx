@@ -225,55 +225,90 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
     try {
       showToast("Analizando dispositivo para renderizado local...");
 
-      const renderResult = await renderMediaOnWeb({
-        composition: {
-          id: "PropertyReel",
-          component: PropertyComposition,
-          width: 1080,
-          height: 1920,
-          fps: 30,
-          durationInFrames: (Math.max(1, currentVideoPhotos.length) + 1) * 90,
-          defaultProps: {
+      let renderResult;
+      try {
+        renderResult = await renderMediaOnWeb({
+          composition: {
+            id: "PropertyReel",
+            component: PropertyComposition,
+            width: 1080,
+            height: 1920,
+            fps: 30,
+            durationInFrames: (Math.max(1, currentVideoPhotos.length) + 1) * 90,
+            defaultProps: {
+              property: {
+                ...property,
+                price: property.operations?.[0]?.prices?.[0]?.price || 0,
+                currency: property.operations?.[0]?.prices?.[0]?.currency || "USD",
+                operation_type: property.operations?.[0]?.operation_type || "Venta",
+                surface: property.surface || 0,
+                surface_covered: property.surface_covered || 0,
+                photos: currentVideoPhotos,
+              },
+              audioUrl: selectedAudio || undefined,
+            }
+          },
+          inputProps: {
             property: {
               ...property,
-              address: parsedLocation?.title || property.address || "Propiedad Exclusiva",
-              price: property.price || "Consultar",
-              type: property.type || "Propiedad",
-              operation_type: property.operation_type || "Venta",
-              location: parsedLocation?.subtitle || property.location || "",
-              rooms: property.rooms || 0,
-              bedrooms: property.bedrooms || 0,
-              bathrooms: property.bathrooms || 0,
-              surface_total: property.surface_total || 0,
+              price: property.operations?.[0]?.prices?.[0]?.price || 0,
+              currency: property.operations?.[0]?.prices?.[0]?.currency || "USD",
+              operation_type: property.operations?.[0]?.operation_type || "Venta",
+              surface: property.surface || 0,
               surface_covered: property.surface_covered || 0,
               photos: currentVideoPhotos,
             },
             audioUrl: selectedAudio || undefined,
-          }
-        },
-        inputProps: {
-          property: {
-            ...property,
-            address: parsedLocation?.title || property.address || "Propiedad Exclusiva",
-            price: property.price || "Consultar",
-            type: property.type || "Propiedad",
-            operation_type: property.operation_type || "Venta",
-            location: parsedLocation?.subtitle || property.location || "",
-            rooms: property.rooms || 0,
-            bedrooms: property.bedrooms || 0,
-            bathrooms: property.bathrooms || 0,
-            surface_total: property.surface_total || 0,
-            surface_covered: property.surface_covered || 0,
-            photos: currentVideoPhotos,
           },
-          audioUrl: selectedAudio || undefined,
-        },
-        videoCodec: "h264",
-        container: "mp4",
-        onProgress: ({ progress }: { progress: number }) => {
-          setVideoDownloadProgress(Math.floor(progress * 100));
-        },
-      });
+          videoCodec: "h264",
+          container: "mp4",
+          onProgress: ({ progress }: { progress: number }) => {
+            setVideoDownloadProgress(Math.floor(progress * 100));
+          },
+        });
+      } catch (h264Error: any) {
+        console.warn("H264 render failed, falling back to vp8/webm:", h264Error);
+        // Fallback a vp8/webm que no requiere encode H264 por hardware
+        renderResult = await renderMediaOnWeb({
+          composition: {
+            id: "PropertyReel",
+            component: PropertyComposition,
+            width: 1080,
+            height: 1920,
+            fps: 30,
+            durationInFrames: (Math.max(1, currentVideoPhotos.length) + 1) * 90,
+            defaultProps: {
+              property: {
+                ...property,
+                price: property.operations?.[0]?.prices?.[0]?.price || 0,
+                currency: property.operations?.[0]?.prices?.[0]?.currency || "USD",
+                operation_type: property.operations?.[0]?.operation_type || "Venta",
+                surface: property.surface || 0,
+                surface_covered: property.surface_covered || 0,
+                photos: currentVideoPhotos,
+              },
+              audioUrl: selectedAudio || undefined,
+            }
+          },
+          inputProps: {
+            property: {
+              ...property,
+              price: property.operations?.[0]?.prices?.[0]?.price || 0,
+              currency: property.operations?.[0]?.prices?.[0]?.currency || "USD",
+              operation_type: property.operations?.[0]?.operation_type || "Venta",
+              surface: property.surface || 0,
+              surface_covered: property.surface_covered || 0,
+              photos: currentVideoPhotos,
+            },
+            audioUrl: selectedAudio || undefined,
+          },
+          videoCodec: "vp8",
+          container: "webm",
+          onProgress: ({ progress }: { progress: number }) => {
+            setVideoDownloadProgress(Math.floor(progress * 100));
+          },
+        });
+      }
 
       const blob = await renderResult.getBlob();
       const url = URL.createObjectURL(blob);
