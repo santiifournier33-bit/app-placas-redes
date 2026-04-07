@@ -100,7 +100,6 @@ export function SocialPublisherForm({
   const [publishText, setPublishText] = useState("");
   const [selectedCopyStyle, setSelectedCopyStyle] = useState<"descriptivo" | "emocional" | "urgencia" | null>(null);
   const [publishNetworks, setPublishNetworks] = useState<string[]>([]);
-  const [whatsappSelected, setWhatsappSelected] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [socialAccounts, setSocialAccounts] = useState<any[]>([]);
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
@@ -244,86 +243,11 @@ export function SocialPublisherForm({
     }
   };
 
-  // ── WhatsApp native share ──
-  const handleWhatsAppShare = async () => {
-    try {
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      const rules = COPY_RULES[contentFormat] || COPY_RULES.post;
-      const includeText = rules["WhatsApp"];
-      const shareText = includeText ? publishText : "";
-
-      if (mediaThumb) {
-        const response = await fetch(mediaThumb);
-        const blob = await response.blob();
-        const file = new File([blob], `freire-${mediaType}.jpg`, { type: blob.type });
-
-        if (navigator.canShare && navigator.canShare({ files: [file] }) && isMobile) {
-          await navigator.share({
-            title: property.address || "Propiedad Freire",
-            text: shareText,
-            files: [file],
-          });
-          return;
-        }
-      }
-
-      // Fallback: open WhatsApp with text only
-      const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText || `Mirá esta propiedad: ${property.address}`)}`;
-      window.open(waUrl, "_blank");
-    } catch (e) {
-      console.error("WhatsApp share error:", e);
-    }
-  };
-
-  // ── Render Video AWS ──
-  const handleVideoRender = async (): Promise<string | null> => {
-    try {
-      setRenderProgress(0);
-      const res = await fetch("/api/render-video", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ property, theme: "default" }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || data.details);
-
-      let isDone = false;
-      let finalUrl: string | null = null;
-      let errorCount = 0;
-
-      while (!isDone && errorCount < 5) {
-        await new Promise(r => setTimeout(r, 2000));
-        try {
-          const pollRes = await fetch(`/api/render-video?renderId=${data.renderId}&bucketName=${data.bucketName}`);
-          const pollData = await pollRes.json();
-          if (pollData.error) throw new Error(pollData.error);
-
-          if (pollData.done) {
-            isDone = true;
-            finalUrl = pollData.outputFile;
-            setRenderProgress(100);
-          } else {
-            setRenderProgress(Math.round(pollData.overallProgress * 100));
-          }
-        } catch (pollErr) {
-          console.error("Poll error:", pollErr);
-          errorCount++;
-        }
-      }
-      return finalUrl;
-    } catch (e: any) {
-      console.error(e);
-      alert(e.message || "Error al renderizar video en AWS. Verificá tu consola de Netlify.");
-      return null;
-    }
-  };
-
   // ── Publish ──
   const handlePublishClick = async () => {
     const hasZernio = publishNetworks.length > 0;
-    const hasWhatsApp = whatsappSelected;
 
-    if (!hasZernio && !hasWhatsApp) return;
+    if (!hasZernio) return;
 
     setIsPublishing(true);
     setRenderProgress(null);
@@ -383,6 +307,7 @@ export function SocialPublisherForm({
               socialAccountIds: finalWithCopy,
               mediaUrls: finalMediaUrls,
               profileId,
+              contentFormat: activeFormats.find(f => f !== 'story') || activeFormats[0] || 'post',
             }),
           });
           if (!res.ok) {
@@ -401,6 +326,7 @@ export function SocialPublisherForm({
               socialAccountIds: finalWithoutCopy,
               mediaUrls: finalMediaUrls,
               profileId,
+              contentFormat: "story",
             }),
           });
           if (!res.ok) {
@@ -408,11 +334,6 @@ export function SocialPublisherForm({
             throw new Error(errData.error || "Error publicando en redes sociales");
           }
         }
-      }
-
-      // 2. WhatsApp native share
-      if (hasWhatsApp) {
-        await handleWhatsAppShare();
       }
 
       onPublishSuccess();
@@ -428,7 +349,6 @@ export function SocialPublisherForm({
   // ── Derived: copy note ──
   const selectedPlatforms: string[] = [
     ...socialAccounts.filter((a: any) => publishNetworks.includes(a.id)).map((a: any) => a.platform),
-    ...(whatsappSelected ? ["WhatsApp"] : []),
   ];
   const { included: copyIncluded, excluded: copyExcluded } = getCopyNote(activeFormats, selectedPlatforms);
 
@@ -441,6 +361,9 @@ export function SocialPublisherForm({
     { key: "emocional", label: "Emocional" },
     { key: "urgencia", label: "Comercial" },
   ];
+
+  // Determine if only stories are selected
+  const isStoryOnly = activeFormats.length > 0 && activeFormats.every(f => f === "story");
 
   return (
     <div className="flex flex-col h-full bg-surface">
@@ -529,23 +452,6 @@ export function SocialPublisherForm({
                 Paso 3.1 — Redes de destino
               </label>
 
-              {/* WhatsApp (always available) */}
-              <div className="mb-2">
-                <button
-                  onClick={() => setWhatsappSelected(!whatsappSelected)}
-                  className={`w-full px-3 py-2.5 border rounded-xl flex items-center gap-2.5 text-xs font-semibold transition-all duration-200 shadow-sm ${
-                    whatsappSelected
-                      ? "bg-[#25D366] text-white border-[#25D366]"
-                      : "bg-surface text-on-surface-variant border-outline-variant hover:border-[#25D366]/50"
-                  }`}
-                >
-                  <svg className={`w-5 h-5 ${whatsappSelected ? 'fill-white' : 'fill-[#25D366]'}`} viewBox="0 0 24 24">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.414 0 .011 5.403.011 12.038c0 2.12.553 4.189 1.604 6.04L0 24l6.104-1.602a11.803 11.803 0 005.941 1.603h.005c6.634 0 12.031-5.403 12.035-12.04.001-3.213-1.252-6.234-3.526-8.509z"/>
-                  </svg>
-                  WhatsApp — Compartir directo
-                </button>
-              </div>
-
               {/* Zernio accounts */}
               {socialAccounts.length === 0 ? (
                 <div className="bg-surface-variant/50 border border-outline-variant rounded-xl p-4 text-center">
@@ -602,115 +508,122 @@ export function SocialPublisherForm({
             </div>
 
             {/* ═══ STEP 3.2: Copy ═══ */}
-            <div>
-              <label className="block font-semibold text-xs text-primary mb-2 uppercase tracking-wider">
-                Paso 3.2 — Texto (Copy)
-              </label>
+            {isStoryOnly ? (
+              <div className="bg-surface-variant/40 border border-outline-variant/50 rounded-xl p-4 text-center">
+                <p className="text-sm font-semibold text-primary">Las historias no llevan texto</p>
+                <p className="text-xs mt-1 text-on-surface-variant opacity-70">Solo se enviará la imagen o video sin copy.</p>
+              </div>
+            ) : (
+              <div>
+                <label className="block font-semibold text-xs text-primary mb-2 uppercase tracking-wider">
+                  Paso 3.2 — Texto (Copy)
+                </label>
 
-              {/* Style buttons + Generate */}
-              <div className="flex gap-2 mb-3">
-                {STYLE_BUTTONS.map(({ key, label }) => {
-                  const hasContent = !!activeCopyVariants?.[key]?.content;
-                  const isActive = selectedCopyStyle === key;
-                  return (
+                {/* Style buttons + Generate */}
+                <div className="flex gap-2 mb-3">
+                  {STYLE_BUTTONS.map(({ key, label }) => {
+                    const hasContent = !!activeCopyVariants?.[key]?.content;
+                    const isActive = selectedCopyStyle === key;
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => handleSelectStyle(key)}
+                        disabled={!hasContent}
+                        className={`flex-1 px-2 py-2 border rounded-xl text-[11px] font-semibold transition-all duration-200 ${
+                          isActive
+                            ? "bg-[#2563EB] text-white border-[#2563EB] shadow-sm"
+                            : hasContent
+                            ? "bg-surface text-on-surface-variant border-outline-variant hover:border-[#2563EB]/50 cursor-pointer"
+                            : "bg-surface-variant/30 text-on-surface-variant/40 border-outline-variant/50 cursor-not-allowed"
+                        }`}
+                        title={!hasContent ? "Generá el copy primero" : `Usar estilo ${label}`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+
+                  {/* Generate button (only if no variants exist) */}
+                  {!activeCopyVariants && (
                     <button
-                      key={key}
-                      onClick={() => handleSelectStyle(key)}
-                      disabled={!hasContent}
-                      className={`flex-1 px-2 py-2 border rounded-xl text-[11px] font-semibold transition-all duration-200 ${
-                        isActive
-                          ? "bg-[#2563EB] text-white border-[#2563EB] shadow-sm"
-                          : hasContent
-                          ? "bg-surface text-on-surface-variant border-outline-variant hover:border-[#2563EB]/50 cursor-pointer"
-                          : "bg-surface-variant/30 text-on-surface-variant/40 border-outline-variant/50 cursor-not-allowed"
-                      }`}
-                      title={!hasContent ? "Generá el copy primero" : `Usar estilo ${label}`}
+                      onClick={handleGenerateCopyInline}
+                      disabled={isGeneratingCopyInline}
+                      className="flex-1 px-2 py-2 border rounded-xl text-[11px] font-semibold bg-primary text-white border-primary hover:bg-primary/90 transition-all duration-200 flex items-center justify-center gap-1.5 disabled:opacity-60"
                     >
-                      {label}
+                      {isGeneratingCopyInline ? (
+                        <>
+                          <div className="h-3 w-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Generando…
+                        </>
+                      ) : (
+                        <>
+                          <Magicpen size={14} />
+                          Generar copy
+                        </>
+                      )}
                     </button>
-                  );
-                })}
+                  )}
+                </div>
 
-                {/* Generate button (only if no variants exist) */}
-                {!activeCopyVariants && (
-                  <button
-                    onClick={handleGenerateCopyInline}
-                    disabled={isGeneratingCopyInline}
-                    className="flex-1 px-2 py-2 border rounded-xl text-[11px] font-semibold bg-primary text-white border-primary hover:bg-primary/90 transition-all duration-200 flex items-center justify-center gap-1.5 disabled:opacity-60"
+                {/* Textarea */}
+                <div className="relative">
+                  <textarea
+                    value={publishText}
+                    onChange={(e) => {
+                      setPublishText(e.target.value);
+                      setSelectedCopyStyle(null); // user is editing freely
+                    }}
+                    placeholder={
+                      activeCopyVariants
+                        ? "Elegí un estilo arriba o escribí tu propio texto…"
+                        : "Presioná 'Generar copy' para crear el texto con IA, o escribí uno manualmente…"
+                    }
+                    rows={5}
+                    className="w-full bg-surface-variant/30 border border-outline-variant rounded-xl p-3 text-xs text-on-surface-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-shadow whitespace-pre-wrap resize-none"
+                  />
+                  <span
+                    className={`absolute bottom-2 right-3 text-[10px] font-mono ${
+                      charCount > charLimit ? "text-error font-bold" : "text-on-surface-variant/40"
+                    }`}
                   >
-                    {isGeneratingCopyInline ? (
-                      <>
-                        <div className="h-3 w-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Generando…
-                      </>
-                    ) : (
-                      <>
-                        <Magicpen size={14} />
-                        Generar copy
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
+                    {charCount}/{charLimit}
+                  </span>
+                </div>
 
-              {/* Textarea */}
-              <div className="relative">
-                <textarea
-                  value={publishText}
-                  onChange={(e) => {
-                    setPublishText(e.target.value);
-                    setSelectedCopyStyle(null); // user is editing freely
-                  }}
-                  placeholder={
-                    activeCopyVariants
-                      ? "Elegí un estilo arriba o escribí tu propio texto…"
-                      : "Presioná 'Generar copy' para crear el texto con IA, o escribí uno manualmente…"
-                  }
-                  rows={5}
-                  className="w-full bg-surface-variant/30 border border-outline-variant rounded-xl p-3 text-xs text-on-surface-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-shadow whitespace-pre-wrap resize-none"
-                />
-                <span
-                  className={`absolute bottom-2 right-3 text-[10px] font-mono ${
-                    charCount > charLimit ? "text-error font-bold" : "text-on-surface-variant/40"
-                  }`}
-                >
-                  {charCount}/{charLimit}
-                </span>
-              </div>
-
-              {/* ── Copy inclusion note ── */}
-              <AnimatePresence>
-                {selectedPlatforms.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="mt-3"
-                  >
-                    <div className="bg-surface-variant/40 border border-outline-variant/50 rounded-xl p-3 text-[11px] text-on-surface-variant flex items-start gap-2">
-                      <InfoCircle size={16} className="shrink-0 mt-0.5 text-[#2563EB]" />
-                      <div>
-                        {copyIncluded.length > 0 && (
-                          <p>
-                            <span className="font-semibold text-primary">Con copy:</span>{" "}
-                            {copyIncluded.join(", ")}
+                {/* ── Copy inclusion note ── */}
+                <AnimatePresence>
+                  {selectedPlatforms.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mt-3"
+                    >
+                      <div className="bg-surface-variant/40 border border-outline-variant/50 rounded-xl p-3 text-[11px] text-on-surface-variant flex items-start gap-2">
+                        <InfoCircle size={16} className="shrink-0 mt-0.5 text-[#2563EB]" />
+                        <div>
+                          {copyIncluded.length > 0 && (
+                            <p>
+                              <span className="font-semibold text-primary">Con copy:</span>{" "}
+                              {copyIncluded.join(", ")}
+                            </p>
+                          )}
+                          {copyExcluded.length > 0 && (
+                            <p className="mt-0.5">
+                              <span className="font-semibold text-on-surface-variant/60">Sin copy (solo media):</span>{" "}
+                              {copyExcluded.join(", ")}
+                            </p>
+                          )}
+                          <p className="mt-1 text-[10px] text-on-surface-variant/50 italic">
+                            Para historias y estados, solo se envía la imagen/video sin texto.
                           </p>
-                        )}
-                        {copyExcluded.length > 0 && (
-                          <p className="mt-0.5">
-                            <span className="font-semibold text-on-surface-variant/60">Sin copy (solo media):</span>{" "}
-                            {copyExcluded.join(", ")}
-                          </p>
-                        )}
-                        <p className="mt-1 text-[10px] text-on-surface-variant/50 italic">
-                          Para historias y estados, solo se envía la imagen/video sin texto.
-                        </p>
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
 
             {/* ── Media preview ── */}
             {mediaThumb && (
@@ -732,7 +645,7 @@ export function SocialPublisherForm({
       <div className="p-4 border-t border-outline-variant bg-surface shrink-0">
         <button
           onClick={handlePublishClick}
-          disabled={isPublishing || (!publishNetworks.length && !whatsappSelected) || (activeFormats.some(f => COPY_RULES[f]?.Instagram) && !publishText && publishNetworks.length > 0)}
+          disabled={isPublishing || !publishNetworks.length}
           className="btn-primary flex items-center justify-center gap-2 py-4 disabled:opacity-50 w-full"
         >
           {isPublishing ? (

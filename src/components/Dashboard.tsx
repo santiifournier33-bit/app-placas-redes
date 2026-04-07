@@ -1349,21 +1349,27 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
                       onClick={async () => {
                         setIsRenderingForPublish(true);
                         setRenderedVideoUrl(null);
+                        setVideoDownloadProgress(0);
                         try {
-                          const blob = await renderVideoToBlob();
-                          if (blob) {
-                            const formData = new FormData();
-                            formData.append('reqtype', 'fileupload');
-                            formData.append('fileToUpload', blob, 'video.mp4');
-                            const res = await fetch('https://catbox.moe/user/api.php', { method: 'POST', body: formData });
-                            const url = await res.text();
-                            if (url?.startsWith('https://')) setRenderedVideoUrl(url.trim());
-                          }
-                        } catch (e) {
+                          const blob = await renderVideoToBlob((p) => setVideoDownloadProgress(p));
+                          if (!blob) throw new Error("Render devolvió null");
+
+                          const formData = new FormData();
+                          formData.append('reqtype', 'fileupload');
+                          formData.append('fileToUpload', blob, 'video.mp4');
+                          const res = await fetch('https://catbox.moe/user/api.php', { method: 'POST', body: formData });
+                          const url = await res.text();
+
+                          if (!url?.startsWith('https://')) throw new Error("Upload falló: " + url);
+
+                          setRenderedVideoUrl(url.trim());
+                          setVideoStep("publish");
+                        } catch (e: any) {
                           console.error("Error preparing video for publish:", e);
+                          showToast("Error preparando el video. Intentá de nuevo.");
                         } finally {
                           setIsRenderingForPublish(false);
-                          setVideoStep("publish");
+                          setVideoDownloadProgress(null);
                         }
                       }}
                       disabled={videoPublishFormats.length === 0 || isRenderingForPublish}
@@ -1372,7 +1378,9 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
                       {isRenderingForPublish ? (
                         <>
                           <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          Preparando...
+                          {videoDownloadProgress !== null && videoDownloadProgress > 0
+                            ? `Renderizando... ${videoDownloadProgress}%`
+                            : "Preparando..."}
                         </>
                       ) : "Continuar →"}
                     </button>
