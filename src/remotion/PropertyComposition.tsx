@@ -289,7 +289,7 @@ export const PropertyComposition: React.FC<{
   // Fade out: Last 4 seconds (120 frames at 30fps)
   const volume = interpolate(
     frame,
-    [0, 90, durationInFrames - 120, durationInFrames],
+    [0, 90, Math.max(90, durationInFrames - 120), Math.max(91, durationInFrames)],
     [0, 1, 1, 0],
     { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
   );

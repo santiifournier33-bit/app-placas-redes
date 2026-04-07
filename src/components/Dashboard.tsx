@@ -248,7 +248,7 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
               surface_covered: property.surface_covered || 0,
               photos: currentVideoPhotos,
             },
-            audioUrl: undefined, // TEMPORARY DISABLE TO DEBUG Wasm Assertion Failed
+            audioUrl: selectedAudio || undefined,
           }
         },
         inputProps: {
@@ -266,7 +266,7 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
             surface_covered: property.surface_covered || 0,
             photos: currentVideoPhotos,
           },
-          audioUrl: undefined, // TEMPORARY DISABLE
+          audioUrl: selectedAudio || undefined,
         },
         videoCodec: "h264",
         container: "mp4",
@@ -278,7 +278,17 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
       const blob = await renderResult.getBlob();
       const url = URL.createObjectURL(blob);
 
-      window.open(url, '_blank');
+      // Descarga automática sin abrir nueva pestaña
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Reel-${property.address ? property.address.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'propiedad'}.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      
+      // Opcional: revocar la URL después de un tiempo para liberar memoria
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+
       showToast("Descarga de video lista.");
     } catch (e: any) {
       console.error("Error renderizando localmente:", e);
