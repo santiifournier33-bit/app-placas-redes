@@ -226,8 +226,31 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
       showToast("Analizando dispositivo para renderizado local...");
 
       const renderResult = await renderMediaOnWeb({
-        serveUrl: window.location.origin, // Requiere que el bundle de Remotion esté expuesto aquí
-        composition: "PropertyReel" as any,
+        composition: {
+          id: "PropertyReel",
+          component: PropertyComposition,
+          width: 1080,
+          height: 1920,
+          fps: 30,
+          durationInFrames: (Math.max(1, currentVideoPhotos.length) + 1) * 90,
+          defaultProps: {
+            property: {
+              ...property,
+              address: parsedLocation?.title || property.address || "Propiedad Exclusiva",
+              price: property.price || "Consultar",
+              type: property.type || "Propiedad",
+              operation_type: property.operation_type || "Venta",
+              location: parsedLocation?.subtitle || property.location || "",
+              rooms: property.rooms || 0,
+              bedrooms: property.bedrooms || 0,
+              bathrooms: property.bathrooms || 0,
+              surface_total: property.surface_total || 0,
+              surface_covered: property.surface_covered || 0,
+              photos: currentVideoPhotos,
+            },
+            audioUrl: selectedAudio || undefined,
+          }
+        },
         inputProps: {
           property: {
             ...property,
@@ -245,14 +268,14 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
           },
           audioUrl: selectedAudio || undefined,
         },
-        codec: "h264",
-        autoDownload: false,
+        videoCodec: "h264",
         onProgress: ({ progress }: { progress: number }) => {
           setVideoDownloadProgress(Math.floor(progress * 100));
         },
-      } as any);
+      });
 
-      const url = (renderResult as any).url || (renderResult as any).objectUrl || (renderResult as any).src;
+      const blob = await renderResult.getBlob();
+      const url = URL.createObjectURL(blob);
 
       window.open(url, '_blank');
       showToast("Descarga de video lista.");
