@@ -142,6 +142,31 @@ export function SocialPublisherForm({
     }
   };
 
+  const handleDisconnectAccount = async (accountId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const confirmed = window.confirm("¿Estás seguro de que querés desvincular esta red social?");
+    if (!confirmed) return;
+
+    try {
+      const email = property.agent?.email || "default@freire.com";
+      const res = await fetch("/api/social/accounts/disconnect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, accountId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        fetchSocialAccounts();
+        setPublishNetworks(prev => prev.filter(id => id !== accountId));
+      } else {
+        alert(data.error || "Error al desvincular");
+      }
+    } catch(err) {
+      console.error(err);
+      alert("Error de conexión");
+    }
+  };
+
   const handleGenerateCopyInline = async () => {
     setIsGeneratingCopyInline(true);
     try {
@@ -425,8 +450,8 @@ export function SocialPublisherForm({
             <div className="flex flex-col gap-2 w-full max-w-xs">
               {(["instagram", "facebook", "tiktok"] as const).map((p) => {
                 let Icon;
-                if (p === "instagram") Icon = <Instagram size={18} variant="Bold" className="text-white" />;
-                else if (p === "facebook") Icon = <Facebook size={18} variant="Bold" className="text-white" />;
+                if (p === "instagram") Icon = <Instagram size={18} variant="Bold" color="white" />;
+                else if (p === "facebook") Icon = <Facebook size={18} variant="Bold" color="white" />;
                 else Icon = (
                   <svg className="w-[18px] h-[18px] fill-white" viewBox="0 0 448 512">
                     <path d="M448 209.9a210.1 210.1 0 0 1 -122.8-39.3V349.4A162.6 162.6 0 1 1 185 188.3V278.2a74.6 74.6 0 1 0 52.2 71.2V0l88 0a121.2 121.2 0 0 0 1.9 22.2h0A122.2 122.2 0 0 0 381 102.4a121.4 121.4 0 0 0 67 20.1z"/>
@@ -483,13 +508,15 @@ export function SocialPublisherForm({
               <div className="mb-2">
                 <button
                   onClick={() => setWhatsappSelected(!whatsappSelected)}
-                  className={`w-full px-3 py-2.5 border rounded-xl flex items-center gap-2.5 text-xs font-medium transition-colors duration-200 ${
+                  className={`w-full px-3 py-2.5 border rounded-xl flex items-center gap-2.5 text-xs font-semibold transition-all duration-200 shadow-sm ${
                     whatsappSelected
                       ? "bg-[#25D366] text-white border-[#25D366]"
                       : "bg-surface text-on-surface-variant border-outline-variant hover:border-[#25D366]/50"
                   }`}
                 >
-                  {WHATSAPP_ICON}
+                  <svg className={`w-5 h-5 ${whatsappSelected ? 'fill-white' : 'fill-[#25D366]'}`} viewBox="0 0 24 24">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.414 0 .011 5.403.011 12.038c0 2.12.553 4.189 1.604 6.04L0 24l6.104-1.602a11.803 11.803 0 005.941 1.603h.005c6.634 0 12.031-5.403 12.035-12.04.001-3.213-1.252-6.234-3.526-8.509z"/>
+                  </svg>
                   WhatsApp — Compartir directo
                 </button>
               </div>
@@ -506,28 +533,40 @@ export function SocialPublisherForm({
                 <div className="flex flex-col gap-3">
                   <div className="flex flex-wrap gap-2">
                     {socialAccounts.map((acc: any) => (
-                      <button
-                        key={acc.id}
-                        onClick={() =>
-                          setPublishNetworks((prev) =>
-                            prev.includes(acc.id) ? prev.filter((id) => id !== acc.id) : [...prev, acc.id]
-                          )
-                        }
-                        className={`px-3 py-2 border rounded-xl flex items-center gap-1.5 text-xs font-medium transition-colors duration-200 ${
-                        publishNetworks.includes(acc.id)
-                          ? "bg-[#2563EB] text-white border-[#2563EB]"
-                          : "bg-surface text-on-surface-variant border-outline-variant hover:border-[#2563EB]/50"
-                      }`}
-                    >
-                      {acc.platform === "Instagram" && <Instagram size={14} variant="Bold" className={publishNetworks.includes(acc.id) ? "text-white" : "text-[#2563EB]"} />}
-                      {acc.platform === "Facebook" && <Facebook size={14} variant="Bold" className={publishNetworks.includes(acc.id) ? "text-white" : "text-[#2563EB]"} />}
-                      {acc.platform === "TikTok" && (
-                        <svg className={`w-[12px] h-[12px] ${publishNetworks.includes(acc.id) ? "fill-white" : "fill-[#2563EB]"}`} viewBox="0 0 448 512">
-                           <path d="M448 209.9a210.1 210.1 0 0 1 -122.8-39.3V349.4A162.6 162.6 0 1 1 185 188.3V278.2a74.6 74.6 0 1 0 52.2 71.2V0l88 0a121.2 121.2 0 0 0 1.9 22.2h0A122.2 122.2 0 0 0 381 102.4a121.4 121.4 0 0 0 67 20.1z"/>
-                        </svg>
-                      )}
-                      {acc.platform} — {acc.username || acc.name}
-                      </button>
+                      <div key={acc.id} className="relative group">
+                        <button
+                          onClick={() =>
+                            setPublishNetworks((prev) =>
+                              prev.includes(acc.id) ? prev.filter((id) => id !== acc.id) : [...prev, acc.id]
+                            )
+                          }
+                          className={`px-3 py-2 border rounded-xl flex items-center justify-between gap-2.5 text-xs font-semibold transition-colors duration-200 shadow-sm w-full outline-none pr-8 ${
+                          publishNetworks.includes(acc.id)
+                            ? "bg-[#2563EB] text-white border-[#2563EB]"
+                            : "bg-surface text-on-surface-variant border-outline-variant hover:border-[#2563EB]/50"
+                        }`}
+                      >
+                        <span className="flex items-center gap-1.5 overflow-hidden">
+                          {acc.platform === "Instagram" && <Instagram size={14} color={publishNetworks.includes(acc.id) ? "white" : "#2563EB"} variant={publishNetworks.includes(acc.id) ? "Bold" : "Linear"} />}
+                          {acc.platform === "Facebook" && <Facebook size={14} color={publishNetworks.includes(acc.id) ? "white" : "#2563EB"} variant={publishNetworks.includes(acc.id) ? "Bold" : "Linear"} />}
+                          {acc.platform === "TikTok" && (
+                            <svg className={`w-[12px] h-[12px] ${publishNetworks.includes(acc.id) ? "fill-white" : "fill-[#2563EB]"}`} viewBox="0 0 448 512">
+                               <path d="M448 209.9a210.1 210.1 0 0 1 -122.8-39.3V349.4A162.6 162.6 0 1 1 185 188.3V278.2a74.6 74.6 0 1 0 52.2 71.2V0l88 0a121.2 121.2 0 0 0 1.9 22.2h0A122.2 122.2 0 0 0 381 102.4a121.4 121.4 0 0 0 67 20.1z"/>
+                            </svg>
+                          )}
+                          <span className="flex flex-col items-start leading-tight">
+                            <span className="truncate">{acc.platform} — {acc.username || acc.name}</span>
+                          </span>
+                        </span>
+                        </button>
+                        <button
+                           onClick={(e) => handleDisconnectAccount(acc.id, e)}
+                           title="Desvincular red social"
+                           className={`absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full bg-surface-variant text-on-surface-variant hover:bg-error hover:text-white transition-opacity duration-200 z-10 ${publishNetworks.includes(acc.id) ? "opacity-100 bg-white/20 text-white" : "opacity-0 group-hover:opacity-100"}`}
+                        >
+                          <CloseCircle size={14} variant="Bold" />
+                        </button>
+                      </div>
                     ))}
                   </div>
                   <button onClick={() => setOauthUrl("connect")} className="btn-tertiary self-start text-[11px] font-semibold flex items-center gap-1 opacity-80">

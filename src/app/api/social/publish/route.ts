@@ -36,21 +36,21 @@ export async function POST(req: Request) {
             const buffer = Buffer.from(base64Data, 'base64');
             const blob = new Blob([buffer], { type: mime });
             const formData = new FormData();
-            formData.append('file', blob, 'placa.jpg');
+            formData.append('reqtype', 'fileupload');
+            formData.append('fileToUpload', blob, 'placa.jpg');
 
-            const uploadRes = await fetch('https://tmpfiles.org/api/v1/upload', {
+            const uploadRes = await fetch('https://catbox.moe/user/api.php', {
               method: 'POST',
               body: formData
             });
-            const d = await uploadRes.json();
-            if (d?.data?.url) {
-              // Convert to direct download link
-              processedMedia.push(d.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/'));
+            const textResponse = await uploadRes.text();
+            if (textResponse?.startsWith('https://')) {
+              processedMedia.push(textResponse.trim());
             } else {
               processedMedia.push(m);
             }
           } catch (e) {
-            console.error("Failed to upload base64 to tmpfiles:", e);
+            console.error("Failed to upload base64 to server:", e);
             processedMedia.push(m);
           }
         } else {
