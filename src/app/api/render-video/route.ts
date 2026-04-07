@@ -11,6 +11,9 @@ const SECRET_KEY = process.env.REMOTION_AWS_SECRET_ACCESS_KEY;
 if (ACCESS_KEY && SECRET_KEY) {
   process.env.AWS_ACCESS_KEY_ID = ACCESS_KEY;
   process.env.AWS_SECRET_ACCESS_KEY = SECRET_KEY;
+  // IMPORTANTE: si estamos en Netlify/Vercel, borrar el token de sesión de la función Lambda anfitriona
+  // para que AWS SDK no intente usarlo junto con las llaves de Remotion (error de timeout/auth).
+  delete process.env.AWS_SESSION_TOKEN;
 }
 
 

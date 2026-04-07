@@ -1321,6 +1321,22 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ═══════════════════════════════════ */}
+      {/* TOAST NOTIFICATION                  */}
+      {/* ═══════════════════════════════════ */}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-full shadow-2xl bg-black text-white font-medium text-sm border border-white/10 backdrop-blur-md"
+          >
+            {toastMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
