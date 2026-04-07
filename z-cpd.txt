@@ -1,0 +1,24 @@
+CreatePostData, ThrowOnError>) => _hey_api_client_fetch.RequestResult<PostCreateResponse, CreatePostError, ThrowOnError>;
+        getPost: <ThrowOnError extends boolean = false>(options: _hey_api_client_fetch.OptionsLegacyParser<GetPostData, ThrowOnError>) => _hey_api_client_fetch.RequestResult<PostGetResponse, unknown, ThrowOnError>;
+        updatePost: <ThrowOnError extends boolean = false>(options: _hey_api_client_fetch.OptionsLegacyParser<UpdatePostData, ThrowOnError>) => _hey_api_client_fetch.RequestResult<unknown, unknown, ThrowOnError>;
+        deletePost: <ThrowOnError extends boolean = false>(options: _hey_api_client_fetch.OptionsLegacyParser<DeletePostData, ThrowOnError>) => _hey_api_client_fetch.RequestResult<PostDeleteResponse, unknown, ThrowOnError>;
+        bulkUploadPosts: <ThrowOnError extends boolean = false>(options: _hey_api_client_fetch.OptionsLegacyParser<BulkUploadPostsData, ThrowOnError>) => _hey_api_client_fetch.RequestResult<unknown, unknown, ThrowOnError>;
+        retryPost: <ThrowOnError extends boolean = false>(options: _hey_api_client_fetch.OptionsLegacyParser<RetryPostData, ThrowOnError>) => _hey_api_client_fetch.RequestResult<unknown, unknown, ThrowOnError>;
+        unpublishPost: <ThrowOnError extends boolean = false>(options: _hey_api_client_fetch.OptionsLegacyParser<UnpublishPostData, ThrowOnError>) => _hey_api_client_fetch.RequestResult<UnpublishPostResponse, unknown, ThrowOnError>;
+        editPost: <ThrowOnError extends boolean = false>(options: _hey_api_client_fetch.OptionsLegacyParser<EditPostData, ThrowOnError>) => _hey_api_client_fetch.RequestResult<EditPostResponse, unknown, ThrowOnError>;
+        updatePostMetadata: <ThrowOnError extends boolean = false>(options: _hey_api_client_fetch.OptionsLegacyParser<UpdatePostMetadataData, ThrowOnError>) => _hey_api_client_fetch.RequestResult<UpdatePostMetadataResponse, unknown, ThrowOnError>;
+    };
+    /**
+     * Users API - User management
+     */
+    users: {
+        listUsers: <ThrowOnError extends boolean = false>(options?: _hey_api_client_fetch.OptionsLegacyParser<unknown, ThrowOnError>) => _hey_api_client_fetch.RequestResult<ListUsersResponse, ListUsersError, ThrowOnError>;
+        getUser: <ThrowOnError extends boolean = false>(options: _hey_api_client_fetch.OptionsLegacyParser<GetUserData, ThrowOnError>) => _hey_api_client_fetch.RequestResult<GetUserResponse, unknown, ThrowOnError>;
+    };
+    /**
+     * Profiles API - Manage workspace profiles
+     */
+    profiles: {
+        listProfiles: <ThrowOnError extends boolean = false>(options?: _hey_api_client_fetch.OptionsLegacyParser<ListProfilesData, ThrowOnError>) => _hey_api_client_fetch.RequestResult<ProfilesListResponse, ListProfilesError, ThrowOnError>;
+        createProfile: <ThrowOnError extends boolean = false>(options: _hey_api_client_fetch.OptionsLegacyParser<CreateProfileData, ThrowOnError>) => _hey_api_client_fetch.RequestResult<ProfileCreateResponse, unknown, ThrowOnError>;
+        getProfile: <Th

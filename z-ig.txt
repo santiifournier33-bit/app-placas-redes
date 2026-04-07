@@ -1,0 +1,24 @@
+InstagramPlatformData = {
+    /**
+     * Set to 'story' to publish as a Story. Default posts become Reels or feed depending on media.
+     */
+    contentType?: 'story';
+    /**
+     * For Reels only. When true (default), the Reel appears on both the Reels tab and your main profile feed. Set to false to post to the Reels tab only.
+     */
+    shareToFeed?: boolean;
+    /**
+     * Up to 3 Instagram usernames to invite as collaborators (feed/Reels only)
+     */
+    collaborators?: Array<(string)>;
+    /**
+     * Optional first comment to add after the post is created (not applied to Stories)
+     */
+    firstComment?: string;
+    /**
+     * Trial Reels configuration. Trial reels are shared to non-followers first and can later be graduated to regular reels manually or automatically based on performance. Only applies to Reels.
+     */
+    trialParams?: {
+        /**
+         * MANUAL (graduate from Instagram app) or SS_PERFORMANCE (auto-graduate if performs well with non-followers)
+        

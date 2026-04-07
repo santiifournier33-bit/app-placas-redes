@@ -1,0 +1,19 @@
+type DeleteAccountData = {
+    path: {
+        accountId: string;
+    };
+};
+type DeleteAccountResponse = ({
+    message?: string;
+});
+type DeleteAccountError = ({
+    error?: string;
+});
+type GetAllAccountsHealthData = {
+    query?: {
+        /**
+         * Filter by platform
+         */
+        platform?: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat';
+        /**
+         * F

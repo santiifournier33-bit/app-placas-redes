@@ -1,0 +1,57 @@
+type GetMediaPresignedUrlData = {
+    body: {
+        /**
+         * Name of the file to upload
+         */
+        filename: string;
+        /**
+         * MIME type of the file
+         */
+        contentType: 'image/jpeg' | 'image/jpg' | 'image/png' | 'image/webp' | 'image/gif' | 'video/mp4' | 'video/mpeg' | 'video/quicktime' | 'video/avi' | 'video/x-msvideo' | 'video/webm' | 'video/x-m4v' | 'application/pdf';
+        /**
+         * Optional file size in bytes for pre-validation (max 5GB)
+         */
+        size?: number;
+    };
+};
+type GetMediaPresignedUrlResponse = ({
+    /**
+     * Presigned URL to PUT your file to (expires in 1 hour)
+     */
+    uploadUrl?: string;
+    /**
+     * Public URL where the file will be accessible after upload
+     */
+    publicUrl?: string;
+    /**
+     * Storage key/path of the file
+     */
+    key?: string;
+    /**
+     * Detected file type based on content type
+     */
+    type?: 'image' | 'video' | 'document';
+});
+type GetMediaPresignedUrlError = ({
+    error?: string;
+});
+type SearchRedditData = {
+    query: {
+        accountId: string;
+        after?: string;
+        limit?: number;
+        q: string;
+        restrict_sr?: '0' | '1';
+        sort?: 'relevance' | 'hot' | 'top' | 'new' | 'comments';
+        subreddit?: string;
+    };
+};
+type SearchRedditResponse = ({
+    items?: Array<RedditPost>;
+    after?: (string) | null;
+    before?: (string) | null;
+});
+type SearchRedditError = (unknown | {
+    error?: string;
+});
+type GetRedditFe

@@ -1355,6 +1355,100 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
                         showToast("¡Video publicado exitosamente en tus redes!");
                     }}
                     onCopyGenerated={(v) => setCopyVariants(v)}
+                    onRenderVideo={async (onProgress) => {
+                      try {
+                        let renderResult;
+                        try {
+                          renderResult = await renderMediaOnWeb({
+                            composition: {
+                              id: "PropertyReel",
+                              component: PropertyComposition,
+                              width: 1080,
+                              height: 1920,
+                              fps: 30,
+                              durationInFrames: (Math.max(1, currentVideoPhotos.length) + 1) * 90,
+                              defaultProps: {
+                                property: {
+                                  ...property,
+                                  price: property.operations?.[0]?.prices?.[0]?.price || 0,
+                                  currency: property.operations?.[0]?.prices?.[0]?.currency || "USD",
+                                  operation_type: property.operations?.[0]?.operation_type || "Venta",
+                                  surface: property.surface || 0,
+                                  surface_covered: property.surface_covered || 0,
+                                  photos: currentVideoPhotos,
+                                },
+                                audioUrl: selectedAudio || undefined,
+                              }
+                            },
+                            inputProps: {
+                              property: {
+                                ...property,
+                                price: property.operations?.[0]?.prices?.[0]?.price || 0,
+                                currency: property.operations?.[0]?.prices?.[0]?.currency || "USD",
+                                operation_type: property.operations?.[0]?.operation_type || "Venta",
+                                surface: property.surface || 0,
+                                surface_covered: property.surface_covered || 0,
+                                photos: currentVideoPhotos,
+                              },
+                              audioUrl: selectedAudio || undefined,
+                            },
+                            videoCodec: "h264",
+                            container: "mp4",
+                            onProgress: ({ progress }: { progress: number }) => onProgress(Math.floor(progress * 100)),
+                          });
+                        } catch (h264Error) {
+                          console.warn("H264 render failed, falling back to vp8/webm:", h264Error);
+                          renderResult = await renderMediaOnWeb({
+                            composition: {
+                              id: "PropertyReel",
+                              component: PropertyComposition,
+                              width: 1080,
+                              height: 1920,
+                              fps: 30,
+                              durationInFrames: (Math.max(1, currentVideoPhotos.length) + 1) * 90,
+                              defaultProps: {
+                                property: {
+                                  ...property,
+                                  price: property.operations?.[0]?.prices?.[0]?.price || 0,
+                                  currency: property.operations?.[0]?.prices?.[0]?.currency || "USD",
+                                  operation_type: property.operations?.[0]?.operation_type || "Venta",
+                                  surface: property.surface || 0,
+                                  surface_covered: property.surface_covered || 0,
+                                  photos: currentVideoPhotos,
+                                },
+                                audioUrl: selectedAudio || undefined,
+                              }
+                            },
+                            inputProps: {
+                              property: {
+                                ...property,
+                                price: property.operations?.[0]?.prices?.[0]?.price || 0,
+                                currency: property.operations?.[0]?.prices?.[0]?.currency || "USD",
+                                operation_type: property.operations?.[0]?.operation_type || "Venta",
+                                surface: property.surface || 0,
+                                surface_covered: property.surface_covered || 0,
+                                photos: currentVideoPhotos,
+                              },
+                              audioUrl: selectedAudio || undefined,
+                            },
+                            videoCodec: "vp8",
+                            container: "webm",
+                            onProgress: ({ progress }: { progress: number }) => onProgress(Math.floor(progress * 100)),
+                          });
+                        }
+                        
+                        const blob = await renderResult.getBlob();
+                        return new Promise((resolve, reject) => {
+                          const reader = new FileReader();
+                          reader.onloadend = () => resolve(reader.result as string);
+                          reader.onerror = reject;
+                          reader.readAsDataURL(blob);
+                        });
+                      } catch (err) {
+                        console.error("Local render failed:", err);
+                        return null;
+                      }
+                    }}
                   />
                 </div>
               )}
