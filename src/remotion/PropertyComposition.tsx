@@ -7,9 +7,9 @@ import {
   useCurrentFrame,
   useVideoConfig,
   Sequence,
-  Audio,
   staticFile,
 } from 'remotion';
+import { Audio } from '@remotion/media';
 
 // ═══════════════════════════════════════
 // TYPES

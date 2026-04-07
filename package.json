@@ -15,6 +15,7 @@
     "@react-pdf/renderer": "^4.3.2",
     "@remotion/bundler": "^4.0.445",
     "@remotion/lambda": "^4.0.445",
+    "@remotion/media": "^4.0.445",
     "@remotion/player": "^4.0.445",
     "@remotion/transitions": "^4.0.445",
     "@remotion/web-renderer": "^4.0.445",
