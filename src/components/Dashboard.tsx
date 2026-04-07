@@ -156,7 +156,9 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
         body: JSON.stringify({ property, theme: "default" }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) {
+        throw new Error(data.error || data.errorMessage || "Fallo de conexión o timeout con Lambda");
+      }
 
       const { renderId, bucketName } = data;
       let isDone = false;

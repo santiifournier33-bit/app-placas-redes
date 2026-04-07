@@ -11,9 +11,15 @@ const SECRET_KEY = process.env.REMOTION_AWS_SECRET_ACCESS_KEY;
 if (ACCESS_KEY && SECRET_KEY) {
   process.env.AWS_ACCESS_KEY_ID = ACCESS_KEY;
   process.env.AWS_SECRET_ACCESS_KEY = SECRET_KEY;
-  // IMPORTANTE: si estamos en Netlify/Vercel, borrar el token de sesión de la función Lambda anfitriona
-  // para que AWS SDK no intente usarlo junto con las llaves de Remotion (error de timeout/auth).
+  // IMPORTANTE: Limpiar el entorno temporal de Netlify para obligar
+  // al SDK de AWS a usar SOLAMENTE las llaves que le damos y no intentar
+  // buscar credenciales en el IMDS/Container metadata (que causa el timeout de 30s).
   delete process.env.AWS_SESSION_TOKEN;
+  delete process.env.AWS_CONTAINER_CREDENTIALS_RELATIVE_URI;
+  delete process.env.AWS_CONTAINER_CREDENTIALS_FULL_URI;
+  delete process.env.AWS_EXECUTION_ENV;
+  delete process.env.AWS_WEB_IDENTITY_TOKEN_FILE;
+  delete process.env.AWS_ROLE_ARN;
 }
 
 
