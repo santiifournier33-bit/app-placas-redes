@@ -225,9 +225,9 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
     try {
       showToast("Analizando dispositivo para renderizado local...");
 
-      const { url } = await renderMediaOnWeb({
+      const renderResult = await renderMediaOnWeb({
         serveUrl: window.location.origin, // Requiere que el bundle de Remotion esté expuesto aquí
-        composition: "PropertyReel",
+        composition: "PropertyReel" as any,
         inputProps: {
           property: {
             ...property,
@@ -247,10 +247,12 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
         },
         codec: "h264",
         autoDownload: false,
-        onProgress: ({ progress }) => {
+        onProgress: ({ progress }: { progress: number }) => {
           setVideoDownloadProgress(Math.floor(progress * 100));
         },
-      });
+      } as any);
+
+      const url = (renderResult as any).url || (renderResult as any).objectUrl || (renderResult as any).src;
 
       window.open(url, '_blank');
       showToast("Descarga de video lista.");
