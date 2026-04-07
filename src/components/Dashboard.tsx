@@ -269,6 +269,7 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
           audioUrl: selectedAudio || undefined,
         },
         videoCodec: "h264",
+        container: "mp4",
         onProgress: ({ progress }: { progress: number }) => {
           setVideoDownloadProgress(Math.floor(progress * 100));
         },
