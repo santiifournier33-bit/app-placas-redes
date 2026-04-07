@@ -299,7 +299,7 @@ export const PropertyComposition: React.FC<{
       {audioUrl && (
         <Audio 
           src={staticFile(audioUrl)} 
-          startFrom={450} // 15 seconds * 30 fps
+          trimBefore={450} // 15 seconds * 30 fps
           volume={volume} 
         />
       )}
