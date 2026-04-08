@@ -311,8 +311,10 @@ export function SocialPublisherForm({
             }),
           });
           if (!res.ok) {
-            const errData = await res.json();
-            throw new Error(errData.error || "Error publicando en redes sociales");
+            const errText = await res.text();
+            let errData: any = {};
+            try { errData = JSON.parse(errText); } catch(e) {}
+            throw new Error(errData.error || "Error publicando en redes sociales con texto: " + res.status);
           }
         }
 
@@ -330,8 +332,10 @@ export function SocialPublisherForm({
             }),
           });
           if (!res.ok) {
-            const errData = await res.json();
-            throw new Error(errData.error || "Error publicando en redes sociales");
+            const errText = await res.text();
+            let errData: any = {};
+            try { errData = JSON.parse(errText); } catch(e) {}
+            throw new Error(errData.error || "Error publicando en historias: " + res.status);
           }
         }
       }

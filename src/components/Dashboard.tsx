@@ -1354,28 +1354,44 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
                           const blob = await renderVideoToBlob((p) => setVideoDownloadProgress(p));
                           if (!blob) throw new Error("Render devolvió null");
 
-                          // Upload to our server-side endpoint (uses Zernio presigned storage)
-                          const uploadFormData = new FormData();
-                          uploadFormData.append('email', property.agent?.email || 'default@freire.com');
-                          uploadFormData.append('video', blob, 'video.mp4');
-
-                          setVideoDownloadProgress(null); // Reset for next operation
-                          const uploadRes = await fetch('/api/upload-video', {
+                          // 1. Get presigned URL from Backend
+                          const presignRes = await fetch('/api/social/presign', {
                             method: 'POST',
-                            body: uploadFormData,
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              email: property.agent?.email || 'default@freire.com',
+                              filename: `freire-video-${Date.now()}.mp4`,
+                              contentType: 'video/mp4',
+                              size: blob.size,
+                            }),
+                          });
+
+                          let presignData;
+                          try {
+                            presignData = await presignRes.json();
+                          } catch (e) {
+                            throw new Error("El servidor no pudo generar el enlace de subida.");
+                          }
+
+                          if (!presignRes.ok || !presignData.uploadUrl) {
+                            throw new Error(presignData?.error || `Error obteniendo permisos de subida: ${presignRes.status}`);
+                          }
+
+                          // 2. Upload blob directly to Zernio Storage via PUT
+                          setVideoDownloadProgress(null); // Optionally you can set a "Subiendo..." state here
+                          const uploadRes = await fetch(presignData.uploadUrl, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'video/mp4' },
+                            body: blob,
                           });
 
                           if (!uploadRes.ok) {
-                            const errData = await uploadRes.json();
-                            throw new Error(errData.error || `Upload failed: ${uploadRes.status}`);
+                            const errText = await uploadRes.text();
+                            console.error("Zernio Storage Upload Error:", uploadRes.status, errText);
+                            throw new Error(`Error subiendo el video al servidor de Zernio: ${uploadRes.status}`);
                           }
 
-                          const uploadData = await uploadRes.json();
-                          if (!uploadData.publicUrl) {
-                            throw new Error("Upload response missing publicUrl");
-                          }
-
-                          setRenderedVideoUrl(uploadData.publicUrl);
+                          setRenderedVideoUrl(presignData.publicUrl);
                           setVideoStep("publish");
                         } catch (e: any) {
                           console.error("Error preparing video for publish:", e);
