@@ -298,13 +298,19 @@ export function SocialPublisherForm({
         const finalWithoutCopy = Array.from(accountsWithoutCopy).filter(id => !accountsWithCopy.has(id));
 
         if (finalWithCopy.length > 0 && publishText) {
+          // Build accounts array with platform info (avoids server-side listAccounts call)
+          const accountsPayload = finalWithCopy.map(id => {
+            const acc = socialAccounts.find((a: any) => a.id === id);
+            return { id, platform: acc?.platform || 'instagram' };
+          });
+
           const res = await fetch("/api/social/publish", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               email,
               text: publishText,
-              socialAccountIds: finalWithCopy,
+              accounts: accountsPayload,
               mediaUrls: finalMediaUrls,
               profileId,
               contentFormat: activeFormats.find(f => f !== 'story') || activeFormats[0] || 'post',
@@ -319,13 +325,19 @@ export function SocialPublisherForm({
         }
 
         if (finalWithoutCopy.length > 0) {
+          // Build accounts array with platform info — send without text for stories
+          const accountsPayload = finalWithoutCopy.map(id => {
+            const acc = socialAccounts.find((a: any) => a.id === id);
+            return { id, platform: acc?.platform || 'instagram' };
+          });
+
           const res = await fetch("/api/social/publish", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               email,
               text: "",
-              socialAccountIds: finalWithoutCopy,
+              accounts: accountsPayload,
               mediaUrls: finalMediaUrls,
               profileId,
               contentFormat: "story",

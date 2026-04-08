@@ -224,15 +224,15 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
     const videoProps = {
       property: {
         ...property,
-        address: property.address || "Propiedad Exclusiva",
+        address: parsedLocation?.title || property.address || "Propiedad Exclusiva",
         price: property.price || "Consultar",
         type: property.type || "Propiedad",
         operation_type: property.operation_type || "Venta",
-        location: property.location || "",
+        location: parsedLocation?.subtitle || property.location || "",
         rooms: property.rooms || 0,
         bedrooms: property.bedrooms || 0,
         bathrooms: property.bathrooms || 0,
-        surface: property.surface || property.surface_total || 0,
+        surface_total: property.surface_total || 0,
         surface_covered: property.surface_covered || 0,
         photos: currentVideoPhotos,
       },
@@ -322,34 +322,32 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
       const blob = await renderVideoToBlob((p) => setVideoDownloadProgress(p));
       if (!blob) throw new Error("No se pudo renderizar el video");
 
-      const file = new File([blob], `freire-video.mp4`, { type: blob.type || "video/mp4" });
-      try {
-        if (navigator.canShare?.({ files: [file] })) {
-          await navigator.share({
-            title: property.address || "Freire Propiedades",
-            files: [file],
-          });
-          return;
-        }
-      } catch (err: any) {
-        // Ignora errores si cancela el usuario. Si el navegador bloqueó la accion por asincronismo (NotAllowedError), hacemos el fallback.
-        if (err.name === "AbortError") return;
-        console.warn("navigator.share failed, failing back to local download:", err);
-      }
+      const mimeType = blob.type || "video/mp4";
+      const ext = mimeType.includes("webm") ? "webm" : "mp4";
+      const fileName = `freire-video-${property.address ? property.address.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'propiedad'}.${ext}`;
+      const file = new File([blob], fileName, { type: mimeType });
 
-      showToast("Descargando video... podés adjuntarlo a WhatsApp desde tu galería.");
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `freire-video-${property.id || Date.now()}.mp4`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({
+          title: property.address || "Freire Propiedades",
+          files: [file],
+        });
+      } else {
+        // Desktop fallback: download the file and instruct user
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+        showToast("Video descargado. Adjuntalo a WhatsApp Web manualmente.");
+      }
     } catch (e: any) {
       if (e?.name !== "AbortError") {
         console.error("Error compartiendo video:", e);
-        showToast("No se pudo obtener el video");
+        showToast("No se pudo compartir el video. Usá Descargar HD.");
       }
     } finally {
       setIsVideoDownloading(false);

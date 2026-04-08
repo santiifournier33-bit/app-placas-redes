@@ -6,24 +6,25 @@ import Zernio from '@zernio/node';
  * POST /api/social/publish
  * Publishes content to social media via the Zernio SDK.
  * 
- * Uses the correct Zernio CreatePostData schema:
- *   body.content    → post caption/text
- *   body.mediaItems → array of { type, url }
- *   body.platforms  → array of { platform, accountId, platformSpecificData? }
- *   body.publishNow → true to publish immediately (otherwise saves as draft!)
+ * Accepts:
+ *   email            → advisor email for key lookup
+ *   text             → post caption/text (omitted for stories)
+ *   mediaUrls        → array of public URLs (already uploaded via presigned)
+ *   accounts         → array of { id, platform } (avoids extra listAccounts call)
+ *   socialAccountIds → DEPRECATED fallback (old format, just IDs)
+ *   profileId        → Zernio profile ID
+ *   contentFormat    → 'reel' | 'story' | 'post'
  */
-export const maxDuration = 60;
-
 export async function POST(req: Request) {
   try {
-    const { email, text, mediaUrls, socialAccountIds, profileId, contentFormat } = await req.json();
+    const { email, text, mediaUrls, accounts, socialAccountIds, profileId, contentFormat } = await req.json();
 
     if (!text && (!mediaUrls || mediaUrls.length === 0)) {
       return NextResponse.json({ error: 'Text or media is required' }, { status: 400 });
     }
 
     const apiKey = getZernioKeyForUser(email || 'default@freire.com');
-    const client = new Zernio({ apiKey });
+    const client = new Zernio({ apiKey, timeout: 120000 }); // 120s timeout for video processing
 
     // ── Build the correct CreatePostData body ──
     const body: any = {
@@ -35,7 +36,7 @@ export async function POST(req: Request) {
       body.content = text;
     }
 
-    // ── Upload media through Zernio's own presigned URL system ──
+    // ── Build media items ──
     if (mediaUrls && mediaUrls.length > 0) {
       const mediaItems: { type: string; url: string }[] = [];
 
@@ -54,7 +55,7 @@ export async function POST(req: Request) {
             const mediaType = isVideo ? 'video' : 'image';
             const contentType = isVideo ? 'video/mp4' : 'image/jpeg';
 
-            // Step 1: Get a presigned upload URL from Zernio
+            // Get a presigned upload URL from Zernio
             const presignRes = await client.media.getMediaPresignedUrl({
               body: {
                 filename: `freire-placa-${Date.now()}.${ext}`,
@@ -66,7 +67,6 @@ export async function POST(req: Request) {
             const presignData = presignRes.data as any;
 
             if (presignData?.uploadUrl && presignData?.publicUrl) {
-              // Step 2: Upload the file directly to Zernio's storage via PUT
               const uploadResponse = await fetch(presignData.uploadUrl, {
                 method: 'PUT',
                 headers: { 'Content-Type': contentType },
@@ -74,14 +74,10 @@ export async function POST(req: Request) {
               });
 
               if (uploadResponse.ok) {
-                mediaItems.push({
-                  type: mediaType,
-                  url: presignData.publicUrl,
-                });
+                mediaItems.push({ type: mediaType, url: presignData.publicUrl });
                 console.log(`✅ Uploaded media via Zernio presigned URL: ${presignData.publicUrl}`);
               } else {
                 console.error('Failed to upload to presigned URL:', uploadResponse.status, await uploadResponse.text());
-                // Fallback: try using the data URI directly (unlikely to work but better than nothing)
                 mediaItems.push({ type: mediaType, url: m });
               }
             } else {
@@ -90,11 +86,10 @@ export async function POST(req: Request) {
             }
           } catch (uploadErr) {
             console.error('Media upload error:', uploadErr);
-            // Last resort fallback
             mediaItems.push({ type: 'image', url: m });
           }
         } else {
-          // Already a public URL
+          // Already a public URL (video uploaded via presigned)
           const isVideo = m.includes('.mp4') || m.includes('.webm') || m.includes('.mov');
           mediaItems.push({
             type: isVideo ? 'video' : 'image',
@@ -109,27 +104,42 @@ export async function POST(req: Request) {
     }
 
     // ── Build platforms array ──
-    if (socialAccountIds && socialAccountIds.length > 0) {
-      // Fetch accounts to resolve the platform name for each accountId
-      const pId = profileId ? { query: { profileId } } : undefined;
-      const accountsRes = await client.accounts.listAccounts(pId);
-      const accounts = (accountsRes.data as any)?.accounts || [];
-
+    // NEW: Frontend sends accounts with platform already resolved → no listAccounts needed
+    if (accounts && accounts.length > 0) {
       const platforms: any[] = [];
-      for (const id of socialAccountIds) {
-        const found = accounts.find((a: any) => a._id === id || a.id === id);
-        const platformName = found?.platform || 'instagram';
+      for (const acc of accounts) {
+        const platformEntry: any = {
+          platform: acc.platform?.toLowerCase() || 'instagram',
+          accountId: acc.id,
+        };
 
-        const platformEntry: any = { platform: platformName, accountId: id };
-
-        // For Instagram and Facebook stories, set platformSpecificData
-        if ((platformName === 'instagram' || platformName === 'facebook') && contentFormat === 'story') {
+        // For stories, set platformSpecificData
+        if (['instagram', 'facebook'].includes(platformEntry.platform) && contentFormat === 'story') {
           platformEntry.platformSpecificData = { contentType: 'story' };
         }
 
         platforms.push(platformEntry);
       }
+      body.platforms = platforms;
+    } else if (socialAccountIds && socialAccountIds.length > 0) {
+      // FALLBACK: Old format without platform info — must call listAccounts
+      console.warn('⚠️ Using deprecated socialAccountIds format. Send accounts[] instead.');
+      const pId = profileId ? { query: { profileId } } : undefined;
+      const accountsRes = await client.accounts.listAccounts(pId);
+      const accountsList = (accountsRes.data as any)?.accounts || [];
 
+      const platforms: any[] = [];
+      for (const id of socialAccountIds) {
+        const found = accountsList.find((a: any) => a._id === id || a.id === id);
+        const platformName = found?.platform || 'instagram';
+        const platformEntry: any = { platform: platformName, accountId: id };
+
+        if (['instagram', 'facebook'].includes(platformName) && contentFormat === 'story') {
+          platformEntry.platformSpecificData = { contentType: 'story' };
+        }
+
+        platforms.push(platformEntry);
+      }
       body.platforms = platforms;
     }
 
@@ -139,7 +149,7 @@ export async function POST(req: Request) {
 
     console.log('📤 Zernio createPost payload:', JSON.stringify(body, null, 2));
 
-    // Use the SDK to create a post
+    // Use the SDK to create the post
     const postRes = await client.posts.createPost({ body });
     const data = postRes.data || postRes;
 
