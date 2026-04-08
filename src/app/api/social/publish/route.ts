@@ -120,8 +120,8 @@ export async function POST(req: Request) {
 
         const platformEntry: any = { platform: platformName, accountId: id };
 
-        // For Instagram stories, set platformSpecificData
-        if (platformName === 'instagram' && contentFormat === 'story') {
+        // For Instagram and Facebook stories, set platformSpecificData
+        if ((platformName === 'instagram' || platformName === 'facebook') && contentFormat === 'story') {
           platformEntry.platformSpecificData = { contentType: 'story' };
         }
 

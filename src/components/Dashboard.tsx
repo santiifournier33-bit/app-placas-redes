@@ -1354,19 +1354,32 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
                           const blob = await renderVideoToBlob((p) => setVideoDownloadProgress(p));
                           if (!blob) throw new Error("Render devolvió null");
 
-                          const formData = new FormData();
-                          formData.append('reqtype', 'fileupload');
-                          formData.append('fileToUpload', blob, 'video.mp4');
-                          const res = await fetch('https://catbox.moe/user/api.php', { method: 'POST', body: formData });
-                          const url = await res.text();
+                          // Upload to our server-side endpoint (uses Zernio presigned storage)
+                          const uploadFormData = new FormData();
+                          uploadFormData.append('email', property.agent?.email || 'default@freire.com');
+                          uploadFormData.append('video', blob, 'video.mp4');
 
-                          if (!url?.startsWith('https://')) throw new Error("Upload falló: " + url);
+                          setVideoDownloadProgress(null); // Reset for next operation
+                          const uploadRes = await fetch('/api/upload-video', {
+                            method: 'POST',
+                            body: uploadFormData,
+                          });
 
-                          setRenderedVideoUrl(url.trim());
+                          if (!uploadRes.ok) {
+                            const errData = await uploadRes.json();
+                            throw new Error(errData.error || `Upload failed: ${uploadRes.status}`);
+                          }
+
+                          const uploadData = await uploadRes.json();
+                          if (!uploadData.publicUrl) {
+                            throw new Error("Upload response missing publicUrl");
+                          }
+
+                          setRenderedVideoUrl(uploadData.publicUrl);
                           setVideoStep("publish");
                         } catch (e: any) {
                           console.error("Error preparing video for publish:", e);
-                          showToast("Error preparando el video. Intentá de nuevo.");
+                          showToast(`Error preparando el video: ${e.message || "Intentá de nuevo."}`);
                         } finally {
                           setIsRenderingForPublish(false);
                           setVideoDownloadProgress(null);
