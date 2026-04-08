@@ -1,0 +1,1 @@
+import Zernio from '@zernio/node'; import dotenv from 'dotenv'; dotenv.config({ path: '.env.local' }); async function run() { const apiKey = process.env.ZERNIO_API_KEY_1; const client = new Zernio({ apiKey }); try { const list = await client.accounts.listAccounts(); console.log('Accounts:', list.data); } catch (err) { console.error(err); } } run();

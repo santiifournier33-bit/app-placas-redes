@@ -224,10 +224,15 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
     const videoProps = {
       property: {
         ...property,
-        price: property.operations?.[0]?.prices?.[0]?.price || 0,
-        currency: property.operations?.[0]?.prices?.[0]?.currency || "USD",
-        operation_type: property.operations?.[0]?.operation_type || "Venta",
-        surface: property.surface || 0,
+        address: property.address || "Propiedad Exclusiva",
+        price: property.price || "Consultar",
+        type: property.type || "Propiedad",
+        operation_type: property.operation_type || "Venta",
+        location: property.location || "",
+        rooms: property.rooms || 0,
+        bedrooms: property.bedrooms || 0,
+        bathrooms: property.bathrooms || 0,
+        surface: property.surface || property.surface_total || 0,
         surface_covered: property.surface_covered || 0,
         photos: currentVideoPhotos,
       },
@@ -318,18 +323,33 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
       if (!blob) throw new Error("No se pudo renderizar el video");
 
       const file = new File([blob], `freire-video.mp4`, { type: blob.type || "video/mp4" });
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({
-          title: property.address || "Freire Propiedades",
-          files: [file],
-        });
-      } else {
-        alert("Tu dispositivo no soporta compartir archivos directamente. Usá el botón Descargar HD y adjuntá el video a WhatsApp manualmente.");
+      try {
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({
+            title: property.address || "Freire Propiedades",
+            files: [file],
+          });
+          return;
+        }
+      } catch (err: any) {
+        // Ignora errores si cancela el usuario. Si el navegador bloqueó la accion por asincronismo (NotAllowedError), hacemos el fallback.
+        if (err.name === "AbortError") return;
+        console.warn("navigator.share failed, failing back to local download:", err);
       }
+
+      showToast("Descargando video... podés adjuntarlo a WhatsApp desde tu galería.");
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `freire-video-${property.id || Date.now()}.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (e: any) {
       if (e?.name !== "AbortError") {
         console.error("Error compartiendo video:", e);
-        showToast("No se pudo compartir el video");
+        showToast("No se pudo obtener el video");
       }
     } finally {
       setIsVideoDownloading(false);

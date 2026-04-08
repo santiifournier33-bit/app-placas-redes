@@ -12,6 +12,8 @@ import Zernio from '@zernio/node';
  *   body.platforms  → array of { platform, accountId, platformSpecificData? }
  *   body.publishNow → true to publish immediately (otherwise saves as draft!)
  */
+export const maxDuration = 60;
+
 export async function POST(req: Request) {
   try {
     const { email, text, mediaUrls, socialAccountIds, profileId, contentFormat } = await req.json();

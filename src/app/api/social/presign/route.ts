@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getZernioKeyForUser } from '@/lib/zernio';
 import Zernio from '@zernio/node';
 
+export const maxDuration = 60;
+
 export async function POST(req: Request) {
   try {
     const { email, filename, contentType, size } = await req.json();
