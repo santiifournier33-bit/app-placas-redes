@@ -525,9 +525,16 @@ export function SocialPublisherForm({
                         <button
                            onClick={(e) => handleDisconnectAccount(acc.id, e)}
                            title="Desvincular red social"
-                           className={`absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full bg-surface-variant text-on-surface-variant hover:bg-error hover:text-white transition-opacity duration-200 z-10 ${publishNetworks.includes(acc.id) ? "opacity-100 bg-white/20 text-white" : "opacity-0 group-hover:opacity-100"}`}
+                           className={`absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full transition-colors duration-200 z-10 ${
+                             publishNetworks.includes(acc.id)
+                               ? "bg-white/25 text-white hover:bg-white/40"
+                               : "bg-error/10 text-error hover:bg-error hover:text-white"
+                           }`}
                         >
-                          <CloseCircle size={14} variant="Bold" />
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3">
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                          </svg>
                         </button>
                       </div>
                     ))}

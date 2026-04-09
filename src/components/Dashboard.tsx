@@ -1247,9 +1247,13 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
           >
             <button
               onClick={() => { setShowVideoModal(false); setVideoStep("preview"); }}
-              className="absolute top-6 right-6 lg:top-8 lg:right-8 z-[60] bg-black/60 hover:bg-black/80 text-white rounded-full p-2 transition-colors cursor-pointer"
+              className="absolute top-6 right-6 lg:top-8 lg:right-8 z-[60] bg-black/70 hover:bg-black/90 text-white rounded-full w-11 h-11 flex items-center justify-center transition-all duration-200 cursor-pointer shadow-lg border border-white/20 backdrop-blur-sm"
+              title="Cerrar"
             >
-              <CloseCircle size={40} variant="Bulk" />
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
             <motion.div
               initial={{ scale: 0.92, opacity: 0 }}
@@ -1472,9 +1476,13 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
             {/* LARGE OUTSIDE CLOSE BUTTON */}
             <button
               onClick={() => { setShowPlacaModal(false); setPlacaStep("preview"); }}
-              className="absolute top-6 right-6 lg:top-8 lg:right-8 z-[60] bg-black/60 hover:bg-black/80 text-white rounded-full p-2 transition-colors cursor-pointer"
+              className="absolute top-6 right-6 lg:top-8 lg:right-8 z-[60] bg-black/70 hover:bg-black/90 text-white rounded-full w-11 h-11 flex items-center justify-center transition-all duration-200 cursor-pointer shadow-lg border border-white/20 backdrop-blur-sm"
+              title="Cerrar"
             >
-              <CloseCircle size={40} variant="Bulk" />
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
             <motion.div
               initial={{ scale: 0.92, opacity: 0 }}

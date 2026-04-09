@@ -56,45 +56,57 @@ export default function Home() {
       <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-primary/[0.03] to-transparent blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-gradient-to-tr from-secondary/[0.04] to-transparent blur-3xl pointer-events-none" />
 
-      {/* Top Bar */}
-      <header className="w-full px-8 py-5 flex items-center justify-between relative z-10">
-        <div className="flex items-center gap-4">
-          <button onClick={() => setProperty(null)} className="cursor-pointer">
+      {/* ══ Top Bar ══ */}
+      <header className="w-full relative z-10 border-b border-outline-variant/30 bg-surface/70 backdrop-blur-md sticky top-0">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+
+          {/* Left: Logo + label */}
+          <button
+            onClick={() => setProperty(null)}
+            className="flex items-center gap-2.5 cursor-pointer group shrink-0"
+          >
             <Image
               src="/logo-pequeno.png"
               alt="Freire Propiedades"
-              width={140}
-              height={46}
-              className="object-contain"
+              width={96}
+              height={32}
+              className="object-contain group-hover:opacity-75 transition-opacity duration-200"
             />
+            <div className="hidden sm:flex items-center gap-2">
+              <div className="h-4 w-px bg-primary/15" />
+              <span className="text-[10px] font-bold text-primary/50 uppercase tracking-[0.18em]">
+                Placas & Redes
+              </span>
+            </div>
           </button>
-          <div className="hidden sm:flex items-center gap-2 ml-4">
-            <div className="h-5 w-px bg-primary/10" />
-            <span className="text-[11px] font-semibold text-primary/60 uppercase tracking-[0.15em]">
-              Placas & Redes
-            </span>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-xs text-on-surface-variant/50 font-medium hidden md:inline">
+
+          {/* Center: system label (only on large screens, truly centered) */}
+          <span className="hidden lg:block text-[11px] text-on-surface-variant/40 font-medium tracking-wide absolute left-1/2 -translate-x-1/2 pointer-events-none select-none">
             Sistema Interno de Contenidos
           </span>
-          <div className="h-5 w-px bg-primary/10 hidden md:block" />
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-primary">{user.email}</span>
-            <button 
+
+          {/* Right: user pill + logout */}
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-1.5 bg-surface border border-outline-variant rounded-xl px-2.5 py-1.5 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-green-400 shrink-0" />
+              <span className="text-[11px] font-semibold text-primary truncate max-w-[100px] sm:max-w-[180px] md:max-w-[240px]">
+                {user.email}
+              </span>
+            </div>
+            <button
               onClick={handleLogout}
-              className="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-lg transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-error/10 text-error hover:bg-error hover:text-white border border-error/25 hover:border-error transition-all duration-200 cursor-pointer text-[11px] font-semibold shrink-0"
               title="Cerrar sesión"
             >
-              <Logout size={16} />
+              <Logout size={14} />
+              <span className="hidden sm:inline">Salir</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center px-6 py-4 relative z-10">
+      <main className="flex-1 flex flex-col items-center px-4 sm:px-6 py-6 relative z-10">
         <AnimatePresence mode="wait">
           {property ? (
             /* ── Dashboard (Property selected) ── */
@@ -119,7 +131,7 @@ export default function Home() {
               className="w-full max-w-6xl mx-auto"
             >
               {/* Tab Selector */}
-              <div className="flex items-center justify-center gap-3 mb-8">
+              <div className="flex items-center justify-center gap-3 mb-8 flex-wrap">
                 <TabButton
                   active={activeTab === "properties"}
                   onClick={() => setActiveTab("properties")}
@@ -183,7 +195,7 @@ function TabButton({ active, onClick, icon, label }: {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2.5 px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer ${
+      className={`flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer ${
         active
           ? "bg-primary text-white shadow-md shadow-primary/20"
           : "bg-white text-on-surface-variant border border-outline-variant hover:border-secondary/30 hover:text-primary hover:shadow-sm"
