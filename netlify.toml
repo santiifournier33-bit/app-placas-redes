@@ -1,6 +1,3 @@
-[functions]
-  timeout = 26
-
-[build]
-  command = "npm run build"
-  publish = ".next"
+# Archivo de configuración de Netlify
+# Removido el timeout por incompatibilidad con el plan gratuito.
+# Netlify auto-detectará la configuración de Next.js.
