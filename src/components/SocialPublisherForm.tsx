@@ -292,63 +292,79 @@ export function SocialPublisherForm({
           }
         }
 
-        // Accounts that get copy in ANY format → send with copy
-        // Accounts that NEVER get copy in any format → send without
         const finalWithCopy = Array.from(accountsWithCopy);
         const finalWithoutCopy = Array.from(accountsWithoutCopy).filter(id => !accountsWithCopy.has(id));
 
+        // Helper to perform publish with auto-retry on 502/504
+        const performPublishWithRetry = async (payload: any, label: string) => {
+          let attempts = 0;
+          const maxAttempts = 2; // Try up to twice
+          
+          while (attempts < maxAttempts) {
+            attempts++;
+            try {
+              const res = await fetch("/api/social/publish", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+              });
+
+              if (res.ok) return;
+
+              // If it's a gateway timeout (502/504), retry once
+              if ((res.status === 502 || res.status === 504) && attempts < maxAttempts) {
+                console.warn(`Gateway timeout (${res.status}) for ${label}. Attempt ${attempts} failed. Retrying...`);
+                // Wait briefly for Zernio to finish background processing
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                continue;
+              }
+
+              const errText = await res.text();
+              let errData: any = {};
+              try { errData = JSON.parse(errText); } catch(e) {}
+              throw new Error(errData.error || `Error publicando ${label}: ${res.status}`);
+            } catch (err: any) {
+              if (attempts >= maxAttempts) throw err;
+              // If it's a network error or potential timeout string
+              if (err.message?.includes('502') || err.message?.includes('504')) {
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                continue;
+              }
+              throw err;
+            }
+          }
+        };
+
         if (finalWithCopy.length > 0 && publishText) {
-          // Build accounts array with platform info (avoids server-side listAccounts call)
           const accountsPayload = finalWithCopy.map(id => {
             const acc = socialAccounts.find((a: any) => a.id === id);
             return { id, platform: acc?.platform || 'instagram' };
           });
 
-          const res = await fetch("/api/social/publish", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email,
-              text: publishText,
-              accounts: accountsPayload,
-              mediaUrls: finalMediaUrls,
-              profileId,
-              contentFormat: activeFormats.find(f => f !== 'story') || activeFormats[0] || 'post',
-            }),
-          });
-          if (!res.ok) {
-            const errText = await res.text();
-            let errData: any = {};
-            try { errData = JSON.parse(errText); } catch(e) {}
-            throw new Error(errData.error || "Error publicando en redes sociales con texto: " + res.status);
-          }
+          await performPublishWithRetry({
+            email,
+            text: publishText,
+            accounts: accountsPayload,
+            mediaUrls: finalMediaUrls,
+            profileId,
+            contentFormat: activeFormats.find(f => f !== 'story') || activeFormats[0] || 'post',
+          }, "redes sociales con texto");
         }
 
         if (finalWithoutCopy.length > 0) {
-          // Build accounts array with platform info — send without text for stories
           const accountsPayload = finalWithoutCopy.map(id => {
             const acc = socialAccounts.find((a: any) => a.id === id);
             return { id, platform: acc?.platform || 'instagram' };
           });
 
-          const res = await fetch("/api/social/publish", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email,
-              text: "",
-              accounts: accountsPayload,
-              mediaUrls: finalMediaUrls,
-              profileId,
-              contentFormat: "story",
-            }),
-          });
-          if (!res.ok) {
-            const errText = await res.text();
-            let errData: any = {};
-            try { errData = JSON.parse(errText); } catch(e) {}
-            throw new Error(errData.error || "Error publicando en historias: " + res.status);
-          }
+          await performPublishWithRetry({
+            email,
+            text: "",
+            accounts: accountsPayload,
+            mediaUrls: finalMediaUrls,
+            profileId,
+            contentFormat: "story",
+          }, "historias");
         }
       }
 
