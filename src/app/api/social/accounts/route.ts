@@ -31,7 +31,12 @@ export async function GET(req: Request) {
       .filter((acc: any) => {
         // Ignoramos cuentas que Zernio marca como desconectadas, expiradas o con error
         const s = (acc.status || "").toLowerCase();
-        return s !== 'disconnected' && s !== 'error' && s !== 'unauthorized' && s !== 'expired' && s !== 'pending';
+        if (s === 'disconnected' || s === 'error' || s === 'unauthorized' || s === 'expired' || s === 'pending') return false;
+
+        // SECURE ISOLATION: Si no hay profileId resuelto (usuario nuevo) NO ve nada.
+        // Si lo hay, filtramos de forma estricta contra la cuenta.
+        if (!profileId) return false;
+        return acc.profileId === profileId;
       })
       .map((acc: any) => ({
         id: acc._id || acc.id,

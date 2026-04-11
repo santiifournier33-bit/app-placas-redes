@@ -53,6 +53,8 @@ export default function PropertyExplorer({ onSelectProperty }: { onSelectPropert
     }
   };
 
+  const [sortBy, setSortBy] = useState<"recent" | "price_asc" | "price_desc" | "surface_desc">("recent");
+
   // Detect if search is ID, URL or text
   const isDirectSearch = (query: string): boolean => {
     const trimmed = query.trim();
@@ -62,16 +64,37 @@ export default function PropertyExplorer({ onSelectProperty }: { onSelectPropert
     return false;
   };
 
-  // Filter globally across all properties
+  // Filter and Sort globally across all properties
   const filteredProperties = useMemo(() => {
-    if (!searchQuery.trim() || isDirectSearch(searchQuery)) return allProperties;
+    let result = allProperties;
 
-    const terms = searchQuery.toLowerCase().split(/\s+/).filter(Boolean);
-    return allProperties.filter(p => {
-      const searchable = `${p.title} ${p.address} ${p.location} ${p.type} ${p.operation_type} ${p.description} ${p.reference_code} ${p.tags.join(" ")}`.toLowerCase();
-      return terms.every(term => searchable.includes(term));
+    // 1. Search Query filtering
+    if (searchQuery.trim() && !isDirectSearch(searchQuery)) {
+      const terms = searchQuery.toLowerCase().split(/\s+/).filter(Boolean);
+      result = allProperties.filter(p => {
+        const searchable = `${p.title} ${p.address} ${p.location} ${p.type} ${p.operation_type} ${p.description} ${p.reference_code} ${p.tags.join(" ")}`.toLowerCase();
+        return terms.every(term => searchable.includes(term));
+      });
+    }
+
+    // 2. Sorting
+    return [...result].sort((a, b) => {
+      switch (sortBy) {
+        case "recent":
+          return b.id - a.id;
+        case "price_asc":
+          if (!a.price_raw) return 1;
+          if (!b.price_raw) return -1;
+          return a.price_raw - b.price_raw;
+        case "price_desc":
+          return b.price_raw - a.price_raw;
+        case "surface_desc":
+          return b.surface_total - a.surface_total;
+        default:
+          return b.id - a.id;
+      }
     });
-  }, [allProperties, searchQuery]);
+  }, [allProperties, searchQuery, sortBy]);
 
   // Handle direct property load (by ID or URL)
   const handleDirectLoad = async () => {
@@ -145,37 +168,59 @@ export default function PropertyExplorer({ onSelectProperty }: { onSelectPropert
         transition={{ duration: 0.5, delay: 0.08 }}
         className="mb-8"
       >
-        <form onSubmit={handleSubmit} className="relative w-full max-w-2xl mx-auto group">
-          <div className="absolute left-5 top-1/2 -translate-y-1/2 text-on-surface-variant/50 transition-colors duration-300 group-focus-within:text-secondary">
-            <SearchNormal1 size={20} />
+        <div className="w-full max-w-4xl mx-auto flex flex-col md:flex-row gap-4">
+          <form onSubmit={handleSubmit} className="relative w-full group">
+            <div className="absolute left-5 top-1/2 -translate-y-1/2 text-on-surface-variant/50 transition-colors duration-300 group-focus-within:text-secondary">
+              <SearchNormal1 size={20} />
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setError(null); }}
+              placeholder="Buscar por ubicación, tipo, ID, URL o código..."
+              className="input-architectural pl-14 pr-16 w-full h-[52px]"
+              disabled={directLoading}
+            />
+            <AnimatePresence>
+              {searchQuery.length > 0 && isDirectSearch(searchQuery) && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  type="submit"
+                  disabled={directLoading}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-9 px-4 bg-primary text-white rounded-lg flex items-center justify-center hover:bg-primary-container transition-all disabled:opacity-50 shadow-sm text-xs font-semibold gap-1.5"
+                >
+                  {directLoading ? (
+                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>Cargar</>
+                  )}
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </form>
+
+          {/* Sort Dropdown */}
+          <div className="shrink-0 w-full md:w-56 relative">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              disabled={directLoading || isLoading}
+              className="input-architectural w-full appearance-none bg-white cursor-pointer pl-4 pr-10 focus:ring-primary focus:border-primary disabled:opacity-50 text-sm font-medium text-on-surface h-[52px]"
+            >
+              <option value="recent">Más recientes</option>
+              <option value="price_desc">Mayor precio</option>
+              <option value="price_asc">Menor precio</option>
+              <option value="surface_desc">Mayor tamaño</option>
+            </select>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant/50 flex flex-col gap-0.5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19.9201 8.9502L13.4001 15.4702C12.6301 16.2402 11.3701 16.2402 10.6001 15.4702L4.08008 8.9502" stroke="currentColor" strokeWidth="2.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
           </div>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setError(null); }}
-            placeholder="Buscar por ubicación, tipo, ID, URL o código..."
-            className="input-architectural pl-14 pr-16"
-            disabled={directLoading}
-          />
-          <AnimatePresence>
-            {searchQuery.length > 0 && isDirectSearch(searchQuery) && (
-              <motion.button
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                type="submit"
-                disabled={directLoading}
-                className="absolute right-3 top-1/2 -translate-y-1/2 h-9 px-4 bg-primary text-white rounded-lg flex items-center justify-center hover:bg-primary-container transition-all disabled:opacity-50 shadow-sm text-xs font-semibold gap-1.5"
-              >
-                {directLoading ? (
-                  <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <>Cargar</>
-                )}
-              </motion.button>
-            )}
-          </AnimatePresence>
-        </form>
+        </div>
       </motion.div>
 
       {/* Error */}
