@@ -19,6 +19,15 @@ export default function Home() {
 
   // Check auth on load
   useEffect(() => {
+    // Si estamos dentro del popup de OAuth, cerrarlo para alertar a la ventana padre
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('oauth_success') === 'true') {
+      if (window.opener) {
+        window.close();
+        return;
+      }
+    }
+
     const storedUser = localStorage.getItem("tokko_user");
     if (storedUser) {
       try {
