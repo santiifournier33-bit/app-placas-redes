@@ -11,6 +11,7 @@ type CopyVariants = { descriptivo: CopyVariant; emocional: CopyVariant; urgencia
 
 interface SocialPublisherFormProps {
   property: any;
+  user: any;
   copyVariants: CopyVariants | null;
   mediaType: "placa" | "video";
   /** The primary content format (used for single-format like placas) */
@@ -82,6 +83,7 @@ const WHATSAPP_ICON = (
 
 export function SocialPublisherForm({
   property,
+  user,
   copyVariants,
   mediaType,
   contentFormat,
@@ -133,7 +135,7 @@ export function SocialPublisherForm({
   const fetchSocialAccounts = async () => {
     setIsLoadingAccounts(true);
     try {
-      const email = property.agent?.email || "default@freire.com";
+      const email = user?.email || property.agent?.email || "default@freire.com";
       const res = await fetch(`/api/social/accounts?email=${encodeURIComponent(email)}`);
       const data = await res.json();
       const accounts = data.data || [];
@@ -219,7 +221,7 @@ export function SocialPublisherForm({
   const handleAuthLinking = async (platform: string = "instagram") => {
     setIsConnecting(true);
     try {
-      const email = property.agent?.email || "default@freire.com";
+      const email = user?.email || property.agent?.email || "default@freire.com";
       const res = await fetch(`/api/social/auth?email=${encodeURIComponent(email)}&platform=${platform}`);
       const data = await res.json();
       if (data.url) {
@@ -274,7 +276,7 @@ export function SocialPublisherForm({
     try {
       // 1. Publish to Zernio (social networks)
       if (hasZernio) {
-        const email = property.agent?.email || "default@freire.com";
+        const email = user?.email || property.agent?.email || "default@freire.com";
 
         // For each format, determine which accounts get copy
         const accountsWithCopy = new Set<string>();

@@ -32,7 +32,7 @@ const MUSIC_TRACKS = [
   { id: 'none', name: 'Sin Música', file: null, mood: 'Silencio' },
 ];
 
-export default function Dashboard({ property, onBack }: { property: any; onBack: () => void }) {
+export default function Dashboard({ property, user, onBack }: { property: any; user: any; onBack: () => void }) {
   // ── IA Copywriter State ──
   const [copyVariants, setCopyVariants] = useState<CopyVariants | null>(null);
   const [isGeneratingCopy, setIsGeneratingCopy] = useState(false);
@@ -1463,6 +1463,7 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
                 <div className="h-[80vh] flex flex-col">
                   <SocialPublisherForm
                     property={property}
+                    user={user}
                     copyVariants={copyVariants}
                     mediaType="video"
                     contentFormat={videoPublishFormats.includes("reel") ? "reel" : "story"}
@@ -1581,6 +1582,7 @@ export default function Dashboard({ property, onBack }: { property: any; onBack:
                 <div className="h-[80vh] flex flex-col">
                   <SocialPublisherForm
                     property={property}
+                    user={user}
                     copyVariants={copyVariants}
                     mediaType="placa"
                     contentFormat={placaFormat || "story"}
