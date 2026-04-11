@@ -36,7 +36,8 @@ export async function GET(req: Request) {
         // SECURE ISOLATION: Si no hay profileId resuelto (usuario nuevo) NO ve nada.
         // Si lo hay, filtramos de forma estricta contra la cuenta.
         if (!profileId) return false;
-        return acc.profileId === profileId;
+        const accProfileId = typeof acc.profileId === 'object' ? (acc.profileId._id || acc.profileId.id) : acc.profileId;
+        return accProfileId === profileId;
       })
       .map((acc: any) => ({
         id: acc._id || acc.id,
@@ -44,7 +45,7 @@ export async function GET(req: Request) {
         name: acc.username || acc.displayName || acc.platform,
         username: acc.username,
         profilePicture: acc.profilePicture,
-        profileId: acc.profileId,
+        profileId: typeof acc.profileId === 'object' ? (acc.profileId._id || acc.profileId.id) : acc.profileId,
         status: acc.status || "active",
       }));
 
