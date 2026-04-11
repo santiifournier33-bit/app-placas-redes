@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Sms, Warning2 } from "iconsax-react";
+import { InfiniteGrid } from "@/components/ui/infinite-grid";
 
 interface LoginScreenProps {
   onLoginSuccess: (user: any) => void;
@@ -49,13 +50,8 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-surface overflow-y-auto z-50">
-      <div className="min-h-full flex flex-col items-center justify-center p-4 py-8 relative">
-        {/* Background styling elements */}
-        <div className="absolute inset-0 bg-navy-radial pointer-events-none" />
-        <div className="absolute top-0 right-0 w-[80wv] h-[80wv] max-w-[600px] max-h-[600px] rounded-full bg-gradient-to-br from-primary/[0.03] to-transparent blur-[80px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[60wv] h-[60wv] max-w-[400px] max-h-[400px] rounded-full bg-gradient-to-tr from-secondary/[0.04] to-transparent blur-[60px] pointer-events-none" />
-
+    <div className="fixed inset-0 z-50">
+      <InfiniteGrid>
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -156,8 +152,8 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
             Tus credenciales se validan directamente con Tokko Broker de forma segura y nunca son almacenadas.
           </p>
         </div>
-      </motion.div>
-      </div>
+        </motion.div>
+      </InfiniteGrid>
     </div>
   );
 }
