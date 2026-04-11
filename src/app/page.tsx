@@ -127,7 +127,7 @@ export default function Home() {
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               className="w-full"
             >
-              <Dashboard property={property} onBack={() => setProperty(null)} />
+              <Dashboard property={property} user={user} onBack={() => setProperty(null)} />
             </motion.div>
           ) : (
             /* ── Main Hub (Tabs) ── */
