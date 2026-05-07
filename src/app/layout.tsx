@@ -13,8 +13,9 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Freire Propiedades | Placas y Redes",
-  description: "Herramienta interna para gestión de contenido, descripciones IA, PDFs y videos para Freire Propiedades.",
+  title: "Freire Propiedades | Plataforma Interna",
+  description: "Plataforma integral de gestión interna para Freire Propiedades. Diseño, productividad, marketing, ventas y más.",
+  manifest: "/manifest.json",
 };
 
 export const viewport = {
@@ -22,6 +23,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: "#0A0A0F",
 };
 
 export default function RootLayout({

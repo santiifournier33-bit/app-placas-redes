@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createSession, getUserRole, deleteSession } from '@/lib/auth/session';
 
 export async function POST(request: Request) {
   try {
@@ -50,29 +51,34 @@ export async function POST(request: Request) {
         'Origin': 'https://www.tokkobroker.com',
         'Cookie': `csrftoken=${csrftoken}`
       },
-      redirect: 'manual' // We need to detect the 302 redirect manually
+      redirect: 'manual'
     });
 
     // 3. Analyze the result
-    // Tokko redirects to /home on success, or /invalid_login/ on failure
     const location = loginRes.headers.get('location');
 
     if (loginRes.status === 302 && location?.includes('/home') && !location.includes('/invalid_login/')) {
-      // Success!
+      const role = getUserRole(email);
+      await createSession(email);
+
       return NextResponse.json({
         success: true,
-        user: { email }
+        user: { email, role }
       });
     } else {
-      // Failure
       return NextResponse.json({
         success: false,
         error: 'Las credenciales ingresadas son incorrectas.'
       }, { status: 401 });
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error during login proxy:', error);
     return NextResponse.json({ error: 'Error del servidor al intentar conectar con Tokko' }, { status: 500 });
   }
+}
+
+export async function DELETE() {
+  await deleteSession();
+  return NextResponse.json({ success: true });
 }
