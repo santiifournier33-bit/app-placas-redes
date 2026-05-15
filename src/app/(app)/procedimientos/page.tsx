@@ -1,18 +1,19 @@
-import { Book1 } from "iconsax-react"
+import { getSession } from '@/lib/auth/session'
+import { redirect } from 'next/navigation'
+import { ProceduresChat } from '@/components/procedures/ProceduresChat'
 
-export default function ProcedimientosPage() {
+export const metadata = {
+  title: 'Procedimientos · Freire Propiedades',
+  description: 'Asistente IA de procedimientos inmobiliarios',
+}
+
+export default async function ProcedimientosPage() {
+  const session = await getSession()
+  if (!session) redirect('/login')
+
   return (
-    <div className="p-6 lg:p-8 max-w-7xl mx-auto">
-      <div className="flex items-center gap-3 mb-2">
-        <Book1 size={24} className="text-shell-accent" />
-        <h1 className="text-2xl font-bold text-shell-text">Procedimientos</h1>
-      </div>
-      <p className="text-shell-text-muted text-sm mb-8">
-        Asistente IA para consultas sobre el método de trabajo inmobiliario.
-      </p>
-      <div className="rounded-2xl border border-shell-border bg-shell-surface p-12 text-center">
-        <p className="text-shell-text-muted text-sm">Módulo en desarrollo</p>
-      </div>
+    <div className="h-[calc(100dvh-4rem)] lg:h-screen overflow-hidden">
+      <ProceduresChat />
     </div>
   )
 }

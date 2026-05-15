@@ -1,0 +1,205 @@
+====================================================
+  TOKKO → GOOGLE DRIVE SYNC
+  Freire Propiedades — Sistema de documentación
+====================================================
+
+¿QUÉ ES ESTO?
+--------------
+Es un programa que conecta Tokko Broker con Google Drive.
+Lo que hace automáticamente es:
+
+1. Crear una carpeta en Drive por cada propiedad cargada
+   en Tokko Broker, organizada por asesor
+2. Descargar los archivos de la sección "Archivos" de
+   cada propiedad en Tokko
+3. Clasificar cada archivo con inteligencia artificial
+   (Gemini de Google) para renombrarlo según su contenido
+4. Subir los archivos clasificados a la carpeta
+   correspondiente en Drive
+
+Resultado en Drive:
+  Documentación propiedades/
+  ├── Stella Freire/
+  │   ├── 4933116 - Venta Casa Barrio Los Mirasoles KM50/
+  │   ├── 5201435 - Venta Departamento Pilar Av Tucuman/
+  │   └── ...
+  ├── Carina Castillo/
+  │   ├── 8002445 - Venta Casa Medal Country Club/
+  │   │   ├── mandato_autorizacion_venta_no_exclusiva_magali_bertotti_2026.pdf
+  │   │   ├── titulo_cesion_derechos_martinez_vera_bertotti_2023.pdf
+  │   │   ├── foto_dni_frente_magali_bertotti_2014.jpeg
+  │   │   ├── foto_dni_dorso_magali_bertotti.jpeg
+  │   │   └── foto_foto_plano.jpeg
+  │   └── ...
+  └── (resto de asesores...)
+
+
+¿PARA QUÉ SIRVE?
+-----------------
+Para tener un control propio de la documentación legal
+de cada propiedad (escrituras, autorizaciones de venta,
+poderes, DNIs, planos, etc.) organizada de forma clara.
+
+El nombre de cada carpeta incluye:
+  - ID de la propiedad en Tokko Broker
+  - Tipo de operación (Venta / Alquiler)
+  - Tipo de propiedad (Casa, Departamento, Terreno, etc.)
+  - Ubicación específica (country, barrio, calle, zona)
+
+El nombre de cada archivo clasificado incluye:
+  - Categoría del documento (titulo, mandato, identidad, fiscal, etc.)
+  - Tipo específico (escritura_compraventa, autorizacion_venta, dni_frente, etc.)
+  - Nombre de la persona que figura en el documento
+  - Año de emisión del documento
+
+
+¿CÓMO CORRERLO?
+----------------
+REQUISITOS: Tener Node.js instalado en la computadora.
+
+PASOS:
+
+1. Abrí PowerShell o Terminal
+2. Navegá a la carpeta del proyecto:
+   cd "C:\Users\santi\OneDrive\Desktop\MIGRACION\atnigravitty\tokko-drive-sync"
+
+3. Comandos disponibles:
+
+   --- Solo carpetas (sin archivos) ---
+
+   Ver qué carpetas se crearían SIN crear nada:
+   node src/sync.js --dry-run
+
+   Crear las carpetas nuevas en Drive:
+   node src/sync.js
+
+   Crear carpetas solo para un asesor:
+   node src/sync.js --agent "Carina Castillo"
+
+   --- Con archivos (sin clasificación IA) ---
+
+   Subir archivos de propiedades nuevas:
+   node src/sync.js --with-files
+
+   Subir archivos de TODAS las propiedades (incluidas existentes):
+   node src/sync.js --backfill-files
+
+   --- Con archivos + clasificación IA ---
+
+   Subir archivos clasificados por IA (propiedades nuevas):
+   node src/sync.js --with-files --classify
+
+   Subir archivos clasificados de TODAS las propiedades:
+   node src/sync.js --backfill-files --classify
+
+   Clasificar solo para un asesor:
+   node src/sync.js --agent "Carina Castillo" --backfill-files --classify
+
+   --- Testing ---
+
+   Probar clasificación de archivos de una propiedad:
+   node src/test-classifier.js 8002445
+
+
+¿CUÁNDO CORRERLO?
+------------------
+Cada vez que se cargue una propiedad nueva en Tokko Broker
+o cuando un asesor suba archivos nuevos a una propiedad.
+
+El script solo crea las carpetas que faltan y solo sube
+archivos que no existan ya en Drive. Nunca duplica ni
+borra nada existente. Es seguro correrlo muchas veces.
+
+
+¿QUÉ HACE EXACTAMENTE CUANDO LO CORRÉS?
+-----------------------------------------
+1. Descarga la lista de propiedades desde Tokko Broker
+2. Las agrupa por asesor (5 asesores actuales)
+3. Revisa en Drive qué carpetas ya existen
+4. Para las propiedades nuevas, usa IA (Gemini) para
+   determinar la ubicación más específica posible
+5. Crea la carpeta con el nombre correcto en Drive
+6. Si usás --with-files o --backfill-files:
+   - Inicia sesión en Tokko Broker (HTTP, sin navegador)
+   - Descarga los archivos de la sección "Archivos"
+7. Si usás --classify:
+   - Envía cada archivo a Gemini para que lo analice
+   - Gemini lee el contenido (texto, imágenes, PDFs)
+   - Clasifica el documento en una de 60+ categorías
+   - Genera un nombre estandarizado
+   - Muestra el nivel de confianza (0-100%)
+8. Sube los archivos a la carpeta correspondiente en Drive
+
+
+CLASIFICACIÓN IA — CATEGORÍAS
+------------------------------
+La IA reconoce estos tipos de documentos:
+
+  Titularidad:    escritura, cesión de derechos, declaratoria
+                  de herederos, informe de dominio, boleto
+  Mandatos:       autorización de venta/alquiler (exclusiva
+                  y no exclusiva), poderes
+  Identidad:      DNI (frente/dorso), pasaporte, CUIT/CUIL,
+                  acta de matrimonio/divorcio
+  Fiscal:         boleta ARBA, boleta ABL
+  Expensas:       liquidación, libre deuda, reglamento,
+                  facturas de servicios
+  Planos:         mensura, PH, municipal, final de obra
+  Habilitaciones: comercial, bomberos, industrial, ambiental
+  Hipotecas:      escritura, cancelación, saldo cero
+  Fotos:          foto de DNI, foto de escritura, foto de
+                  plano, fotos de la propiedad
+
+Si la IA no puede clasificar un archivo con suficiente
+confianza, lo marca como "sin_clasificar" y avisa que
+necesita revisión manual.
+
+
+ARCHIVOS IMPORTANTES
+---------------------
+.env                → Claves de API (NO compartir con nadie)
+oauth-client.json   → Credenciales OAuth de Google (NO compartir)
+oauth-token.json    → Token de acceso a Drive (se genera solo)
+src/sync.js         → Programa principal
+src/tokko.js        → Conexión con Tokko Broker (API pública)
+src/tokko-http.js   → Descarga de archivos de Tokko (HTTP)
+src/drive.js        → Conexión con Google Drive (OAuth)
+src/location.js     → Extracción inteligente de ubicaciones
+src/classifier.js   → Clasificación de documentos con IA
+
+
+CLAVES CONFIGURADAS
+--------------------
+- Tokko Broker API Key: configurada en .env
+- Tokko login (email/password): configurado en .env
+- Google Drive: OAuth con cuenta freirepropiedadespilar@gmail.com
+- Gemini AI: configurada en .env
+- Carpeta Drive raíz: "Documentación propiedades"
+
+
+PRIMERA VEZ / AUTORIZACIÓN GOOGLE
+-----------------------------------
+La primera vez que corrés el script con acceso a Drive,
+se abre el navegador para que autorices con tu cuenta
+de Google. Solo pasa una vez — después queda guardado
+en oauth-token.json y no vuelve a pedir.
+
+Si alguna vez deja de funcionar la conexión a Drive,
+borrá el archivo oauth-token.json y volvé a correr
+el script para re-autorizar.
+
+
+COSTOS
+-------
+- Tokko Broker API: gratis (incluida en tu plan)
+- Google Drive API: gratis (cuenta personal)
+- Gemini AI (clasificación): ~$0.007 por cada 5 archivos
+  (menos de 1 centavo de dólar)
+
+
+SOPORTE
+--------
+Este sistema fue desarrollado con Claude Code (Anthropic).
+Ante cualquier problema, consultar al desarrollador.
+
+====================================================

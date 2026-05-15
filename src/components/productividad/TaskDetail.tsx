@@ -1,0 +1,627 @@
+"use client"
+
+import { useState } from "react"
+import {
+  X, Flag, Calendar as CalIcon, Trash2, Plus, AlignLeft, Bell, Repeat,
+  ChevronDown, ChevronRight,
+  CheckSquare, MapPin, Phone, Users, PenLine, UserCircle,
+  Coffee, Gift, Megaphone,
+} from "lucide-react"
+import type { Task, TaskType, TaskState } from "@/lib/stores/taskStore"
+import { useTaskStore, TASK_TYPES } from "@/lib/stores/taskStore"
+import { useContactStore } from "@/lib/stores/contactStore"
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
+
+const priorityLabels: Record<number, { label: string; color: string }> = {
+  1: { label: "P1", color: "text-red-400" },
+  2: { label: "P2", color: "text-orange-400" },
+  3: { label: "P3", color: "text-blue-400" },
+  4: { label: "P4", color: "text-zinc-500" },
+}
+
+const TYPE_ICONS: Record<TaskType, React.ReactNode> = {
+  tarea:             <CheckSquare size={14} />,
+  visita:            <MapPin      size={14} />,
+  llamada:           <Phone       size={14} />,
+  reunion:           <Users       size={14} />,
+  firma:             <PenLine     size={14} />,
+  cafe:              <Coffee      size={14} />,
+  item_valor:        <Gift        size={14} />,
+  item_valor_masivo: <Megaphone   size={14} />,
+}
+
+interface TaskDetailProps {
+  task: Task
+  onClose: () => void
+  onToggleTask?: (id: string) => void
+  inline?: boolean
+}
+
+export function TaskDetail({ task: initialTask, onClose, onToggleTask, inline = false }: TaskDetailProps) {
+  const { updateTask, deleteTask, addSubtask, toggleTask, tasks, sections } = useTaskStore()
+  const doToggle = (id: string) => onToggleTask ? onToggleTask(id) : toggleTask(id)
+  const { contacts } = useContactStore()
+  // Always read live from store so sidebar reflects updates immediately
+  const task = tasks.find((t) => t.id === initialTask.id) ?? initialTask
+  const subtasks = tasks.filter((t) => t.parent_id === task.id)
+  const section = sections.find((s) => s.id === task.section_id)
+  const linkedContact = contacts.find((c) => c.id === task.contact_id) ?? null
+
+  const [newSubtask, setNewSubtask] = useState("")
+  const [showPriority, setShowPriority] = useState(false)
+  const [showType, setShowType] = useState(false)
+  const [showContactPicker, setShowContactPicker] = useState(false)
+  const [contactSearch, setContactSearch] = useState("")
+  const [editingTitle, setEditingTitle] = useState(false)
+  const [title, setTitle] = useState(task.title)
+  const [description, setDescription] = useState(task.description ?? '')
+  const [showDesc, setShowDesc] = useState(!!task.description)
+  const [subtasksOpen, setSubtasksOpen] = useState(true)
+
+  const effectiveType = (task.task_type ?? "tarea") as TaskType
+
+  const handleSubtaskAdd = () => {
+    if (!newSubtask.trim()) return
+    addSubtask(task.id, newSubtask.trim())
+    setNewSubtask("")
+  }
+
+  return (
+    <>
+      {/* Mobile: bottom sheet overlay */}
+      <div className="lg:hidden fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+        <div
+          className="relative bg-[#1a1a24] rounded-t-2xl w-full max-h-[90vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <MobileHeader task={task} onClose={onClose} onDelete={() => { deleteTask(task.id); onClose() }} />
+          <TaskBody
+            task={task} subtasks={subtasks} section={section}
+            title={title} setTitle={setTitle}
+            description={description} setDescription={setDescription}
+            showDesc={showDesc} setShowDesc={setShowDesc}
+            subtasksOpen={subtasksOpen} setSubtasksOpen={setSubtasksOpen}
+            newSubtask={newSubtask} setNewSubtask={setNewSubtask}
+            showPriority={showPriority} setShowPriority={setShowPriority}
+            showType={showType} setShowType={setShowType}
+            effectiveType={effectiveType}
+            updateTask={updateTask} toggleTask={doToggle} handleSubtaskAdd={handleSubtaskAdd}
+          />
+        </div>
+      </div>
+
+      {/* Desktop: right side panel */}
+      <div className={`hidden lg:flex ${inline ? 'relative w-[680px] h-full' : 'fixed inset-0 z-50'}`}>
+        {/* Backdrop — only in overlay mode */}
+        {!inline && <div className="flex-1" onClick={onClose} />}
+        {/* Panel */}
+        <div className={`${inline ? 'w-full' : 'w-[680px]'} bg-[#13131a] border-l border-white/[0.06] flex flex-col overflow-hidden shadow-2xl`}>
+          {/* Header bar */}
+          <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06] shrink-0">
+            <div className="flex items-center gap-1 text-xs text-zinc-500">
+              <span>Bandeja de entrada</span>
+              {section && (
+                <>
+                  <span>/</span>
+                  <span>{section.name}</span>
+                </>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              <button className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer text-zinc-500 hover:text-zinc-300">
+                <ChevronDown size={16} />
+              </button>
+              <button className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer text-zinc-500 hover:text-zinc-300">
+                <ChevronRight size={16} />
+              </button>
+              <div className="w-px h-4 bg-white/[0.08] mx-1" />
+              <button
+                onClick={onClose}
+                className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer text-zinc-500 hover:text-zinc-300"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </div>
+
+          {/* Two-column layout */}
+          <div className="flex flex-1 overflow-hidden">
+            {/* Left: main content */}
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {/* Title */}
+              <div className="flex items-start gap-3 mb-4">
+                <button
+                  onClick={() => doToggle(task.id)}
+                  className={`mt-1.5 w-5 h-5 rounded-full border-2 shrink-0 transition-all ${
+                    task.completed ? "bg-blue-500 border-transparent" : "border-zinc-600"
+                  }`}
+                />
+                {editingTitle ? (
+                  <input
+                    autoFocus
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    onBlur={() => {
+                      if (title.trim()) updateTask(task.id, { title: title.trim() })
+                      setEditingTitle(false)
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") (e.target as HTMLInputElement).blur()
+                    }}
+                    className="flex-1 bg-transparent text-xl font-semibold text-shell-text outline-none"
+                  />
+                ) : (
+                  <h2
+                    onClick={() => setEditingTitle(true)}
+                    className={`flex-1 text-xl font-semibold cursor-text leading-snug ${
+                      task.completed ? "line-through text-zinc-600" : "text-shell-text"
+                    }`}
+                  >
+                    {task.title}
+                  </h2>
+                )}
+              </div>
+
+              {/* Description */}
+              <div className="ml-8 mb-5">
+                {showDesc ? (
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    onBlur={() => updateTask(task.id, { description })}
+                    placeholder="Descripción"
+                    rows={3}
+                    className="w-full bg-transparent text-sm text-zinc-400 placeholder:text-zinc-600 outline-none resize-none"
+                  />
+                ) : (
+                  <button
+                    onClick={() => setShowDesc(true)}
+                    className="flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-400 cursor-pointer"
+                  >
+                    <AlignLeft size={14} />
+                    Descripción
+                  </button>
+                )}
+              </div>
+
+              {/* Subtasks */}
+              <div className="ml-8 border-t border-white/[0.06] pt-4">
+                <button
+                  onClick={() => setSubtasksOpen(!subtasksOpen)}
+                  className="flex items-center gap-2 text-sm font-semibold text-zinc-400 mb-3 cursor-pointer hover:text-zinc-200"
+                >
+                  {subtasksOpen ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
+                  Subtareas
+                  {subtasks.length > 0 && (
+                    <span className="text-xs font-normal text-zinc-600">
+                      {subtasks.filter((s) => s.completed).length}/{subtasks.length}
+                    </span>
+                  )}
+                </button>
+
+                {subtasksOpen && (
+                  <div className="space-y-1">
+                    {subtasks.map((sub) => (
+                      <div key={sub.id} className="flex items-center gap-3 py-1.5 group">
+                        <button
+                          onClick={() => doToggle(sub.id)}
+                          className={`w-4 h-4 rounded-full border-[1.5px] shrink-0 flex items-center justify-center ${
+                            sub.completed ? "bg-blue-500 border-transparent" : "border-zinc-600"
+                          }`}
+                        >
+                          {sub.completed && (
+                            <svg width="8" height="6" viewBox="0 0 10 8" fill="none">
+                              <path d="M1 3.5L3.5 6L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          )}
+                        </button>
+                        <span className={`text-sm flex-1 ${sub.completed ? "line-through text-zinc-600" : "text-zinc-300"}`}>
+                          {sub.title}
+                        </span>
+                      </div>
+                    ))}
+
+                    {/* Add subtask */}
+                    <div className="flex items-center gap-3 py-1">
+                      <Plus size={14} className="text-zinc-600 shrink-0" />
+                      <input
+                        value={newSubtask}
+                        onChange={(e) => setNewSubtask(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === "Enter") handleSubtaskAdd() }}
+                        placeholder="Añadir subtarea"
+                        className="flex-1 bg-transparent text-sm text-zinc-400 placeholder:text-zinc-700 outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Comment field (bottom) */}
+              <div className="ml-8 mt-6 flex items-center gap-3 border border-white/[0.06] rounded-xl px-3 py-2.5 bg-white/[0.02]">
+                <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                  S
+                </div>
+                <input
+                  placeholder="Comentar"
+                  className="flex-1 bg-transparent text-sm text-zinc-400 placeholder:text-zinc-600 outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Right: metadata sidebar */}
+            <div className="w-56 border-l border-white/[0.06] px-4 py-5 space-y-4 overflow-y-auto shrink-0">
+              {/* Proyecto */}
+              <MetaRow label="Proyecto">
+                <span className="text-xs text-zinc-400">
+                  {section ? section.name : "Bandeja de entrada"}
+                </span>
+              </MetaRow>
+
+              {/* Fecha */}
+              <MetaRow label="Fecha">
+                <input
+                  type="date"
+                  value={task.due_date ? task.due_date.slice(0, 10) : ""}
+                  onChange={(e) =>
+                    updateTask(task.id, {
+                      due_date: e.target.value ?? null,
+                    })
+                  }
+                  className="bg-transparent text-xs text-zinc-400 outline-none cursor-pointer [color-scheme:dark] w-full"
+                />
+              </MetaRow>
+
+              {/* Prioridad */}
+              <MetaRow label="Prioridad">
+                <div className="relative">
+                  <button
+                    onClick={() => { setShowPriority(!showPriority); setShowType(false) }}
+                    className={`flex items-center gap-1.5 text-xs cursor-pointer ${priorityLabels[task.priority ?? 4].color}`}
+                  >
+                    <Flag size={13} />
+                    {priorityLabels[task.priority ?? 4].label}
+                  </button>
+                  {showPriority && (
+                    <div className="absolute right-0 top-6 bg-[#222230] rounded-xl border border-white/[0.08] py-1 z-10 shadow-xl min-w-[130px]">
+                      {([1, 2, 3, 4] as const).map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => { updateTask(task.id, { priority: p }); setShowPriority(false) }}
+                          className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs cursor-pointer"
+                        >
+                          <Flag size={12} className={priorityLabels[p].color} />
+                          <span className={priorityLabels[p].color}>Prioridad {p}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </MetaRow>
+
+              {/* Tipo */}
+              <MetaRow label="Tipo">
+                <div className="relative">
+                  <button
+                    onClick={() => { setShowType(!showType); setShowPriority(false) }}
+                    className={`flex items-center gap-1.5 text-xs cursor-pointer ${
+                      effectiveType !== "tarea" ? "text-violet-400" : "text-zinc-500"
+                    }`}
+                  >
+                    {TYPE_ICONS[effectiveType]}
+                    {TASK_TYPES[effectiveType]?.label ?? "Tarea"}
+                  </button>
+                  {showType && (
+                    <div className="absolute right-0 top-6 bg-[#222230] rounded-xl border border-white/[0.08] py-1 z-10 shadow-xl min-w-[130px]">
+                      {(Object.entries(TASK_TYPES) as [TaskType, typeof TASK_TYPES[TaskType]][]).map(([key, val]) => (
+                        <button
+                          key={key}
+                          onClick={() => { updateTask(task.id, { task_type: key }); setShowType(false) }}
+                          className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-300 cursor-pointer"
+                        >
+                          <span className="text-zinc-500">{TYPE_ICONS[key]}</span>
+                          {val.label}
+                          {effectiveType === key && <span className="ml-auto text-zinc-600">✓</span>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </MetaRow>
+
+              {/* Recordatorio */}
+              <MetaRow label="Recordatorio">
+                <input
+                  type="datetime-local"
+                  value={task.reminder ?? ""}
+                  onChange={(e) => updateTask(task.id, { reminder: e.target.value || null })}
+                  className={`bg-transparent text-xs outline-none cursor-pointer [color-scheme:dark] w-full ${
+                    task.reminder ? "text-amber-400" : "text-zinc-500"
+                  }`}
+                />
+              </MetaRow>
+
+              {/* Contacto */}
+              <MetaRow label="Contacto">
+                <div className="relative">
+                  <button
+                    onClick={() => { setShowContactPicker(!showContactPicker); setContactSearch("") }}
+                    className="flex items-center gap-1.5 text-xs cursor-pointer text-zinc-400 hover:text-zinc-200 w-full text-left"
+                  >
+                    <UserCircle size={13} className="shrink-0 text-zinc-500" />
+                    <span className="truncate">
+                      {linkedContact
+                        ? `${linkedContact.first_name} ${linkedContact.last_name}`
+                        : "Sin contacto"}
+                    </span>
+                  </button>
+                  {showContactPicker && (
+                    <div className="absolute right-0 top-6 bg-[#222230] rounded-xl border border-white/[0.08] z-20 shadow-xl w-52">
+                      <div className="p-2 border-b border-white/[0.06]">
+                        <input
+                          autoFocus
+                          value={contactSearch}
+                          onChange={(e) => setContactSearch(e.target.value)}
+                          placeholder="Buscar contacto..."
+                          className="w-full bg-transparent text-xs text-zinc-300 placeholder:text-zinc-600 outline-none"
+                        />
+                      </div>
+                      <div className="max-h-48 overflow-y-auto py-1">
+                        {task.contact_id && (
+                          <button
+                            onClick={() => { updateTask(task.id, { contact_id: null }); setShowContactPicker(false) }}
+                            className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-500 cursor-pointer"
+                          >
+                            <UserCircle size={12} />
+                            Sin contacto
+                          </button>
+                        )}
+                        {contacts
+                          .filter((c) => {
+                            const q = contactSearch.toLowerCase()
+                            return !q || `${c.first_name} ${c.last_name}`.toLowerCase().includes(q) || (c.primary_phone ?? '').includes(q)
+                          })
+                          .slice(0, 20)
+                          .map((c) => (
+                            <button
+                              key={c.id}
+                              onClick={() => { updateTask(task.id, { contact_id: c.id }); setShowContactPicker(false) }}
+                              className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs cursor-pointer"
+                            >
+                              <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-[10px] text-blue-400 font-bold shrink-0">
+                                {(c.first_name || c.last_name || "?")[0]}
+                              </div>
+                              <div className="flex-1 min-w-0 text-left">
+                                <div className="text-zinc-300 truncate">{c.first_name} {c.last_name}</div>
+                                <div className="text-zinc-600 truncate">{c.primary_phone}</div>
+                              </div>
+                              {task.contact_id === c.id && <span className="text-zinc-600 ml-auto">✓</span>}
+                            </button>
+                          ))}
+                        {contacts.filter((c) => {
+                          const q = contactSearch.toLowerCase()
+                          return !q || `${c.first_name} ${c.last_name}`.toLowerCase().includes(q) || (c.primary_phone ?? '').includes(q)
+                        }).length === 0 && (
+                          <p className="text-xs text-zinc-600 text-center py-3">Sin resultados</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </MetaRow>
+
+              {/* Delete */}
+              <div className="pt-4 border-t border-white/[0.06]">
+                <button
+                  onClick={() => { deleteTask(task.id); onClose() }}
+                  className="flex items-center gap-2 text-xs text-zinc-600 hover:text-red-400 cursor-pointer transition-colors"
+                >
+                  <Trash2 size={13} />
+                  Eliminar tarea
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
+/* ─── Helpers ─── */
+
+function MetaRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider mb-1">{label}</p>
+      {children}
+    </div>
+  )
+}
+
+function MobileHeader({ task, onClose, onDelete }: { task: Task; onClose: () => void; onDelete: () => void }) {
+  return (
+    <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
+      <button onClick={onClose} className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer">
+        <X size={20} className="text-zinc-400" />
+      </button>
+      <button onClick={onDelete} className="p-1.5 hover:bg-red-500/10 rounded-lg cursor-pointer">
+        <Trash2 size={18} className="text-zinc-500 hover:text-red-400" />
+      </button>
+    </div>
+  )
+}
+
+function TaskBody({
+  task, subtasks, section,
+  title, setTitle, description, setDescription,
+  showDesc, setShowDesc,
+  subtasksOpen, setSubtasksOpen,
+  newSubtask, setNewSubtask,
+  showPriority, setShowPriority,
+  showType, setShowType,
+  effectiveType,
+  updateTask, toggleTask, handleSubtaskAdd,
+}: {
+  task: Task
+  subtasks: Task[]
+  section: { id: string; name: string; position: number } | undefined
+  title: string
+  setTitle: (v: string) => void
+  description: string
+  setDescription: (v: string) => void
+  showDesc: boolean
+  setShowDesc: (v: boolean) => void
+  subtasksOpen: boolean
+  setSubtasksOpen: (v: boolean) => void
+  newSubtask: string
+  setNewSubtask: (v: string) => void
+  showPriority: boolean
+  setShowPriority: (v: boolean) => void
+  showType: boolean
+  setShowType: (v: boolean) => void
+  effectiveType: TaskType
+  updateTask: TaskState["updateTask"]
+  toggleTask: (id: string) => void
+  handleSubtaskAdd: () => void
+}) {
+  return (
+    <div className="p-4 space-y-4">
+      <div className="flex items-start gap-3">
+        <button
+          onClick={() => toggleTask(task.id)}
+          className={`mt-1 w-5 h-5 rounded-full border-2 shrink-0 ${
+            task.completed ? "bg-blue-500 border-transparent" : "border-zinc-600"
+          }`}
+        />
+        <h2 className={`flex-1 text-lg font-semibold ${task.completed ? "line-through text-zinc-600" : "text-shell-text"}`}>
+          {task.title}
+        </h2>
+      </div>
+
+      {/* Date */}
+      <div className="flex items-center gap-2">
+        <CalIcon size={15} className="text-zinc-500" />
+        <input
+          type="date"
+          value={task.due_date ? task.due_date.slice(0, 10) : ""}
+          onChange={(e) =>
+            updateTask(task.id, {
+              due_date: e.target.value ?? null,
+            })
+          }
+          className="bg-transparent text-sm text-zinc-400 outline-none cursor-pointer [color-scheme:dark]"
+        />
+      </div>
+
+      {/* Priority */}
+      <div className="relative flex items-center gap-2">
+        <Flag size={15} className={priorityLabels[task.priority ?? 4].color} />
+        <button
+          onClick={() => { setShowPriority(!showPriority); setShowType(false) }}
+          className={`text-sm cursor-pointer ${priorityLabels[task.priority ?? 4].color}`}
+        >
+          {priorityLabels[task.priority ?? 4].label}
+        </button>
+        {showPriority && (
+          <div className="absolute left-0 top-8 bg-[#222230] rounded-xl border border-white/[0.08] py-1 z-10 shadow-xl">
+            {([1, 2, 3, 4] as const).map((p) => (
+              <button
+                key={p}
+                onClick={() => { updateTask(task.id, { priority: p }); setShowPriority(false) }}
+                className="flex items-center gap-2 px-4 py-2 w-full hover:bg-white/[0.04] text-sm cursor-pointer"
+              >
+                <Flag size={14} className={priorityLabels[p].color} />
+                <span className={priorityLabels[p].color}>Prioridad {p}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Reminder */}
+      <div className="flex items-center gap-2">
+        <Bell size={15} className={task.reminder ? "text-amber-400" : "text-zinc-500"} />
+        <input
+          type="datetime-local"
+          value={task.reminder ?? ""}
+          onChange={(e) => updateTask(task.id, { reminder: e.target.value || null })}
+          className={`bg-transparent text-sm outline-none cursor-pointer [color-scheme:dark] ${
+            task.reminder ? "text-amber-400" : "text-zinc-500"
+          }`}
+        />
+      </div>
+
+      {/* Description */}
+      {showDesc ? (
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          onBlur={() => updateTask(task.id, { description })}
+          placeholder="Descripcion..."
+          rows={2}
+          className="w-full bg-white/[0.04] rounded-xl px-3 py-2 text-sm text-shell-text placeholder:text-zinc-600 outline-none resize-none border border-white/[0.06] focus:border-blue-500/30"
+        />
+      ) : (
+        <button
+          onClick={() => setShowDesc(true)}
+          className="flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-300 cursor-pointer"
+        >
+          <AlignLeft size={15} />
+          Descripcion
+        </button>
+      )}
+
+      {/* Subtasks */}
+      <div className="space-y-1 pt-1 border-t border-white/[0.06]">
+        <button
+          onClick={() => setSubtasksOpen(!subtasksOpen)}
+          className="flex items-center gap-2 text-sm font-semibold text-zinc-400 mb-2 cursor-pointer"
+        >
+          {subtasksOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          Subtareas
+          {subtasks.length > 0 && (
+            <span className="text-xs font-normal text-zinc-600">
+              {subtasks.filter((s) => s.completed).length}/{subtasks.length}
+            </span>
+          )}
+        </button>
+
+        {subtasksOpen && (
+          <>
+            {subtasks.map((sub) => (
+              <div key={sub.id} className="flex items-center gap-3 py-1.5">
+                <button
+                  onClick={() => toggleTask(sub.id)}
+                  className={`w-4 h-4 rounded-full border-[1.5px] shrink-0 flex items-center justify-center ${
+                    sub.completed ? "bg-blue-500 border-transparent" : "border-zinc-600"
+                  }`}
+                >
+                  {sub.completed && (
+                    <svg width="8" height="6" viewBox="0 0 10 8" fill="none">
+                      <path d="M1 3.5L3.5 6L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </button>
+                <span className={`text-sm ${sub.completed ? "line-through text-zinc-600" : "text-zinc-300"}`}>
+                  {sub.title}
+                </span>
+              </div>
+            ))}
+            <div className="flex items-center gap-3 pt-1">
+              <Plus size={14} className="text-zinc-600 shrink-0" />
+              <input
+                value={newSubtask}
+                onChange={(e) => setNewSubtask(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleSubtaskAdd() }}
+                placeholder="Anadir subtarea"
+                className="flex-1 bg-transparent text-sm text-zinc-400 placeholder:text-zinc-700 outline-none"
+              />
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}

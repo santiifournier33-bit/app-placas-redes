@@ -1,0 +1,91 @@
+"use client"
+
+import { format, isPast, isToday } from "date-fns"
+import { es } from "date-fns/locale"
+import { ChevronRight, Flag } from "lucide-react"
+import type { Task } from "@/lib/stores/taskStore"
+import { useTaskStore } from "@/lib/stores/taskStore"
+
+const priorityColors: Record<number, string> = {
+  1: "border-red-500 text-red-500",
+  2: "border-orange-500 text-orange-500",
+  3: "border-blue-500 text-blue-500",
+  4: "border-zinc-600 text-zinc-600",
+}
+
+const priorityBg: Record<number, string> = {
+  1: "bg-red-500",
+  2: "bg-orange-500",
+  3: "bg-blue-500",
+  4: "bg-zinc-500",
+}
+
+interface TaskItemProps {
+  task: Task
+  subtaskCount?: number
+  subtaskDone?: number
+  onTap?: () => void
+  indent?: boolean
+  onToggle?: (id: string) => void
+}
+
+export function TaskItem({ task, subtaskCount = 0, subtaskDone = 0, onTap, indent, onToggle }: TaskItemProps) {
+  const toggleTask = useTaskStore((s) => s.toggleTask)
+  const doToggle = (id: string) => onToggle ? onToggle(id) : toggleTask(id)
+
+  const overdue = task.due_date && isPast(new Date(task.due_date)) && !isToday(new Date(task.due_date)) && !task.completed
+
+  return (
+    <div
+      className={`group flex items-start gap-3 px-4 py-3 border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors cursor-pointer ${
+        indent ? "pl-10" : ""
+      }`}
+      onClick={onTap}
+    >
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          doToggle(task.id)
+        }}
+        className={`mt-0.5 w-5 h-5 rounded-full border-2 shrink-0 transition-all duration-200 flex items-center justify-center ${
+          task.completed
+            ? `${priorityBg[task.priority]} border-transparent`
+            : priorityColors[task.priority]
+        }`}
+      >
+        {task.completed && (
+          <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+            <path d="M1 3.5L3.5 6L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+      </button>
+
+      <div className="flex-1 min-w-0">
+        <p className={`text-sm leading-snug ${task.completed ? "line-through text-zinc-600" : "text-shell-text"}`}>
+          {task.title}
+        </p>
+
+        <div className="flex items-center gap-3 mt-1 flex-wrap">
+          {task.due_date && (
+            <span className={`text-[11px] flex items-center gap-1 ${overdue ? "text-red-400" : "text-zinc-500"}`}>
+              {format(new Date(task.due_date), "d MMM", { locale: es })}
+            </span>
+          )}
+
+          {subtaskCount > 0 && (
+            <span className="text-[11px] text-zinc-500 flex items-center gap-1">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 8h8M8 4v8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              {subtaskDone}/{subtaskCount}
+            </span>
+          )}
+
+          {task.priority < 4 && (
+            <Flag size={11} className={priorityColors[task.priority].split(" ")[1]} />
+          )}
+        </div>
+      </div>
+
+      <ChevronRight size={16} className="text-zinc-700 mt-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+    </div>
+  )
+}

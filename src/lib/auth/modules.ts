@@ -12,12 +12,12 @@ export interface ModuleDefinition {
 
 export const modules: ModuleDefinition[] = [
   {
-    id: 'diseno',
-    label: 'Diseño',
-    href: '/diseno',
-    icon: 'Brush2',
+    id: 'dashboard',
+    label: 'Dashboard',
+    href: '/dashboard',
+    icon: 'Home',
     access: ['admin', 'asesor'],
-    description: 'Placas, copy, PDFs y videos',
+    description: 'Resumen y métricas rápidas',
     enabled: true,
   },
   {
@@ -26,8 +26,17 @@ export const modules: ModuleDefinition[] = [
     href: '/productividad',
     icon: 'TaskSquare',
     access: ['admin', 'asesor'],
-    description: 'Tareas, actividad y métricas',
-    enabled: false,
+    description: 'Tareas, negocios, equipo y contactos',
+    enabled: true,
+  },
+  {
+    id: 'diseno',
+    label: 'Diseño',
+    href: '/diseno',
+    icon: 'Brush2',
+    access: ['admin', 'asesor'],
+    description: 'Placas, copy, PDFs y videos',
+    enabled: true,
   },
   {
     id: 'consultas',
@@ -45,7 +54,16 @@ export const modules: ModuleDefinition[] = [
     icon: 'Book1',
     access: ['admin', 'asesor'],
     description: 'Asistente IA inmobiliario',
-    enabled: false,
+    enabled: true,
+  },
+  {
+    id: 'firmas',
+    label: 'Firmas electrónicas',
+    href: '/firmas',
+    icon: 'Signature',
+    access: ['admin', 'asesor'],
+    description: 'Firmas digitales de contratos',
+    enabled: true,
   },
   {
     id: 'documentacion',
@@ -54,7 +72,7 @@ export const modules: ModuleDefinition[] = [
     icon: 'FolderOpen',
     access: ['admin'],
     description: 'Archivos de propiedades',
-    enabled: false,
+    enabled: true,
   },
   {
     id: 'marketing',
@@ -72,7 +90,7 @@ export const modules: ModuleDefinition[] = [
     icon: 'DollarSquare',
     access: ['admin'],
     description: 'Operaciones y comisiones',
-    enabled: false,
+    enabled: true,
   },
   {
     id: 'servicios',
@@ -81,7 +99,7 @@ export const modules: ModuleDefinition[] = [
     icon: 'Receipt1',
     access: ['admin'],
     description: 'Gastos y vencimientos',
-    enabled: false,
+    enabled: true,
   },
   {
     id: 'correo',
@@ -90,7 +108,7 @@ export const modules: ModuleDefinition[] = [
     icon: 'Sms',
     access: ['admin', 'asesor'],
     description: 'Email corporativo',
-    enabled: false,
+    enabled: true,
   },
 ]
 

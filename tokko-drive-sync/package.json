@@ -1,0 +1,25 @@
+{
+  "name": "tokko-drive-sync",
+  "version": "1.0.0",
+  "description": "Sincroniza propiedades de Tokko Broker con estructura de carpetas en Google Drive",
+  "main": "src/sync.js",
+  "scripts": {
+    "sync": "node src/sync.js",
+    "sync:dry": "node src/sync.js --dry-run",
+    "sync:agent": "node src/sync.js --agent",
+    "sync:classify": "node src/sync.js --backfill-files --classify",
+    "test:classify": "node src/test-classifier.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "axios": "^1.7.2",
+    "axios-cookiejar-support": "^5.0.3",
+    "cheerio": "^1.0.0",
+    "dotenv": "^16.4.5",
+    "googleapis": "^140.0.1",
+    "mammoth": "^1.12.0",
+    "open": "^11.0.0",
+    "playwright": "^1.44.0",
+    "tough-cookie": "^4.1.4"
+  }
+}

@@ -1,84 +1,137 @@
-import { NextResponse } from 'next/server';
-import { createSession, getUserRole, deleteSession } from '@/lib/auth/session';
+import { NextRequest, NextResponse } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
+import { createServiceClient } from '@/lib/supabase/service'
+import { getUserRole, encrypt } from '@/lib/auth/session'
+import { validateTokkoCredentials } from '@/lib/tokko/client'
+import type { Database } from '@/lib/supabase/types'
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
+    const { email, password } = await request.json()
 
     if (!email || !password) {
-      return NextResponse.json({ error: 'Faltan credenciales' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Faltan credenciales', code: 'MISSING_CREDENTIALS' },
+        { status: 400 }
+      )
     }
 
-    // 1. Get the CSRF token from Tokko
-    const initialRes = await fetch('https://www.tokkobroker.com/go/', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-        'Accept-Language': 'es-AR,es;q=0.8,en-US;q=0.5,en;q=0.3'
-      }
-    });
+    const normalizedEmail = email.toLowerCase().trim()
 
-    const setCookieHeader = initialRes.headers.get('set-cookie');
-    if (!setCookieHeader) {
-      return NextResponse.json({ error: 'No se pudo inicializar la sesión con Tokko' }, { status: 502 });
+    const tokkoResult = await validateTokkoCredentials(normalizedEmail, password)
+    if (!tokkoResult.success) {
+      return NextResponse.json(
+        { success: false, error: tokkoResult.error, code: 'INVALID_CREDENTIALS' },
+        { status: 401 }
+      )
     }
 
-    // Extract csrftoken
-    let csrftoken = '';
-    const match = setCookieHeader.match(/csrftoken=([^;]+)/);
-    if (match && match[1]) {
-      csrftoken = match[1];
-    }
+    // Ensure Supabase Auth user exists and has current password
+    const serviceClient = createServiceClient()
+    const { data: profile } = await serviceClient
+      .from('profiles')
+      .select('id')
+      .eq('email', normalizedEmail)
+      .single()
 
-    if (!csrftoken) {
-      return NextResponse.json({ error: 'No se obtuvo token de seguridad de Tokko' }, { status: 502 });
-    }
-
-    // 2. Perform the actual POST login
-    const formData = new URLSearchParams();
-    formData.append('username', email);
-    formData.append('password', password);
-    formData.append('csrfmiddlewaretoken', csrftoken);
-    formData.append('next', '/home');
-
-    const loginRes = await fetch('https://www.tokkobroker.com/login/?next=/home', {
-      method: 'POST',
-      body: formData.toString(),
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-        'Referer': 'https://www.tokkobroker.com/go/',
-        'Origin': 'https://www.tokkobroker.com',
-        'Cookie': `csrftoken=${csrftoken}`
-      },
-      redirect: 'manual'
-    });
-
-    // 3. Analyze the result
-    const location = loginRes.headers.get('location');
-
-    if (loginRes.status === 302 && location?.includes('/home') && !location.includes('/invalid_login/')) {
-      const role = getUserRole(email);
-      await createSession(email);
-
-      return NextResponse.json({
-        success: true,
-        user: { email, role }
-      });
+    if (profile) {
+      await serviceClient.auth.admin.updateUserById(profile.id, { password })
     } else {
-      return NextResponse.json({
-        success: false,
-        error: 'Las credenciales ingresadas son incorrectas.'
-      }, { status: 401 });
+      const role = getUserRole(normalizedEmail)
+      const { error: createError } = await serviceClient.auth.admin.createUser({
+        email: normalizedEmail,
+        password,
+        email_confirm: true,
+        user_metadata: { role },
+      })
+
+      if (createError) {
+        console.error('Supabase createUser error:', createError)
+        return NextResponse.json(
+          { error: 'Error al crear cuenta de usuario', code: 'CREATE_USER_FAILED' },
+          { status: 500 }
+        )
+      }
     }
 
+    // Build response first so Supabase cookies go directly onto it
+    const role = getUserRole(normalizedEmail)
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    const sessionToken = await encrypt({ email: normalizedEmail, role, expiresAt })
+
+    const response = NextResponse.json({ success: true, user: { email: normalizedEmail, role } })
+
+    // Set app session cookie on the response
+    response.cookies.set('session', sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      expires: expiresAt,
+      sameSite: 'lax',
+      path: '/',
+    })
+
+    // Supabase client that sets cookies directly on the response
+    const supabase = createServerClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return request.cookies.getAll() },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set(name, value, options)
+            })
+          },
+        },
+      }
+    )
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: normalizedEmail,
+      password,
+    })
+
+    if (signInError) {
+      console.error('Supabase signIn error:', signInError)
+      return NextResponse.json(
+        { error: 'Error al establecer sesión', code: 'SIGNIN_FAILED' },
+        { status: 500 }
+      )
+    }
+
+    return response
   } catch (error: unknown) {
-    console.error('Error during login proxy:', error);
-    return NextResponse.json({ error: 'Error del servidor al intentar conectar con Tokko' }, { status: 500 });
+    console.error('Login error:', error)
+    return NextResponse.json(
+      { error: 'Error del servidor al conectar con Tokko', code: 'SERVER_ERROR' },
+      { status: 500 }
+    )
   }
 }
 
-export async function DELETE() {
-  await deleteSession();
-  return NextResponse.json({ success: true });
+export async function DELETE(request: NextRequest) {
+  const response = NextResponse.json({ success: true })
+
+  try {
+    const supabase = createServerClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return request.cookies.getAll() },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set(name, value, options)
+            })
+          },
+        },
+      }
+    )
+    await supabase.auth.signOut()
+  } catch {
+    // signout failure shouldn't block app logout
+  }
+
+  response.cookies.delete('session')
+  return response
 }
