@@ -75,6 +75,7 @@ interface ContactState {
   loading: boolean
   initialized: boolean
 
+  reset: () => void
   init: () => Promise<void>
   fetchKanban: (pipelineId: string) => Promise<void>
 
@@ -98,13 +99,22 @@ export const useContactStore = create<ContactState>((set, get) => ({
   loading: true,
   initialized: false,
 
+  reset: () => {
+    supabase.removeChannel(supabase.channel('contacts-realtime'))
+    set({ contacts: [], kanbanContacts: [], loading: true, initialized: false })
+  },
+
   init: async () => {
     if (get().initialized) return
     set({ initialized: true })
 
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { set({ loading: false }); return }
+
     const { data } = await supabase
       .from('contacts')
       .select('*')
+      .eq('owner_id', user.id)
       .is('deleted_at', null)
       .order('last_activity_at', { ascending: false })
 
@@ -118,6 +128,7 @@ export const useContactStore = create<ContactState>((set, get) => ({
       .channel('contacts-realtime')
       .on('postgres_changes', {
         event: '*', schema: 'public', table: 'contacts',
+        filter: `owner_id=eq.${user.id}`,
       }, (payload) => {
         if (payload.eventType === 'INSERT') {
           const row = payload.new as Contact
@@ -138,10 +149,14 @@ export const useContactStore = create<ContactState>((set, get) => ({
   },
 
   fetchKanban: async (pipelineId) => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
     const { data: cps } = await supabase
       .from('contact_pipelines')
       .select('*, contacts(*)')
       .eq('pipeline_id', pipelineId)
+      .eq('owner_id', user.id)
       .order('last_activity_at', { ascending: false })
 
     if (!cps) {

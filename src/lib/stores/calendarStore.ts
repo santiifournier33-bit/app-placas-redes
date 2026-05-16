@@ -20,6 +20,7 @@ interface CalendarState {
   loading: boolean
   initialized: boolean
 
+  reset: () => void
   init: () => Promise<void>
   addEvent: (data: Omit<TablesInsert<'calendar_events'>, 'owner_id'>) => Promise<CalendarEvent | null>
   updateEvent: (id: string, updates: Partial<CalendarEvent>) => Promise<void>
@@ -33,13 +34,22 @@ export const useCalendarStore = create<CalendarState>((set, get) => ({
   loading: true,
   initialized: false,
 
+  reset: () => {
+    supabase.removeChannel(supabase.channel('calendar-events-realtime'))
+    set({ events: [], loading: true, initialized: false })
+  },
+
   init: async () => {
     if (get().initialized) return
     set({ initialized: true })
 
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { set({ loading: false }); return }
+
     const { data } = await supabase
       .from('calendar_events')
       .select('*')
+      .eq('owner_id', user.id)
       .is('deleted_at', null)
       .order('event_date', { ascending: true })
 
@@ -53,6 +63,7 @@ export const useCalendarStore = create<CalendarState>((set, get) => ({
       .channel('calendar-events-realtime')
       .on('postgres_changes', {
         event: '*', schema: 'public', table: 'calendar_events',
+        filter: `owner_id=eq.${user.id}`,
       }, (payload) => {
         if (payload.eventType === 'INSERT') {
           const row = payload.new as CalendarEvent

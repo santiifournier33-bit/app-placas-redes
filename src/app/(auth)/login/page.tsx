@@ -6,6 +6,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Sms, Warning2 } from "iconsax-react";
 import { InfiniteGrid } from "@/components/ui/infinite-grid";
+import { resetAllStores } from "@/lib/stores/resetAllStores";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -37,6 +38,7 @@ export default function LoginPage() {
         throw new Error(data.error || "Credenciales incorrectas.");
       }
 
+      resetAllStores()
       router.push("/diseno");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Error desconocido");

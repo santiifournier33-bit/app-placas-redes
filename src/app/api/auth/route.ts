@@ -28,24 +28,26 @@ export async function POST(request: NextRequest) {
 
     // Ensure Supabase Auth user exists and has current password
     const serviceClient = createServiceClient()
-    const { data: profile } = await serviceClient
-      .from('profiles')
-      .select('id')
-      .eq('email', normalizedEmail)
-      .single()
+    const role = getUserRole(normalizedEmail)
 
-    if (profile) {
-      await serviceClient.auth.admin.updateUserById(profile.id, { password })
-    } else {
-      const role = getUserRole(normalizedEmail)
-      const { error: createError } = await serviceClient.auth.admin.createUser({
-        email: normalizedEmail,
-        password,
-        email_confirm: true,
-        user_metadata: { role },
-      })
+    // Try to create user first; if already exists, update password instead
+    const { data: created, error: createError } = await serviceClient.auth.admin.createUser({
+      email: normalizedEmail,
+      password,
+      email_confirm: true,
+      user_metadata: { role },
+    })
 
-      if (createError) {
+    let authUserId = created?.user?.id
+
+    if (createError) {
+      // User already exists in auth — find by email and update password
+      const { data: { users } } = await serviceClient.auth.admin.listUsers()
+      const existing = users?.find(u => u.email === normalizedEmail)
+      if (existing) {
+        await serviceClient.auth.admin.updateUserById(existing.id, { password })
+        authUserId = existing.id
+      } else {
         console.error('Supabase createUser error:', createError)
         return NextResponse.json(
           { error: 'Error al crear cuenta de usuario', code: 'CREATE_USER_FAILED' },
@@ -54,8 +56,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Ensure profile row exists
+    if (authUserId) {
+      await serviceClient.from('profiles').upsert({
+        id: authUserId,
+        email: normalizedEmail,
+        role,
+        is_active: true,
+      }, { onConflict: 'id' })
+    }
+
     // Build response first so Supabase cookies go directly onto it
-    const role = getUserRole(normalizedEmail)
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     const sessionToken = await encrypt({ email: normalizedEmail, role, expiresAt })
 

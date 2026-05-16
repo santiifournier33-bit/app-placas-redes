@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { Plus, Search, X } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import { usePipelinesStore } from '@/lib/stores/pipelinesStore'
 import {
   useContactStore,
@@ -51,31 +52,21 @@ export default function NegociosPage() {
   useEffect(() => {
     if (!activePipeline) return
 
-    const supabase = (async () => {
-      const { createClient } = await import('@/lib/supabase/client')
-      return createClient()
-    })()
-
-    let channel: ReturnType<Awaited<typeof supabase>['channel']> | null = null
-
-    supabase.then(sb => {
-      channel = sb
-        .channel(`kanban-${activePipeline.id}`)
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'contact_pipelines',
-          filter: `pipeline_id=eq.${activePipeline.id}`,
-        }, () => {
-          contactStore.fetchKanban(activePipeline.id)
-        })
-        .subscribe()
-    })
+    const sb = createClient()
+    const channel = sb
+      .channel(`kanban-${activePipeline.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'contact_pipelines',
+        filter: `pipeline_id=eq.${activePipeline.id}`,
+      }, () => {
+        contactStore.fetchKanban(activePipeline.id)
+      })
+      .subscribe()
 
     return () => {
-      if (channel) {
-        supabase.then(sb => sb.removeChannel(channel!))
-      }
+      sb.removeChannel(channel)
     }
   }, [activePipeline?.id])
 

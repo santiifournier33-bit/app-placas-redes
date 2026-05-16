@@ -20,6 +20,7 @@ interface PipelinesState {
   activePipeline: () => PipelineWithStages | null
   activeStages: () => PipelineStage[]
 
+  reset: () => void
   init: () => Promise<void>
   setActivePipeline: (id: string) => void
 
@@ -52,19 +53,28 @@ export const usePipelinesStore = create<PipelinesState>((set, get) => ({
     return [...pipeline.stages].sort((a, b) => a.position - b.position)
   },
 
+  reset: () => {
+    set({ pipelines: [], activePipelineId: null, loading: true, initialized: false })
+  },
+
   init: async () => {
     if (get().initialized) return
     set({ initialized: true })
 
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { set({ loading: false, initialized: true }); return }
+
     const { data: pipelines, error: pErr } = await supabase
       .from('pipelines')
       .select('*')
+      .eq('owner_id', user.id)
       .is('deleted_at', null)
       .order('position')
 
     const { data: stages, error: sErr } = await supabase
       .from('pipeline_stages')
       .select('*')
+      .eq('owner_id', user.id)
       .order('position')
 
     if (pErr) console.error('pipelinesStore: pipelines query failed', pErr)

@@ -26,6 +26,7 @@ export interface TaskState {
   sections: TaskSection[]
   initialized: boolean
 
+  reset: () => void
   init: () => Promise<void>
   addTask: (title: string, sectionId?: string | null) => Promise<void>
   toggleTask: (id: string) => Promise<void>
@@ -44,6 +45,11 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
   sections: [],
   initialized: false,
 
+  reset: () => {
+    supabase.removeChannel(supabase.channel('tasks-realtime'))
+    set({ tasks: [], sections: [], initialized: false })
+  },
+
   init: async () => {
     if (get().initialized) return
     set({ initialized: true })
@@ -55,11 +61,13 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
       supabase
         .from('tasks')
         .select('*')
+        .eq('owner_id', user.id)
         .is('deleted_at', null)
         .order('position', { ascending: true }),
       supabase
         .from('task_sections')
         .select('*')
+        .eq('owner_id', user.id)
         .is('deleted_at', null)
         .order('position', { ascending: true }),
     ])
