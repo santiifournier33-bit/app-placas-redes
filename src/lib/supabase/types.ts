@@ -7,6 +7,8 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
@@ -683,6 +685,44 @@ export type Database = {
           },
         ]
       }
+      signature_submissions: {
+        Row: {
+          created_at: string | null
+          deleted_at: string | null
+          docuseal_submission_id: string
+          id: string
+          owner_id: string
+          status: string | null
+          template_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          deleted_at?: string | null
+          docuseal_submission_id: string
+          id?: string
+          owner_id: string
+          status?: string | null
+          template_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          deleted_at?: string | null
+          docuseal_submission_id?: string
+          id?: string
+          owner_id?: string
+          status?: string | null
+          template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signature_submissions_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasaciones: {
         Row: {
           contact_id: string | null
@@ -897,7 +937,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_team_week_metrics: {
+        Args: { week_start: string }
+        Returns: {
+          avatar_url: string
+          contacts_created: number
+          contacts_moved: number
+          display_name: string
+          email: string
+          profile_id: string
+          tasks_completed: number
+          total_actions: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
@@ -1024,3 +1076,9 @@ export type CompositeTypes<
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
+
+export const Constants = {
+  public: {
+    Enums: {},
+  },
+} as const
