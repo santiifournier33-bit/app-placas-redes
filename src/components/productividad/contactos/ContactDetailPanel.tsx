@@ -5,8 +5,10 @@ import { X, Phone, MessageSquare, Mail, Check, Copy } from 'lucide-react'
 import { useContactStore, SOURCE_LABELS, type Contact } from '@/lib/stores/contactStore'
 import { ContactDataTab } from './ContactDataTab'
 import { ContactNotesTab } from './ContactNotesTab'
+import { ContactTasksTab } from './ContactTasksTab'
+import { ContactHistoryTab } from './ContactHistoryTab'
 
-type Tab = 'data' | 'notes'
+type Tab = 'data' | 'tasks' | 'notes' | 'history'
 
 interface ContactDetailPanelProps {
   contact: Contact
@@ -155,7 +157,7 @@ function PanelContent({ contact, tab, setTab, onClose, markContacted, handleDele
 
         {/* Tabs */}
         <div className="flex gap-1 px-5 py-2 border-b border-white/[0.06] shrink-0">
-          {(['data', 'notes'] as Tab[]).map(t => (
+          {(['data', 'tasks', 'notes', 'history'] as Tab[]).map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -165,7 +167,7 @@ function PanelContent({ contact, tab, setTab, onClose, markContacted, handleDele
                   : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
-              {t === 'data' ? 'Datos' : 'Notas'}
+              {t === 'data' ? 'Datos' : t === 'tasks' ? 'Tareas' : t === 'notes' ? 'Notas' : 'Historial'}
             </button>
           ))}
         </div>
@@ -173,7 +175,9 @@ function PanelContent({ contact, tab, setTab, onClose, markContacted, handleDele
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
           {tab === 'data' && <ContactDataTab contact={contact} />}
+          {tab === 'tasks' && <ContactTasksTab contactId={contact.id} />}
           {tab === 'notes' && <ContactNotesTab contactId={contact.id} />}
+          {tab === 'history' && <ContactHistoryTab contactId={contact.id} />}
         </div>
 
         {/* Footer */}

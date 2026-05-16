@@ -153,6 +153,48 @@ export type Database = {
           },
         ]
       }
+      contact_activity_log: {
+        Row: {
+          contact_id: string
+          created_at: string | null
+          event_type: string
+          id: string
+          owner_id: string
+          payload: Json | null
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string | null
+          event_type: string
+          id?: string
+          owner_id: string
+          payload?: Json | null
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          owner_id?: string
+          payload?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_activity_log_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contact_activity_log_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_notes: {
         Row: {
           body: string

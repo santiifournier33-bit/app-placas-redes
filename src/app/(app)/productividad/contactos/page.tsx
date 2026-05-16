@@ -30,13 +30,18 @@ export default function ContactosPage() {
     return 'table'
   })
 
-  const { contacts, init, addContact, deleteContact } = useContactStore()
+  const { contacts, init, addContact, deleteContact, fetchKanban } = useContactStore()
   const pipelinesStore = usePipelinesStore()
+  const { activePipelineId } = usePipelinesStore()
 
   useEffect(() => {
     init()
     pipelinesStore.init()
   }, [])
+
+  useEffect(() => {
+    if (activePipelineId) fetchKanban(activePipelineId)
+  }, [activePipelineId])
 
   const filtered = useMemo(() => {
     return contacts

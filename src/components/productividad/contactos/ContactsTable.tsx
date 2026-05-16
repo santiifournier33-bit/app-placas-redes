@@ -1,14 +1,12 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { ChevronUp, ChevronDown, ExternalLink, Phone, MessageSquare } from 'lucide-react'
+import { ChevronUp, ChevronDown, ExternalLink, Phone, MessageSquare, Check, Copy } from 'lucide-react'
 import {
   useContactStore,
-  SOURCE_LABELS,
-  CIRCLE_LABELS,
-  CATEGORY_LABELS,
-  type Contact, type Source, type Circle, type Category,
+  type Contact,
 } from '@/lib/stores/contactStore'
+import { usePipelinesStore } from '@/lib/stores/pipelinesStore'
 import { EditableCell } from './EditableCell'
 
 type SortKey = keyof Contact | null
@@ -58,6 +56,7 @@ interface Column {
 const ALL_COLUMNS: Column[] = [
   { key: 'first_name', label: 'Nombre', width: 'w-40', sortable: true },
   { key: 'last_name', label: 'Apellido', width: 'w-32', sortable: true },
+  { key: 'pipeline_stage', label: 'Pipeline', width: 'w-36' },
   { key: 'primary_phone', label: 'Teléfono', width: 'w-32' },
   { key: 'primary_email', label: 'Email', width: 'w-40' },
   { key: 'rol', label: 'Rol', width: 'w-28' },
@@ -79,6 +78,106 @@ interface ContactsTableProps {
   contacts: Contact[]
   onSelectContact: (contact: Contact) => void
   selectedId?: string | null
+}
+
+function CopyChip({ value, kind }: { value: string; kind: 'phone' | 'email' }) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    navigator.clipboard.writeText(value).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1200)
+    })
+  }
+
+  return (
+    <button
+      onClick={handleCopy}
+      title={`Copiar ${kind === 'phone' ? 'teléfono' : 'email'}`}
+      className="group inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 text-[11px] cursor-pointer max-w-full"
+    >
+      <span className="truncate">{value}</span>
+      {copied ? (
+        <Check size={11} className="text-emerald-400 shrink-0" />
+      ) : (
+        <Copy size={11} className="text-zinc-500 opacity-0 group-hover:opacity-100 shrink-0" />
+      )}
+    </button>
+  )
+}
+
+function PipelineStageCell({
+  contact,
+  onSelect,
+}: {
+  contact: Contact
+  onSelect: () => void
+}) {
+  const { activePipelineId, pipelines } = usePipelinesStore()
+  const { kanbanContacts, moveToStage, addToPipeline, fetchKanban } = useContactStore()
+  const [open, setOpen] = useState(false)
+
+  const pipeline = pipelines.find(p => p.id === activePipelineId)
+  const stages = pipeline ? [...pipeline.stages].sort((a, b) => a.position - b.position) : []
+  const kanbanEntry = kanbanContacts.find(k => k.id === contact.id && k.pipelineId === activePipelineId)
+  const currentStage = stages.find(s => s.id === kanbanEntry?.stageId)
+
+  const handleSelect = async (stageId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setOpen(false)
+    if (!activePipelineId) return
+    if (kanbanEntry) {
+      await moveToStage(kanbanEntry.contactPipelineId, stageId)
+    } else {
+      await addToPipeline(contact.id, activePipelineId, stageId)
+      await fetchKanban(activePipelineId)
+    }
+  }
+
+  if (!pipeline) {
+    return <span className="text-[11px] text-zinc-700 px-1">—</span>
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={(e) => { e.stopPropagation(); setOpen(o => !o) }}
+        className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] cursor-pointer max-w-full"
+        style={
+          currentStage
+            ? { background: `${currentStage.color}26`, color: currentStage.color || '#a3a3a3' }
+            : { background: 'rgba(255,255,255,0.04)', color: '#71717a' }
+        }
+      >
+        <span className="truncate">{currentStage?.name || 'Sin etapa'}</span>
+        <ChevronDown size={10} className="shrink-0" />
+      </button>
+      {open && (
+        <>
+          <div
+            className="fixed inset-0 z-30"
+            onClick={(e) => { e.stopPropagation(); setOpen(false) }}
+          />
+          <div className="absolute left-0 top-full mt-1 z-40 bg-[#1e1e2c] border border-white/[0.08] rounded-lg shadow-xl py-1 min-w-[160px]">
+            {stages.map(stage => (
+              <button
+                key={stage.id}
+                onClick={(e) => handleSelect(stage.id, e)}
+                className="w-full text-left px-3 py-1.5 text-xs hover:bg-white/[0.04] cursor-pointer flex items-center gap-2"
+              >
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ background: stage.color || '#3b82f6' }}
+                />
+                <span className="text-zinc-300 truncate">{stage.name}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
 }
 
 export function ContactsTable({ contacts, onSelectContact, selectedId }: ContactsTableProps) {
@@ -212,6 +311,14 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
                           <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">{tag}</span>
                         ))}
                       </div>
+                    ) : col.key === 'pipeline_stage' ? (
+                      <div className="px-1">
+                        <PipelineStageCell contact={contact} onSelect={() => onSelectContact(contact)} />
+                      </div>
+                    ) : col.key === 'primary_phone' && contact.primary_phone ? (
+                      <div className="px-1"><CopyChip value={contact.primary_phone} kind="phone" /></div>
+                    ) : col.key === 'primary_email' && contact.primary_email ? (
+                      <div className="px-1"><CopyChip value={contact.primary_email} kind="email" /></div>
                     ) : (
                       <EditableCell
                         value={contact[col.key as keyof Contact] as string | number | boolean | null}
