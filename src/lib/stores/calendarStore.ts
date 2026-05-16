@@ -46,10 +46,10 @@ export const useCalendarStore = create<CalendarState>((set, get) => ({
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { set({ loading: false }); return }
 
+    // RLS enforces: own personal events + organization-scope events visible to all
     const { data } = await supabase
       .from('calendar_events')
       .select('*')
-      .eq('owner_id', user.id)
       .is('deleted_at', null)
       .order('event_date', { ascending: true })
 
@@ -63,7 +63,6 @@ export const useCalendarStore = create<CalendarState>((set, get) => ({
       .channel('calendar-events-realtime')
       .on('postgres_changes', {
         event: '*', schema: 'public', table: 'calendar_events',
-        filter: `owner_id=eq.${user.id}`,
       }, (payload) => {
         if (payload.eventType === 'INSERT') {
           const row = payload.new as CalendarEvent

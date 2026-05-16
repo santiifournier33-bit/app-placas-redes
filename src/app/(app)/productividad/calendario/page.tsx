@@ -30,6 +30,7 @@ export default function CalendarioPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   const { events, init: initCalendar, addEvent } = useCalendarStore()
   const { tasks, init: initTasks } = useTaskStore()
@@ -38,6 +39,10 @@ export default function CalendarioPage() {
     setMounted(true)
     initCalendar()
     initTasks()
+    fetch('/api/auth/me')
+      .then(r => r.json())
+      .then(d => setIsAdmin(d?.user?.role === 'admin'))
+      .catch(() => {})
   }, [])
 
   const calendarItems = useMemo((): CalendarItem[] => {
@@ -256,6 +261,7 @@ export default function CalendarioPage() {
       {showForm && (
         <EventFormModal
           date={selectedDate ?? new Date()}
+          isAdmin={isAdmin}
           onSave={async (data) => {
             await addEvent(data)
             setShowForm(false)
@@ -268,10 +274,11 @@ export default function CalendarioPage() {
 }
 
 function EventFormModal({
-  date, onSave, onClose,
+  date, isAdmin, onSave, onClose,
 }: {
   date: Date
-  onSave: (data: { title: string; description: string | null; event_date: string; event_end: string | null; event_type: EventType }) => void
+  isAdmin: boolean
+  onSave: (data: { title: string; description: string | null; event_date: string; event_end: string | null; event_type: EventType; scope: 'organization' | 'personal' }) => void
   onClose: () => void
 }) {
   const [form, setForm] = useState({
@@ -280,6 +287,7 @@ function EventFormModal({
     event_date: format(date, "yyyy-MM-dd'T'HH:mm"),
     event_end: "",
     event_type: "reunion" as EventType,
+    scope: 'personal' as 'organization' | 'personal',
   })
 
   const set = (key: string, value: unknown) => setForm(f => ({ ...f, [key]: value }))
@@ -292,6 +300,7 @@ function EventFormModal({
       event_date: form.event_date,
       event_end: form.event_end || null,
       event_type: form.event_type,
+      scope: form.scope,
     })
   }
 
@@ -310,6 +319,34 @@ function EventFormModal({
         </div>
 
         <div className="p-4 space-y-3">
+          {isAdmin && (
+            <div>
+              <label className="text-[11px] text-zinc-500 font-medium block mb-1">Alcance</label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => set("scope", "personal")}
+                  className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium cursor-pointer transition-all ${
+                    form.scope === "personal"
+                      ? "bg-blue-500/15 text-blue-400 border border-blue-500/30"
+                      : "bg-white/[0.04] text-zinc-500 hover:bg-white/[0.06] border border-transparent"
+                  }`}
+                >
+                  Personal
+                </button>
+                <button
+                  onClick={() => set("scope", "organization")}
+                  className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium cursor-pointer transition-all ${
+                    form.scope === "organization"
+                      ? "bg-amber-500/15 text-amber-400 border border-amber-500/30"
+                      : "bg-white/[0.04] text-zinc-500 hover:bg-white/[0.06] border border-transparent"
+                  }`}
+                >
+                  De oficina (todos)
+                </button>
+              </div>
+            </div>
+          )}
+
           <div>
             <label className="text-[11px] text-zinc-500 font-medium block mb-1">Titulo *</label>
             <input
