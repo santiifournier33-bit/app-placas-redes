@@ -15,6 +15,7 @@ import {
 } from '@/lib/stores/contactStore'
 import { KanbanBoard } from '@/components/productividad/KanbanBoard'
 import { PipelineSelector } from '@/components/productividad/negocios/PipelineSelector'
+import { PageHeader } from '@/components/nav/PageHeader'
 
 export default function NegociosPage() {
   const [search, setSearch] = useState('')
@@ -112,6 +113,7 @@ export default function NegociosPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-120px)]">
+      <PageHeader title="Negocios" />
       {/* Pipeline selector + toolbar */}
       <div className="flex flex-col gap-2 px-4 py-3 border-b border-white/[0.04] shrink-0">
         <PipelineSelector />

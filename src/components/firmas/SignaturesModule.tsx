@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import TemplateSender from './TemplateSender'
 import SignaturesList from './SignaturesList'
+import { PageHeader } from '@/components/nav/PageHeader'
 
 type Tab = 'nueva' | 'listado'
 
@@ -18,26 +19,14 @@ export default function SignaturesModule() {
 
   return (
     <div className="h-full flex flex-col bg-[var(--bg-primary)] text-[var(--text-primary)]">
-      {/* Header */}
-      <div className="border-b border-[var(--border-subtle)] px-6 pt-5 pb-0 flex-shrink-0">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg">
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-[var(--text-primary)]">Firmas Digitales</h1>
-              <p className="text-xs text-[var(--text-muted)]">Enviá documentos a firmar de forma segura</p>
-            </div>
-          </div>
-
-          {/* Quick actions */}
-          <div className="flex items-center gap-2">
+      <PageHeader
+        title="Firmas Digitales"
+        subtitle="Enviá documentos a firmar de forma segura"
+        actions={
+          <>
             <button
               onClick={handleRefresh}
-              className="p-2 rounded-lg hover:bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+              className="p-2 rounded-lg hover:bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
               title="Actualizar"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -55,10 +44,12 @@ export default function SignaturesModule() {
               </svg>
               Administrar Plantillas
             </a>
-          </div>
-        </div>
+          </>
+        }
+      />
 
-        {/* Tabs */}
+      {/* Tabs */}
+      <div className="border-b border-[var(--border-subtle)] px-6 pt-3 flex-shrink-0">
         <div className="flex gap-1">
           {([
             ['nueva', '✍️ Nueva Firma'],

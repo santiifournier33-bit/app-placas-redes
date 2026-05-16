@@ -6,6 +6,7 @@ import Dashboard from "@/components/Dashboard";
 import TokkoDescriptionForm from "@/components/TokkoDescriptionForm";
 import { motion, AnimatePresence } from "framer-motion";
 import { Building, DocumentText1 } from "iconsax-react";
+import { PageHeader } from "@/components/nav/PageHeader";
 
 type ActiveTab = "properties" | "tokko_description";
 
@@ -37,6 +38,10 @@ export default function DisenoPage() {
       <div className="absolute inset-0 bg-navy-radial pointer-events-none" />
       <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-primary/[0.03] to-transparent blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-gradient-to-tr from-secondary/[0.04] to-transparent blur-3xl pointer-events-none" />
+
+      <div className="relative z-10">
+        <PageHeader title="Diseño" />
+      </div>
 
       <main className="flex-1 flex flex-col items-center px-4 sm:px-6 py-6 relative z-10">
         <AnimatePresence mode="wait">

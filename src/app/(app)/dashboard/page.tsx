@@ -13,6 +13,7 @@ import Link from "next/link"
 import { startOfWeek, isAfter, isBefore, format } from "date-fns"
 import { es } from "date-fns/locale"
 import { WeeklyTrackerWidget } from "@/components/productividad/WeeklyTrackerWidget"
+import { PageHeader } from "@/components/nav/PageHeader"
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false)
@@ -73,13 +74,12 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="p-4 lg:p-6 max-w-4xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-xl font-bold text-shell-text">Dashboard</h1>
-        <p className="text-sm text-zinc-500 mt-1">
-          {format(now, "EEEE d 'de' MMMM", { locale: es })}
-        </p>
-      </div>
+    <div className="flex flex-col h-full">
+      <PageHeader
+        title="Dashboard"
+        subtitle={format(now, "EEEE d 'de' MMMM", { locale: es })}
+      />
+      <div className="p-4 lg:p-6 max-w-4xl mx-auto space-y-6 w-full">
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -272,6 +272,7 @@ export default function DashboardPage() {
           </div>
         </Link>
       )}
+      </div>
     </div>
   )
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import {
-  Inbox, CalendarDays, CalendarRange, Plus, FolderPlus,
+  Inbox, CalendarDays, Plus, FolderPlus,
   LayoutDashboard, List, Columns, CheckSquare2, X,
 } from "lucide-react"
 import { useTaskStore, TASK_TYPES, type TaskType } from "@/lib/stores/taskStore"
@@ -11,23 +11,20 @@ import { TaskItem } from "@/components/productividad/TaskItem"
 import { TaskDetail } from "@/components/productividad/TaskDetail"
 import { SectionHeader } from "@/components/productividad/SectionHeader"
 import { BoardView } from "@/components/productividad/BoardView"
-import {
-  isToday, isPast, isFuture, format, startOfMonth, endOfMonth,
-  eachDayOfInterval, startOfWeek, endOfWeek, addMonths, subMonths, isSameDay, isSameMonth
-} from "date-fns"
+import { PageHeader } from "@/components/nav/PageHeader"
+import { isToday, isPast, format } from "date-fns"
 import { es } from "date-fns/locale"
 import type { Task } from "@/lib/stores/taskStore"
 import {
-  CheckSquare, MapPin, Phone, Users, PenLine, ChevronLeft, ChevronRight,
+  CheckSquare, MapPin, Phone, Users, PenLine,
 } from "lucide-react"
 
-type View = "bandeja" | "hoy" | "proximo"
+type View = "bandeja" | "hoy"
 type DisplayMode = "lista" | "panel"
 
 const viewConfig = [
   { key: "bandeja" as const, label: "Bandeja", icon: Inbox },
   { key: "hoy" as const, label: "Hoy", icon: CalendarDays },
-  { key: "proximo" as const, label: "Proximo", icon: CalendarRange },
 ]
 
 export default function TareasPage() {
@@ -140,7 +137,8 @@ export default function TareasPage() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header: view toggles + format menu */}
+      <PageHeader title="Tareas" />
+      {/* View toggles + format menu */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.04] shrink-0">
         <div className="flex gap-1">
           {viewConfig.map(({ key, label, icon: Icon }) => (
@@ -261,12 +259,6 @@ export default function TareasPage() {
             />
           )}
 
-          {view === "proximo" && (
-            <ProximoView
-              tasks={rootTasks}
-              onSelectTask={setSelectedTask}
-            />
-          )}
         </div>
 
         {/* Inline detail panel — desktop only, rendered alongside list */}
@@ -582,276 +574,6 @@ function HoyView({
           ))}
         </div>
       )}
-    </div>
-  )
-}
-
-/* ─── PROXIMO VIEW — KiteProp-style calendar ─── */
-
-const TYPE_COLORS: Record<TaskType, { dot: string; badge: string; label: string }> = {
-  tarea:             { dot: "bg-zinc-500",    badge: "bg-zinc-500/15 text-zinc-400",      label: "Tarea"         },
-  visita:            { dot: "bg-amber-400",   badge: "bg-amber-500/15 text-amber-400",    label: "Visita"        },
-  llamada:           { dot: "bg-blue-400",    badge: "bg-blue-500/15 text-blue-400",      label: "Llamada"       },
-  reunion:           { dot: "bg-violet-400",  badge: "bg-violet-500/15 text-violet-400",  label: "Reunión"       },
-  firma:             { dot: "bg-emerald-400", badge: "bg-emerald-500/15 text-emerald-400", label: "Firma"        },
-  cafe:              { dot: "bg-yellow-400",  badge: "bg-yellow-500/15 text-yellow-400",  label: "Café"          },
-  item_valor:        { dot: "bg-pink-400",    badge: "bg-pink-500/15 text-pink-400",      label: "Item de valor" },
-  item_valor_masivo: { dot: "bg-teal-400",    badge: "bg-teal-500/15 text-teal-400",      label: "Valor masivo"  },
-}
-
-const TYPE_ICON_MAP: Record<TaskType, React.ReactNode> = {
-  tarea:             <CheckSquare size={12} />,
-  visita:            <MapPin      size={12} />,
-  llamada:           <Phone       size={12} />,
-  reunion:           <Users       size={12} />,
-  firma:             <PenLine     size={12} />,
-  cafe:              <CheckSquare size={12} />,
-  item_valor:        <CheckSquare size={12} />,
-  item_valor_masivo: <CheckSquare size={12} />,
-}
-
-function ProximoView({
-  tasks, onSelectTask,
-}: {
-  tasks: Task[]
-  onSelectTask: (t: Task) => void
-}) {
-  const { contacts } = useContactStore()
-  const [currentMonth, setCurrentMonth] = useState(new Date())
-  const [filterType, setFilterType] = useState<TaskType | "">("")
-  const [showTypeDropdown, setShowTypeDropdown] = useState(false)
-  const [filterPriority, setFilterPriority] = useState<1|2|3|4|0>(0)
-  const [showPrioDropdown, setShowPrioDropdown] = useState(false)
-  const [hoveredTask, setHoveredTask] = useState<{ task: Task; x: number; y: number } | null>(null)
-
-  const monthStart = startOfMonth(currentMonth)
-  const monthEnd = endOfMonth(currentMonth)
-  const calStart = startOfWeek(monthStart, { weekStartsOn: 1 })
-  const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 })
-  const days = eachDayOfInterval({ start: calStart, end: calEnd })
-
-  const filteredTasks = tasks.filter((t) => {
-    if (!t.due_date || t.completed) return false
-    if (filterType && (t.task_type ?? "tarea") !== filterType) return false
-    if (filterPriority && t.priority !== filterPriority) return false
-    return true
-  })
-
-  const getTasksForDay = (day: Date) =>
-    filteredTasks.filter((t) => isSameDay(new Date(t.due_date!), day))
-
-  const getContact = (id: string | null | undefined) =>
-    id ? contacts.find((c) => c.id === id) : null
-
-  return (
-    <div className="flex flex-col h-full">
-      {/* Filters bar */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.06]">
-        {/* Tipo filter */}
-        <div className="relative">
-          <button
-            onClick={() => { setShowTypeDropdown(!showTypeDropdown); setShowPrioDropdown(false) }}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors cursor-pointer ${
-              filterType
-                ? "border-blue-500/40 bg-blue-500/10 text-blue-400"
-                : "border-white/[0.08] bg-white/[0.03] text-zinc-400 hover:bg-white/[0.06]"
-            }`}
-          >
-            Tipo
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-          </button>
-          {showTypeDropdown && (
-            <div className="absolute top-full mt-1 left-0 bg-[#1e1e2c] rounded-xl border border-white/[0.08] py-1 z-30 shadow-xl min-w-[140px]">
-              <button
-                onClick={() => { setFilterType(""); setShowTypeDropdown(false) }}
-                className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-300 cursor-pointer font-bold"
-              >
-                Tipo
-              </button>
-              {(Object.keys(TASK_TYPES) as TaskType[]).map((key) => (
-                <button
-                  key={key}
-                  onClick={() => { setFilterType(key); setShowTypeDropdown(false) }}
-                  className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-300 cursor-pointer"
-                >
-                  <span className={`w-2 h-2 rounded-full ${TYPE_COLORS[key].dot}`} />
-                  {TASK_TYPES[key].label}
-                  {filterType === key && <span className="ml-auto text-zinc-500">✓</span>}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Prioridad filter */}
-        <div className="relative">
-          <button
-            onClick={() => { setShowPrioDropdown(!showPrioDropdown); setShowTypeDropdown(false) }}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors cursor-pointer ${
-              filterPriority
-                ? "border-blue-500/40 bg-blue-500/10 text-blue-400"
-                : "border-white/[0.08] bg-white/[0.03] text-zinc-400 hover:bg-white/[0.06]"
-            }`}
-          >
-            {filterPriority ? `P${filterPriority}` : "Prioridad"}
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-          </button>
-          {showPrioDropdown && (
-            <div className="absolute top-full mt-1 left-0 bg-[#1e1e2c] rounded-xl border border-white/[0.08] py-1 z-30 shadow-xl min-w-[120px]">
-              <button
-                onClick={() => { setFilterPriority(0); setShowPrioDropdown(false) }}
-                className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-300 cursor-pointer font-bold"
-              >
-                Prioridad
-              </button>
-              {([1,2,3,4] as const).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => { setFilterPriority(p); setShowPrioDropdown(false) }}
-                  className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs cursor-pointer"
-                >
-                  <span className={`text-xs font-bold ${p===1?"text-red-400":p===2?"text-orange-400":p===3?"text-blue-400":"text-zinc-500"}`}>
-                    P{p}
-                  </span>
-                  {filterPriority === p && <span className="ml-auto text-zinc-500">✓</span>}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {(filterType || filterPriority > 0) && (
-          <button
-            onClick={() => { setFilterType(""); setFilterPriority(0) }}
-            className="text-xs text-zinc-500 hover:text-zinc-300 cursor-pointer"
-          >
-            Limpiar
-          </button>
-        )}
-
-        {/* Month nav */}
-        <div className="ml-auto flex items-center gap-2">
-          <button
-            onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-            className="p-1.5 hover:bg-white/[0.06] rounded-lg text-zinc-400 cursor-pointer"
-          >
-            <ChevronLeft size={16} />
-          </button>
-          <span className="text-sm font-bold text-shell-text capitalize min-w-[120px] text-center">
-            {format(currentMonth, "MMMM yyyy", { locale: es })}
-          </span>
-          <button
-            onClick={() => setCurrentMonth(new Date())}
-            className="text-[11px] text-blue-400 hover:bg-blue-500/10 px-2 py-1 rounded-lg cursor-pointer"
-          >
-            Hoy
-          </button>
-          <button
-            onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-            className="p-1.5 hover:bg-white/[0.06] rounded-lg text-zinc-400 cursor-pointer"
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div>
-      </div>
-
-      {/* Day headers */}
-      <div className="grid grid-cols-7 border-b border-white/[0.06]">
-        {["LUN","MAR","MIÉ","JUE","VIE","SÁB","DOM"].map((d) => (
-          <div key={d} className="text-center text-[10px] font-bold text-zinc-600 uppercase tracking-wider py-2">
-            {d}
-          </div>
-        ))}
-      </div>
-
-      {/* Calendar grid */}
-      <div className="grid grid-cols-7 flex-1" style={{ gridAutoRows: "minmax(80px, 1fr)" }}>
-        {days.map((day) => {
-          const inMonth = isSameMonth(day, currentMonth)
-          const today = isToday(day)
-          const dayTasks = getTasksForDay(day)
-          const dateKey = format(day, "yyyy-MM-dd")
-
-          return (
-            <div
-              key={dateKey}
-              className={`border-r border-b border-white/[0.04] p-1 min-h-[80px] ${
-                today ? "bg-blue-500/[0.04]" : ""
-              } ${!inMonth ? "opacity-40" : ""}`}
-            >
-              {/* Day number */}
-              <div className={`text-xs font-bold mb-1 w-6 h-6 flex items-center justify-center rounded-full ${
-                today ? "bg-blue-500 text-white" : "text-zinc-400"
-              }`}>
-                {format(day, "d")}
-              </div>
-
-              {/* Task chips */}
-              <div className="flex flex-col gap-0.5">
-                {dayTasks.slice(0, 3).map((task) => {
-                  const type = (task.task_type ?? "tarea") as TaskType
-                  const colors = TYPE_COLORS[type]
-                  return (
-                    <button
-                      key={task.id}
-                      onClick={() => onSelectTask(task)}
-                      onMouseEnter={(e) => {
-                        const rect = (e.target as HTMLElement).closest("button")?.getBoundingClientRect()
-                        if (rect) setHoveredTask({ task, x: rect.left, y: rect.top })
-                      }}
-                      onMouseLeave={() => setHoveredTask(null)}
-                      className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium cursor-pointer hover:opacity-80 transition-opacity w-full text-left truncate ${colors.badge}`}
-                    >
-                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${colors.dot}`} />
-                      <span className="truncate">{task.title}</span>
-                    </button>
-                  )
-                })}
-                {dayTasks.length > 3 && (
-                  <span className="text-[9px] text-zinc-600 px-1">+{dayTasks.length - 3} más</span>
-                )}
-              </div>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Hover tooltip */}
-      {hoveredTask && (() => {
-        const { task, x, y } = hoveredTask
-        const type = (task.task_type ?? "tarea") as TaskType
-        const contact = getContact(task.contact_id)
-        return (
-          <div
-            className="fixed z-50 bg-[#1e1e2c] border border-white/[0.1] rounded-xl p-3 shadow-2xl w-56 pointer-events-none"
-            style={{ left: Math.min(x + 4, window.innerWidth - 240), top: Math.max(y - 8, 60) }}
-          >
-            <p className="text-sm font-semibold text-shell-text mb-2 leading-snug">{task.title}</p>
-            {task.due_date && (
-              <p className="text-[11px] text-zinc-500 mb-1">
-                {format(new Date(task.due_date), "EEEE d 'de' MMMM", { locale: es })}
-              </p>
-            )}
-            <div className="flex items-center gap-1 mb-2">
-              <span className={`flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded ${TYPE_COLORS[type].badge}`}>
-                {TYPE_ICON_MAP[type]}
-                {TYPE_COLORS[type].label}
-              </span>
-              {task.priority < 4 && (
-                <span className={`text-[10px] font-bold ${
-                  task.priority===1?"text-red-400":task.priority===2?"text-orange-400":"text-blue-400"
-                }`}>P{task.priority}</span>
-              )}
-            </div>
-            {contact && (
-              <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 border-t border-white/[0.06] pt-2">
-                <Users size={11} className="shrink-0 text-zinc-600" />
-                {contact.first_name} {contact.last_name}
-              </div>
-            )}
-          </div>
-        )
-      })()}
     </div>
   )
 }

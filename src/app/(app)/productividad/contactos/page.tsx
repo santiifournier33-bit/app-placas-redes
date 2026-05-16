@@ -12,6 +12,7 @@ import { ContactsTable } from '@/components/productividad/contactos/ContactsTabl
 import { ContactsCards } from '@/components/productividad/contactos/ContactsCards'
 import { ContactDetailPanel } from '@/components/productividad/contactos/ContactDetailPanel'
 import { ImportCSVModal } from '@/components/productividad/contactos/ImportCSVModal'
+import { PageHeader } from '@/components/nav/PageHeader'
 import { exportContactsCSV } from '@/lib/csv/export'
 
 type ViewMode = 'table' | 'cards'
@@ -70,6 +71,7 @@ export default function ContactosPage() {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
+      <PageHeader title="Contactos" />
       {/* Toolbar */}
       <div className="px-4 py-3 border-b border-white/[0.04] space-y-2 shrink-0">
         {/* Top row: count + actions */}
