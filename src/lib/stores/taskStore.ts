@@ -40,6 +40,15 @@ export interface TaskState {
 
 const supabase = createClient()
 
+function syncTaskToGoogle(taskId: string, action: 'push' | 'remove') {
+  // Fire-and-forget — never block UI on Google sync
+  fetch('/api/google/tasks/sync', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ taskId, action }),
+  }).catch(() => {})
+}
+
 export const useTaskStore = create<TaskState>()((set, get) => ({
   tasks: [],
   sections: [],
@@ -146,7 +155,10 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
       .select()
       .single()
 
-    if (data) set(s => ({ tasks: [...s.tasks, data] }))
+    if (data) {
+      set(s => ({ tasks: [...s.tasks, data] }))
+      if (data.due_date) syncTaskToGoogle(data.id, 'push')
+    }
   },
 
   toggleTask: async (id) => {
@@ -219,6 +231,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
   },
 
   deleteTask: async (id) => {
+    const prev = get().tasks.find(t => t.id === id)
     set(s => ({ tasks: s.tasks.filter(t => t.id !== id && t.parent_id !== id) }))
 
     await supabase
@@ -230,9 +243,12 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
       .from('tasks')
       .update({ deleted_at: new Date().toISOString() })
       .eq('parent_id', id)
+
+    if (prev?.google_event_id) syncTaskToGoogle(id, 'remove')
   },
 
   updateTask: async (id, updates) => {
+    const prev = get().tasks.find(t => t.id === id)
     set(s => ({
       tasks: s.tasks.map(t => t.id === id ? { ...t, ...updates } : t),
     }))
@@ -241,6 +257,21 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
       .from('tasks')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', id)
+
+    // Sync to Google when due_date, title or description changed and task has/should have an event
+    const touchesEvent =
+      'due_date' in updates ||
+      'due_time' in updates ||
+      'title' in updates ||
+      'description' in updates
+    if (touchesEvent) {
+      const next = { ...(prev || {}), ...updates } as { due_date?: string | null; google_event_id?: string | null }
+      if (next.due_date) {
+        syncTaskToGoogle(id, 'push')
+      } else if (prev?.google_event_id) {
+        syncTaskToGoogle(id, 'remove')
+      }
+    }
   },
 
   addSection: async (name) => {

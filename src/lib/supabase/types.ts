@@ -828,7 +828,10 @@ export type Database = {
           description: string | null
           due_date: string | null
           due_time: string | null
+          google_calendar_id: string | null
+          google_event_id: string | null
           id: string
+          last_synced_at: string | null
           owner_id: string
           parent_id: string | null
           position: number
@@ -854,7 +857,10 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           due_time?: string | null
+          google_calendar_id?: string | null
+          google_event_id?: string | null
           id?: string
+          last_synced_at?: string | null
           owner_id: string
           parent_id?: string | null
           position?: number
@@ -880,7 +886,10 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           due_time?: string | null
+          google_calendar_id?: string | null
+          google_event_id?: string | null
           id?: string
+          last_synced_at?: string | null
           owner_id?: string
           parent_id?: string | null
           position?: number

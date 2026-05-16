@@ -197,3 +197,129 @@ export async function syncCalendarForUser(userId: string): Promise<{ pulled: num
 
   return { pulled, pushed }
 }
+
+interface TaskSyncPayload {
+  id: string
+  title: string
+  description: string | null
+  due_date: string | null
+  due_time: string | null
+  google_event_id: string | null
+  google_calendar_id: string | null
+}
+
+function taskToEventBody(task: TaskSyncPayload) {
+  if (!task.due_date) return null
+  const hasTime = !!task.due_time
+  const startISO = hasTime
+    ? `${task.due_date}T${task.due_time}:00`
+    : task.due_date
+
+  const start = hasTime ? { dateTime: startISO } : { date: task.due_date }
+  const end = hasTime
+    ? { dateTime: startISO }
+    : { date: task.due_date }
+
+  return {
+    summary: `[Tarea] ${task.title}`,
+    description: task.description || undefined,
+    start,
+    end,
+  }
+}
+
+export async function pushTaskToGoogle(userId: string, taskId: string): Promise<boolean> {
+  const supabase = getServiceClient()
+
+  const { data: conn } = await supabase
+    .from("google_calendar_connections")
+    .select("*")
+    .eq("owner_id", userId)
+    .eq("is_active", true)
+    .single()
+  if (!conn) return false
+
+  const { data: task } = await supabase
+    .from("tasks")
+    .select("id, title, description, due_date, due_time, google_event_id, google_calendar_id")
+    .eq("id", taskId)
+    .eq("owner_id", userId)
+    .single()
+  if (!task) return false
+
+  const body = taskToEventBody(task as TaskSyncPayload)
+  if (!body) {
+    // No due_date — if there's an existing Google event, remove it
+    if (task.google_event_id) {
+      await removeTaskFromGoogle(userId, taskId)
+    }
+    return false
+  }
+
+  const oauth2 = await getAuthedClient(conn)
+  const calendar = google.calendar({ version: "v3", auth: oauth2 })
+
+  try {
+    if (task.google_event_id) {
+      await calendar.events.update({
+        calendarId: task.google_calendar_id || "primary",
+        eventId: task.google_event_id,
+        requestBody: body,
+      })
+    } else {
+      const res = await calendar.events.insert({
+        calendarId: "primary",
+        requestBody: body,
+      })
+      if (res.data.id) {
+        await supabase.from("tasks").update({
+          google_event_id: res.data.id,
+          google_calendar_id: "primary",
+          last_synced_at: new Date().toISOString(),
+        }).eq("id", taskId)
+      }
+    }
+    return true
+  } catch (err) {
+    console.error("pushTaskToGoogle failed", err)
+    return false
+  }
+}
+
+export async function removeTaskFromGoogle(userId: string, taskId: string): Promise<boolean> {
+  const supabase = getServiceClient()
+
+  const { data: conn } = await supabase
+    .from("google_calendar_connections")
+    .select("*")
+    .eq("owner_id", userId)
+    .eq("is_active", true)
+    .single()
+  if (!conn) return false
+
+  const { data: task } = await supabase
+    .from("tasks")
+    .select("google_event_id, google_calendar_id")
+    .eq("id", taskId)
+    .eq("owner_id", userId)
+    .single()
+  if (!task?.google_event_id) return false
+
+  const oauth2 = await getAuthedClient(conn)
+  const calendar = google.calendar({ version: "v3", auth: oauth2 })
+
+  try {
+    await calendar.events.delete({
+      calendarId: task.google_calendar_id || "primary",
+      eventId: task.google_event_id,
+    })
+    await supabase.from("tasks").update({
+      google_event_id: null,
+      last_synced_at: new Date().toISOString(),
+    }).eq("id", taskId)
+    return true
+  } catch (err) {
+    console.error("removeTaskFromGoogle failed", err)
+    return false
+  }
+}
