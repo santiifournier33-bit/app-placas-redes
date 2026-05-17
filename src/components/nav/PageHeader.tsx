@@ -16,7 +16,7 @@ export function PageHeader({ title, subtitle, actions, className = "" }: PageHea
 
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-3 border-b border-white/[0.06] shrink-0 ${className}`}
+      className={`h-14 flex items-center gap-3 px-4 border-b border-white/[0.06] shrink-0 ${className}`}
     >
       <button
         onClick={toggle}
@@ -30,10 +30,10 @@ export function PageHeader({ title, subtitle, actions, className = "" }: PageHea
         )}
       </button>
 
-      <div className="flex flex-col min-w-0 flex-1">
-        <h1 className="text-base font-bold text-shell-text truncate">{title}</h1>
+      <div className="flex flex-col min-w-0 flex-1 leading-tight">
+        <h1 className="text-sm font-bold text-shell-text truncate">{title}</h1>
         {subtitle && (
-          <p className="text-xs text-zinc-500 truncate">{subtitle}</p>
+          <p className="text-[11px] text-zinc-500 truncate">{subtitle}</p>
         )}
       </div>
 

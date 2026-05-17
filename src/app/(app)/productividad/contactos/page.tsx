@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { Plus, Search, ChevronDown, Download, Upload, Table2, LayoutGrid } from 'lucide-react'
 import {
   useContactStore,
@@ -10,21 +11,21 @@ import {
 import { usePipelinesStore } from '@/lib/stores/pipelinesStore'
 import { ContactsTable } from '@/components/productividad/contactos/ContactsTable'
 import { ContactsCards } from '@/components/productividad/contactos/ContactsCards'
-import { ContactDetailPanel } from '@/components/productividad/contactos/ContactDetailPanel'
 import { ImportCSVModal } from '@/components/productividad/contactos/ImportCSVModal'
-import { PageHeader } from '@/components/nav/PageHeader'
 import { exportContactsCSV } from '@/lib/csv/export'
 
 type ViewMode = 'table' | 'cards'
 
 export default function ContactosPage() {
+  const router = useRouter()
   const [search, setSearch] = useState('')
   const [filterSource, setFilterSource] = useState<Source | 'all'>('all')
   const [filterCategory, setFilterCategory] = useState<Category | 'all'>('all')
   const [filterCirculo, setFilterCirculo] = useState<string>('all')
   const [showForm, setShowForm] = useState(false)
-  const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
   const [showImport, setShowImport] = useState(false)
+
+  const openContact = (c: Contact) => router.push(`/productividad/contactos/${c.id}`)
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     if (typeof window !== 'undefined' && window.innerWidth < 768) return 'cards'
     return 'table'
@@ -76,7 +77,6 @@ export default function ContactosPage() {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <PageHeader title="Contactos" />
       {/* Toolbar */}
       <div className="px-4 py-3 border-b border-white/[0.04] space-y-2 shrink-0">
         {/* Top row: count + actions */}
@@ -169,43 +169,22 @@ export default function ContactosPage() {
         </div>
       </div>
 
-      {/* Content + inline detail split */}
+      {/* Content — clicking a contact navigates to full-page detail */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Table/cards pane */}
         <div className="flex-1 overflow-y-auto">
           {viewMode === 'table' ? (
             <ContactsTable
               contacts={filtered}
-              onSelectContact={c => setSelectedContact(c)}
-              selectedId={selectedContact?.id ?? null}
+              onSelectContact={openContact}
             />
           ) : (
             <ContactsCards
               contacts={filtered}
-              onSelectContact={c => setSelectedContact(c)}
+              onSelectContact={openContact}
             />
           )}
         </div>
-
-        {/* Inline detail panel — desktop side-by-side, mobile overlay */}
-        {selectedContact && (
-          <ContactDetailPanel
-            contact={selectedContact}
-            onClose={() => setSelectedContact(null)}
-            inline={true}
-          />
-        )}
       </div>
-
-      {/* Mobile overlay detail panel */}
-      {selectedContact && (
-        <div className="lg:hidden">
-          <ContactDetailPanel
-            contact={selectedContact}
-            onClose={() => setSelectedContact(null)}
-          />
-        </div>
-      )}
 
       {/* Quick add modal */}
       {showForm && (

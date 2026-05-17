@@ -55,27 +55,24 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
     <aside className={`hidden lg:flex flex-col h-screen fixed left-0 top-0 bg-[#0A0A0F]/90 backdrop-blur-xl border-r border-white/[0.06] z-50 transition-[width] duration-300 overflow-hidden ${
       collapsed ? "w-16" : "w-64"
     }`}>
-      {/* Logo block — fixed height for consistency expanded/collapsed */}
+      {/* Logo block — fixed height (matches PageHeader + TabNav) */}
       <Link
         href="/diseno"
-        className="h-14 border-b border-white/[0.06] flex items-center justify-center px-3 shrink-0 cursor-pointer hover:bg-white/[0.02] transition-colors"
+        className={`h-14 border-b border-white/[0.06] flex items-center shrink-0 cursor-pointer hover:bg-white/[0.02] transition-colors ${
+          collapsed ? "justify-center px-2" : "gap-2.5 px-4"
+        }`}
       >
-        {collapsed ? (
-          <Image
-            src="/favicon.png"
-            alt="Freire Propiedades"
-            width={28}
-            height={28}
-            className="object-contain"
-          />
-        ) : (
-          <Image
-            src="/logo-pequeno.png"
-            alt="Freire Propiedades"
-            width={100}
-            height={32}
-            className="object-contain brightness-0 invert opacity-90"
-          />
+        <Image
+          src="/favicon.png"
+          alt="Freire Propiedades"
+          width={28}
+          height={28}
+          className="object-contain shrink-0"
+        />
+        {!collapsed && (
+          <span className="text-[13px] font-bold tracking-wide text-zinc-200 truncate">
+            FREIRE
+          </span>
         )}
       </Link>
 

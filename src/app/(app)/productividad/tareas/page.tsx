@@ -11,7 +11,6 @@ import { TaskItem } from "@/components/productividad/TaskItem"
 import { TaskDetail } from "@/components/productividad/TaskDetail"
 import { SectionHeader } from "@/components/productividad/SectionHeader"
 import { BoardView } from "@/components/productividad/BoardView"
-import { PageHeader } from "@/components/nav/PageHeader"
 import { isToday, isPast, format } from "date-fns"
 import { es } from "date-fns/locale"
 import type { Task } from "@/lib/stores/taskStore"
@@ -137,7 +136,6 @@ export default function TareasPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <PageHeader title="Tareas" />
       {/* View toggles + format menu */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.04] shrink-0">
         <div className="flex gap-1">

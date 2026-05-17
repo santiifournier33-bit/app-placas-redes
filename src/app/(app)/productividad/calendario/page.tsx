@@ -8,7 +8,6 @@ import {
 } from "@/lib/stores/calendarStore"
 import { useTaskStore } from "@/lib/stores/taskStore"
 import { GoogleConnectButton } from "@/components/productividad/calendario/GoogleConnectButton"
-import { PageHeader } from "@/components/nav/PageHeader"
 import {
   format, startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   eachDayOfInterval, isSameMonth, isSameDay, isToday,
@@ -91,10 +90,10 @@ export default function CalendarioPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <PageHeader
-        title="Calendario"
-        actions={<GoogleConnectButton />}
-      />
+      <div className="flex items-center justify-between px-4 h-12 border-b border-white/[0.04]">
+        <span className="text-xs text-zinc-500 uppercase tracking-wider">Sync</span>
+        <GoogleConnectButton />
+      </div>
 
       {/* Month header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.04]">

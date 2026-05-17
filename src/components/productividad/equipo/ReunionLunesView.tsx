@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { PageHeader } from "@/components/nav/PageHeader"
 import { format, startOfWeek } from "date-fns"
 import { Users, CheckSquare, UserPlus, ArrowRightLeft, AlertTriangle } from "lucide-react"
 import { WeekSelector } from "@/components/productividad/WeekSelector"
@@ -63,10 +62,8 @@ export function ReunionLunesView() {
   )
 
   return (
-    <div>
-      <PageHeader title="Equipo" />
-      <div className="max-w-3xl mx-auto">
-        <WeekSelector weekKey={weekKey} onChange={setWeekKey} />
+    <div className="max-w-3xl mx-auto">
+      <WeekSelector weekKey={weekKey} onChange={setWeekKey} />
 
       {loading ? (
         <div className="p-6 space-y-4">
@@ -190,7 +187,6 @@ export function ReunionLunesView() {
           )}
         </div>
       )}
-      </div>
     </div>
   )
 }

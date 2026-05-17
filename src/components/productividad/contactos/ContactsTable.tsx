@@ -54,8 +54,7 @@ interface Column {
 }
 
 const ALL_COLUMNS: Column[] = [
-  { key: 'first_name', label: 'Nombre', width: 'w-40', sortable: true },
-  { key: 'last_name', label: 'Apellido', width: 'w-32', sortable: true },
+  { key: 'full_name', label: 'Nombre', width: 'w-56', sortable: true },
   { key: 'pipeline_stage', label: 'Pipeline', width: 'w-36' },
   { key: 'primary_phone', label: 'Teléfono', width: 'w-32' },
   { key: 'primary_email', label: 'Email', width: 'w-40' },
@@ -182,7 +181,7 @@ function PipelineStageCell({
 
 export function ContactsTable({ contacts, onSelectContact, selectedId }: ContactsTableProps) {
   const { updateContact } = useContactStore()
-  const [sortKey, setSortKey] = useState<SortKey>('first_name')
+  const [sortKey, setSortKey] = useState<SortKey>('full_name' as unknown as SortKey)
   const [sortDir, setSortDir] = useState<SortDir>('asc')
   const [hiddenCols, setHiddenCols] = useState<Set<string>>(() => {
     const stored = typeof window !== 'undefined' ? localStorage.getItem('contacts-hidden-cols') : null
@@ -195,9 +194,16 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
   const sorted = useMemo(() => {
     if (!sortKey) return contacts
     return [...contacts].sort((a, b) => {
-      const aVal = a[sortKey] ?? ''
-      const bVal = b[sortKey] ?? ''
-      const cmp = String(aVal).localeCompare(String(bVal), 'es', { sensitivity: 'base' })
+      let aVal: string
+      let bVal: string
+      if (sortKey === ('full_name' as unknown as SortKey)) {
+        aVal = `${a.first_name ?? ''} ${a.last_name ?? ''}`.trim()
+        bVal = `${b.first_name ?? ''} ${b.last_name ?? ''}`.trim()
+      } else {
+        aVal = String(a[sortKey] ?? '')
+        bVal = String(b[sortKey] ?? '')
+      }
+      const cmp = aVal.localeCompare(bVal, 'es', { sensitivity: 'base' })
       return sortDir === 'asc' ? cmp : -cmp
     })
   }, [contacts, sortKey, sortDir])
@@ -305,7 +311,14 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
               >
                 {visibleCols.map((col, idx) => (
                   <td key={col.key} className={`px-1 py-0.5 ${col.width} ${idx === 0 ? 'sticky left-0 z-[5] bg-[#14141e]' : ''}`}>
-                    {col.key === 'tags' ? (
+                    {col.key === 'full_name' ? (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onSelectContact(contact) }}
+                        className="px-1 text-left text-xs text-shell-text hover:underline cursor-pointer truncate block w-full"
+                      >
+                        {`${contact.first_name ?? ''} ${contact.last_name ?? ''}`.trim() || '—'}
+                      </button>
+                    ) : col.key === 'tags' ? (
                       <div className="flex gap-1 flex-wrap px-1">
                         {(contact.tags ?? []).map((tag, i) => (
                           <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">{tag}</span>

@@ -4,9 +4,11 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   CheckSquare, Briefcase, Users, Contact, Calendar,
+  PanelLeftClose, PanelLeftOpen,
 } from "lucide-react"
 import type { ReactNode } from "react"
 import type { UserRole } from "@/lib/auth/session"
+import { useSidebar } from "@/components/nav/SidebarContext"
 
 interface Tab {
   href: string
@@ -29,12 +31,20 @@ interface TabNavProps {
 
 export function TabNav({ role }: TabNavProps) {
   const pathname = usePathname()
+  const { collapsed, toggle } = useSidebar()
 
   const visibleTabs = tabs.filter(t => !t.adminOnly || role === 'admin')
 
   return (
-    <div className="sticky top-0 z-20 bg-shell-bg/90 backdrop-blur-xl border-b border-white/[0.06]">
-      <nav className="flex gap-1 px-4 lg:px-6 overflow-x-auto scrollbar-hide py-2">
+    <div className="sticky top-0 z-20 h-14 flex items-center gap-2 bg-shell-bg/90 backdrop-blur-xl border-b border-white/[0.06] px-4 lg:px-4">
+      <button
+        onClick={toggle}
+        className="hidden lg:flex p-2 rounded-xl hover:bg-white/[0.06] text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer shrink-0"
+        title={collapsed ? "Expandir sidebar" : "Colapsar sidebar"}
+      >
+        {collapsed ? <PanelLeftOpen size={18} strokeWidth={1.8} /> : <PanelLeftClose size={18} strokeWidth={1.8} />}
+      </button>
+      <nav className="flex gap-1 overflow-x-auto scrollbar-hide flex-1">
         {visibleTabs.map(({ href, label, icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/")
           return (
