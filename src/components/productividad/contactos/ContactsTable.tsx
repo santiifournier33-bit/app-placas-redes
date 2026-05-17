@@ -10,42 +10,16 @@ import {
 import { usePipelinesStore } from '@/lib/stores/pipelinesStore'
 import { EditableCell } from './EditableCell'
 import { InlineSelectChip } from './InlineSelectChip'
+import {
+  SOURCE_OPTIONS,
+  CIRCLE_OPTIONS,
+  CATEGORY_SHORT as CATEGORY_OPTIONS,
+  TIPO_OPTIONS,
+  CERCANIA_OPTIONS,
+} from './options'
 
 type SortKey = keyof Contact | null
 type SortDir = 'asc' | 'desc'
-
-const SOURCE_OPTIONS = [
-  { value: 'referido', label: 'Referido', color: 'violet' as const },
-  { value: 'portal', label: 'Portal', color: 'blue' as const },
-  { value: 'redes', label: 'Redes', color: 'cyan' as const },
-  { value: 'oficina', label: 'Oficina', color: 'amber' as const },
-  { value: 'otro', label: 'Otro', color: 'zinc' as const },
-]
-
-const CIRCLE_OPTIONS = [
-  { value: 'principal', label: 'Principal', color: 'red' as const },
-  { value: 'fundamental', label: 'Fundamental', color: 'amber' as const },
-  { value: 'vital', label: 'Vital', color: 'emerald' as const },
-]
-
-const CATEGORY_OPTIONS = [
-  { value: 'A', label: 'A', color: 'emerald' as const },
-  { value: 'B', label: 'B', color: 'blue' as const },
-  { value: 'C', label: 'C', color: 'amber' as const },
-  { value: 'D', label: 'D', color: 'red' as const },
-]
-
-const TIPO_OPTIONS = [
-  { value: 'profesional', label: 'Profesional', color: 'violet' as const },
-  { value: 'personal', label: 'Personal', color: 'blue' as const },
-  { value: 'ambos', label: 'Ambos', color: 'cyan' as const },
-]
-
-const CERCANIA_OPTIONS = [
-  { value: '1', label: '1 — Alta', color: 'emerald' as const },
-  { value: '2', label: '2 — Media', color: 'amber' as const },
-  { value: '3', label: '3 — Baja', color: 'red' as const },
-]
 
 interface Column {
   key: string
