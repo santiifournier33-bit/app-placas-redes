@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { ChevronUp, ChevronDown, ExternalLink, Phone, MessageSquare, Check, Copy } from 'lucide-react'
 import {
   useContactStore,
@@ -109,7 +110,6 @@ function CopyChip({ value, kind }: { value: string; kind: 'phone' | 'email' }) {
 
 function PipelineStageCell({
   contact,
-  onSelect,
 }: {
   contact: Contact
   onSelect: () => void
@@ -117,11 +117,33 @@ function PipelineStageCell({
   const { activePipelineId, pipelines } = usePipelinesStore()
   const { kanbanContacts, moveToStage, addToPipeline, fetchKanban } = useContactStore()
   const [open, setOpen] = useState(false)
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   const pipeline = pipelines.find(p => p.id === activePipelineId)
   const stages = pipeline ? [...pipeline.stages].sort((a, b) => a.position - b.position) : []
   const kanbanEntry = kanbanContacts.find(k => k.id === contact.id && k.pipelineId === activePipelineId)
   const currentStage = stages.find(s => s.id === kanbanEntry?.stageId)
+
+  useEffect(() => {
+    if (!open) return
+    const rect = buttonRef.current?.getBoundingClientRect()
+    if (rect) setPos({ top: rect.bottom + 4, left: rect.left })
+    const handler = (e: MouseEvent) => {
+      const t = e.target as Node
+      if (!buttonRef.current?.contains(t) && !menuRef.current?.contains(t)) setOpen(false)
+    }
+    const scroll = () => setOpen(false)
+    document.addEventListener('mousedown', handler)
+    window.addEventListener('scroll', scroll, true)
+    window.addEventListener('resize', scroll)
+    return () => {
+      document.removeEventListener('mousedown', handler)
+      window.removeEventListener('scroll', scroll, true)
+      window.removeEventListener('resize', scroll)
+    }
+  }, [open])
 
   const handleSelect = async (stageId: string, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -140,8 +162,9 @@ function PipelineStageCell({
   }
 
   return (
-    <div className="relative">
+    <>
       <button
+        ref={buttonRef}
         onClick={(e) => { e.stopPropagation(); setOpen(o => !o) }}
         className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] cursor-pointer max-w-full"
         style={
@@ -153,30 +176,30 @@ function PipelineStageCell({
         <span className="truncate">{currentStage?.name || 'Sin etapa'}</span>
         <ChevronDown size={10} className="shrink-0" />
       </button>
-      {open && (
-        <>
-          <div
-            className="fixed inset-0 z-30"
-            onClick={(e) => { e.stopPropagation(); setOpen(false) }}
-          />
-          <div className="absolute left-0 top-full mt-1 z-40 bg-[#1e1e2c] border border-white/[0.08] rounded-lg shadow-xl py-1 min-w-[160px]">
-            {stages.map(stage => (
-              <button
-                key={stage.id}
-                onClick={(e) => handleSelect(stage.id, e)}
-                className="w-full text-left px-3 py-1.5 text-xs hover:bg-white/[0.04] cursor-pointer flex items-center gap-2"
-              >
-                <span
-                  className="w-2 h-2 rounded-full shrink-0"
-                  style={{ background: stage.color || '#3b82f6' }}
-                />
-                <span className="text-zinc-300 truncate">{stage.name}</span>
-              </button>
-            ))}
-          </div>
-        </>
+      {open && pos && typeof window !== 'undefined' && createPortal(
+        <div
+          ref={menuRef}
+          style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 9999 }}
+          className="bg-[#1e1e2c] border border-white/[0.08] rounded-lg shadow-2xl py-1 min-w-[160px] max-h-72 overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {stages.map(stage => (
+            <button
+              key={stage.id}
+              onClick={(e) => handleSelect(stage.id, e)}
+              className="w-full text-left px-3 py-1.5 text-xs hover:bg-white/[0.04] cursor-pointer flex items-center gap-2"
+            >
+              <span
+                className="w-2 h-2 rounded-full shrink-0"
+                style={{ background: stage.color || '#3b82f6' }}
+              />
+              <span className="text-zinc-300 truncate">{stage.name}</span>
+            </button>
+          ))}
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   )
 }
 

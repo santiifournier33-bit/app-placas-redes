@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { ChevronDown } from 'lucide-react'
 
 interface InlineSelectChipProps {
@@ -17,22 +18,42 @@ export function InlineSelectChip({
   placeholder = '—',
 }: InlineSelectChipProps) {
   const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!open) return
-    const handler = (e: MouseEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false)
+    const rect = buttonRef.current?.getBoundingClientRect()
+    if (rect) {
+      setPos({ top: rect.bottom + 4, left: rect.left })
     }
+    const handler = (e: MouseEvent) => {
+      const target = e.target as Node
+      if (
+        !buttonRef.current?.contains(target) &&
+        !menuRef.current?.contains(target)
+      ) {
+        setOpen(false)
+      }
+    }
+    const scroll = () => setOpen(false)
     document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
+    window.addEventListener('scroll', scroll, true)
+    window.addEventListener('resize', scroll)
+    return () => {
+      document.removeEventListener('mousedown', handler)
+      window.removeEventListener('scroll', scroll, true)
+      window.removeEventListener('resize', scroll)
+    }
   }, [open])
 
   const selected = options.find(o => o.value === value)
 
   return (
-    <div ref={ref} className="relative" onClick={(e) => e.stopPropagation()}>
+    <>
       <button
+        ref={buttonRef}
         onClick={(e) => { e.stopPropagation(); setOpen(o => !o) }}
         className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-medium cursor-pointer transition-colors ${
           selected
@@ -44,8 +65,13 @@ export function InlineSelectChip({
         <ChevronDown size={10} className="shrink-0 opacity-70" />
       </button>
 
-      {open && (
-        <div className="absolute left-0 top-full mt-1 z-40 bg-[#1e1e2c] border border-white/[0.08] rounded-lg shadow-xl py-1 min-w-[160px] max-h-72 overflow-y-auto">
+      {open && pos && typeof window !== 'undefined' && createPortal(
+        <div
+          ref={menuRef}
+          style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 9999 }}
+          className="bg-[#1e1e2c] border border-white/[0.08] rounded-lg shadow-2xl py-1 min-w-[160px] max-h-72 overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
           {value && (
             <button
               onClick={(e) => { e.stopPropagation(); onChange(null); setOpen(false) }}
@@ -68,8 +94,9 @@ export function InlineSelectChip({
               {opt.value === value && <span className="ml-auto text-violet-400">✓</span>}
             </button>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   )
 }
