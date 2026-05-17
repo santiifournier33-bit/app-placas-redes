@@ -15,36 +15,36 @@ type SortKey = keyof Contact | null
 type SortDir = 'asc' | 'desc'
 
 const SOURCE_OPTIONS = [
-  { value: 'referido', label: 'Referido' },
-  { value: 'portal', label: 'Portal' },
-  { value: 'redes', label: 'Redes' },
-  { value: 'oficina', label: 'Oficina' },
-  { value: 'otro', label: 'Otro' },
+  { value: 'referido', label: 'Referido', color: 'violet' as const },
+  { value: 'portal', label: 'Portal', color: 'blue' as const },
+  { value: 'redes', label: 'Redes', color: 'cyan' as const },
+  { value: 'oficina', label: 'Oficina', color: 'amber' as const },
+  { value: 'otro', label: 'Otro', color: 'zinc' as const },
 ]
 
 const CIRCLE_OPTIONS = [
-  { value: 'principal', label: 'Principal' },
-  { value: 'fundamental', label: 'Fundamental' },
-  { value: 'vital', label: 'Vital' },
+  { value: 'principal', label: 'Principal', color: 'red' as const },
+  { value: 'fundamental', label: 'Fundamental', color: 'amber' as const },
+  { value: 'vital', label: 'Vital', color: 'emerald' as const },
 ]
 
 const CATEGORY_OPTIONS = [
-  { value: 'A', label: 'A' },
-  { value: 'B', label: 'B' },
-  { value: 'C', label: 'C' },
-  { value: 'D', label: 'D' },
+  { value: 'A', label: 'A', color: 'emerald' as const },
+  { value: 'B', label: 'B', color: 'blue' as const },
+  { value: 'C', label: 'C', color: 'amber' as const },
+  { value: 'D', label: 'D', color: 'red' as const },
 ]
 
 const TIPO_OPTIONS = [
-  { value: 'profesional', label: 'Profesional' },
-  { value: 'personal', label: 'Personal' },
-  { value: 'ambos', label: 'Ambos' },
+  { value: 'profesional', label: 'Profesional', color: 'violet' as const },
+  { value: 'personal', label: 'Personal', color: 'blue' as const },
+  { value: 'ambos', label: 'Ambos', color: 'cyan' as const },
 ]
 
 const CERCANIA_OPTIONS = [
-  { value: '1', label: '1 — Alta' },
-  { value: '2', label: '2 — Media' },
-  { value: '3', label: '3 — Baja' },
+  { value: '1', label: '1 — Alta', color: 'emerald' as const },
+  { value: '2', label: '2 — Media', color: 'amber' as const },
+  { value: '3', label: '3 — Baja', color: 'red' as const },
 ]
 
 interface Column {
@@ -180,22 +180,32 @@ function PipelineStageCell({
         <div
           ref={menuRef}
           style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 9999 }}
-          className="bg-[#1e1e2c] border border-white/[0.08] rounded-lg shadow-2xl py-1 min-w-[160px] max-h-72 overflow-y-auto"
+          className="bg-[#1e1e2c] border border-white/[0.08] rounded-xl shadow-2xl p-1.5 min-w-[180px] max-h-72 overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
-          {stages.map(stage => (
-            <button
-              key={stage.id}
-              onClick={(e) => handleSelect(stage.id, e)}
-              className="w-full text-left px-3 py-1.5 text-xs hover:bg-white/[0.04] cursor-pointer flex items-center gap-2"
-            >
-              <span
-                className="w-2 h-2 rounded-full shrink-0"
-                style={{ background: stage.color || '#3b82f6' }}
-              />
-              <span className="text-zinc-300 truncate">{stage.name}</span>
-            </button>
-          ))}
+          {stages.map(stage => {
+            const isSelected = stage.id === currentStage?.id
+            const c = stage.color || '#3b82f6'
+            return (
+              <button
+                key={stage.id}
+                onClick={(e) => handleSelect(stage.id, e)}
+                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors ${
+                  isSelected ? 'bg-white/[0.06]' : 'hover:bg-white/[0.04]'
+                }`}
+              >
+                <span
+                  className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium"
+                  style={{ background: `${c}26`, color: c }}
+                >
+                  {stage.name}
+                </span>
+                {isSelected && (
+                  <span className="ml-auto text-zinc-400 text-xs">✓</span>
+                )}
+              </button>
+            )
+          })}
         </div>,
         document.body
       )}
