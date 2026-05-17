@@ -53,7 +53,7 @@ export function EditableCell({
     return (
       <button
         onClick={() => onSave(!value)}
-        className={`w-full flex justify-center cursor-pointer ${className}`}
+        className={`flex justify-start items-center px-2 py-1 cursor-pointer ${className}`}
       >
         <div className={`w-4 h-4 rounded border transition-colors ${
           value

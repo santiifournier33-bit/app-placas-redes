@@ -8,6 +8,7 @@ import {
 } from '@/lib/stores/contactStore'
 import { usePipelinesStore } from '@/lib/stores/pipelinesStore'
 import { EditableCell } from './EditableCell'
+import { InlineSelectChip } from './InlineSelectChip'
 
 type SortKey = keyof Contact | null
 type SortDir = 'asc' | 'desc'
@@ -332,6 +333,46 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
                       <div className="px-1"><CopyChip value={contact.primary_phone} kind="phone" /></div>
                     ) : col.key === 'primary_email' && contact.primary_email ? (
                       <div className="px-1"><CopyChip value={contact.primary_email} kind="email" /></div>
+                    ) : col.key === 'source' ? (
+                      <div className="px-1">
+                        <InlineSelectChip
+                          value={contact.source ?? null}
+                          options={SOURCE_OPTIONS}
+                          onChange={(v) => handleCellSave(contact.id, 'source', v)}
+                        />
+                      </div>
+                    ) : col.key === 'category' ? (
+                      <div className="px-1">
+                        <InlineSelectChip
+                          value={contact.category ?? null}
+                          options={CATEGORY_OPTIONS}
+                          onChange={(v) => handleCellSave(contact.id, 'category', v)}
+                        />
+                      </div>
+                    ) : col.key === 'tipo' ? (
+                      <div className="px-1">
+                        <InlineSelectChip
+                          value={contact.tipo ?? null}
+                          options={TIPO_OPTIONS}
+                          onChange={(v) => handleCellSave(contact.id, 'tipo', v)}
+                        />
+                      </div>
+                    ) : col.key === 'cercania' ? (
+                      <div className="px-1">
+                        <InlineSelectChip
+                          value={contact.cercania != null ? String(contact.cercania) : null}
+                          options={CERCANIA_OPTIONS}
+                          onChange={(v) => handleCellSave(contact.id, 'cercania', v != null ? Number(v) : null)}
+                        />
+                      </div>
+                    ) : col.key === 'circulo' ? (
+                      <div className="px-1">
+                        <InlineSelectChip
+                          value={contact.circulo ?? null}
+                          options={CIRCLE_OPTIONS}
+                          onChange={(v) => handleCellSave(contact.id, 'circulo', v)}
+                        />
+                      </div>
                     ) : (
                       <EditableCell
                         value={contact[col.key as keyof Contact] as string | number | boolean | null}

@@ -32,9 +32,11 @@ const TYPE_ICONS: Record<TaskType, React.ReactNode> = {
 interface QuickAddTaskProps {
   sectionId: string | null
   onClose: () => void
+  preselectedContactId?: string | null
+  hideContactPicker?: boolean
 }
 
-export function QuickAddTask({ sectionId, onClose }: QuickAddTaskProps) {
+export function QuickAddTask({ sectionId, onClose, preselectedContactId = null, hideContactPicker = false }: QuickAddTaskProps) {
   const { addTask, updateTask, tasks } = useTaskStore()
   const { contacts } = useContactStore()
 
@@ -43,7 +45,7 @@ export function QuickAddTask({ sectionId, onClose }: QuickAddTaskProps) {
   const [taskType, setTaskType] = useState<TaskType>("tarea")
   const [dueDate, setDueDate] = useState<string | null>(null)
   const [reminder, setReminder] = useState<string | null>(null)
-  const [contactId, setContactId] = useState<string | null>(null)
+  const [contactId, setContactId] = useState<string | null>(preselectedContactId)
   const [contactSearch, setContactSearch] = useState("")
   const [recurrenceFreq, setRecurrenceFreq] = useState<string | null>(null)
 
@@ -284,6 +286,7 @@ export function QuickAddTask({ sectionId, onClose }: QuickAddTaskProps) {
         </div>
 
         {/* Contact */}
+        {!hideContactPicker && (
         <div className="relative">
           <button
             onClick={() => { closeAllDropdowns(); setShowContactPicker(!showContactPicker); setContactSearch("") }}
@@ -338,6 +341,7 @@ export function QuickAddTask({ sectionId, onClose }: QuickAddTaskProps) {
             </div>
           )}
         </div>
+        )}
       </div>
 
       {/* Buttons */}

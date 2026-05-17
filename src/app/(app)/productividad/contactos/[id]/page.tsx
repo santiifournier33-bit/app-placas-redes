@@ -11,12 +11,11 @@ import {
   type Contact,
 } from '@/lib/stores/contactStore'
 import { usePipelinesStore } from '@/lib/stores/pipelinesStore'
+import { useTaskStore } from '@/lib/stores/taskStore'
 import { ContactDataTab } from '@/components/productividad/contactos/ContactDataTab'
 import { ContactNotesTab } from '@/components/productividad/contactos/ContactNotesTab'
-import { ContactTasksTab } from '@/components/productividad/contactos/ContactTasksTab'
 import { ContactHistoryTab } from '@/components/productividad/contactos/ContactHistoryTab'
-
-type Tab = 'data' | 'tasks' | 'notes' | 'history'
+import { ContactTasksCard } from '@/components/productividad/contactos/ContactTasksCard'
 
 export default function ContactDetailPage() {
   const router = useRouter()
@@ -25,12 +24,13 @@ export default function ContactDetailPage() {
 
   const { contacts, init, deleteContact, markContacted } = useContactStore()
   const pipelinesStore = usePipelinesStore()
-  const [tab, setTab] = useState<Tab>('data')
+  const taskStore = useTaskStore()
   const [copied, setCopied] = useState<string | null>(null)
 
   useEffect(() => {
     init()
     pipelinesStore.init()
+    taskStore.init()
   }, [])
 
   const contact: Contact | undefined = contacts.find(c => c.id === contactId)
@@ -67,7 +67,7 @@ export default function ContactDetailPage() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Sub-header (matches TabNav height) */}
+      {/* Sub-header */}
       <div className="h-14 flex items-center gap-3 px-4 border-b border-white/[0.06] shrink-0">
         <button
           onClick={() => router.push('/productividad/contactos')}
@@ -109,7 +109,7 @@ export default function ContactDetailPage() {
         </button>
       </div>
 
-      {/* Contact chips bar */}
+      {/* Chips bar */}
       <div className="flex flex-wrap items-center gap-2 px-4 py-2.5 border-b border-white/[0.06] shrink-0">
         {contact.primary_phone && (
           <>
@@ -157,39 +157,31 @@ export default function ContactDetailPage() {
         )}
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 px-4 py-2 border-b border-white/[0.06] shrink-0">
-        {(['data', 'tasks', 'notes', 'history'] as Tab[]).map(t => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-              tab === t ? 'bg-white/[0.08] text-shell-text' : 'text-zinc-500 hover:text-zinc-300'
-            }`}
-          >
-            {t === 'data' ? 'Datos' : t === 'tasks' ? 'Tareas' : t === 'notes' ? 'Notas' : 'Historial'}
-          </button>
-        ))}
-      </div>
-
-      {/* Body — full width grid: data on left, tasks/notes on right when on data tab */}
-      <div className="flex-1 overflow-y-auto">
-        {tab === 'data' && (
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-0 xl:divide-x xl:divide-white/[0.06] min-h-full">
-            <div className="xl:col-span-2 p-2">
-              <ContactDataTab contact={contact} />
-            </div>
-            <div className="xl:col-span-1 p-4 hidden xl:block">
-              <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider mb-3">
-                Actividad reciente
-              </h3>
-              <ContactHistoryTab contactId={contact.id} />
-            </div>
+      {/* Body — 3-column grid */}
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full grid grid-cols-1 xl:grid-cols-[2fr_1fr_1fr] divide-y xl:divide-y-0 xl:divide-x divide-white/[0.06]">
+          {/* Column 1: Data + Tasks */}
+          <div className="overflow-y-auto">
+            <ContactDataTab contact={contact} />
+            <ContactTasksCard contactId={contact.id} />
           </div>
-        )}
-        {tab === 'tasks' && <div className="max-w-3xl mx-auto"><ContactTasksTab contactId={contact.id} /></div>}
-        {tab === 'notes' && <div className="max-w-3xl mx-auto"><ContactNotesTab contactId={contact.id} /></div>}
-        {tab === 'history' && <div className="max-w-3xl mx-auto"><ContactHistoryTab contactId={contact.id} /></div>}
+
+          {/* Column 2: Notas */}
+          <div className="overflow-y-auto">
+            <div className="px-5 pt-5">
+              <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Notas</h3>
+            </div>
+            <ContactNotesTab contactId={contact.id} />
+          </div>
+
+          {/* Column 3: Historial */}
+          <div className="overflow-y-auto">
+            <div className="px-5 pt-5">
+              <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Historial</h3>
+            </div>
+            <ContactHistoryTab contactId={contact.id} />
+          </div>
+        </div>
       </div>
     </div>
   )
