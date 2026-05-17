@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useMemo, useRef, useEffect } from 'react'
-import { createPortal } from 'react-dom'
+import { useState, useMemo, useRef } from 'react'
 import { ChevronUp, ChevronDown, ExternalLink, Phone, MessageSquare, Check, Copy } from 'lucide-react'
 import {
   useContactStore,
@@ -10,6 +9,7 @@ import {
 import { usePipelinesStore } from '@/lib/stores/pipelinesStore'
 import { EditableCell } from './EditableCell'
 import { InlineSelectChip } from './InlineSelectChip'
+import { PortalDropdown } from '@/components/ui/PortalDropdown'
 import {
   SOURCE_OPTIONS,
   CIRCLE_OPTIONS,
@@ -91,33 +91,12 @@ function PipelineStageCell({
   const { activePipelineId, pipelines } = usePipelinesStore()
   const { kanbanContacts, moveToStage, addToPipeline, fetchKanban } = useContactStore()
   const [open, setOpen] = useState(false)
-  const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
-  const menuRef = useRef<HTMLDivElement>(null)
 
   const pipeline = pipelines.find(p => p.id === activePipelineId)
   const stages = pipeline ? [...pipeline.stages].sort((a, b) => a.position - b.position) : []
   const kanbanEntry = kanbanContacts.find(k => k.id === contact.id && k.pipelineId === activePipelineId)
   const currentStage = stages.find(s => s.id === kanbanEntry?.stageId)
-
-  useEffect(() => {
-    if (!open) return
-    const rect = buttonRef.current?.getBoundingClientRect()
-    if (rect) setPos({ top: rect.bottom + 4, left: rect.left })
-    const handler = (e: MouseEvent) => {
-      const t = e.target as Node
-      if (!buttonRef.current?.contains(t) && !menuRef.current?.contains(t)) setOpen(false)
-    }
-    const scroll = () => setOpen(false)
-    document.addEventListener('mousedown', handler)
-    window.addEventListener('scroll', scroll, true)
-    window.addEventListener('resize', scroll)
-    return () => {
-      document.removeEventListener('mousedown', handler)
-      window.removeEventListener('scroll', scroll, true)
-      window.removeEventListener('resize', scroll)
-    }
-  }, [open])
 
   const handleSelect = async (stageId: string, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -150,39 +129,37 @@ function PipelineStageCell({
         <span className="truncate">{currentStage?.name || 'Sin etapa'}</span>
         <ChevronDown size={10} className="shrink-0" />
       </button>
-      {open && pos && typeof window !== 'undefined' && createPortal(
-        <div
-          ref={menuRef}
-          style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 9999 }}
-          className="bg-[#1e1e2c] border border-white/[0.08] rounded-xl shadow-2xl p-1.5 min-w-[180px] max-h-72 overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {stages.map(stage => {
-            const isSelected = stage.id === currentStage?.id
-            const c = stage.color || '#3b82f6'
-            return (
-              <button
-                key={stage.id}
-                onClick={(e) => handleSelect(stage.id, e)}
-                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors ${
-                  isSelected ? 'bg-white/[0.06]' : 'hover:bg-white/[0.04]'
-                }`}
+      <PortalDropdown
+        anchorRef={buttonRef}
+        open={open}
+        onClose={() => setOpen(false)}
+        className="bg-[#1e1e2c] border border-white/[0.08] rounded-xl shadow-2xl p-1.5 max-h-72 overflow-y-auto"
+        minWidth={180}
+      >
+        {stages.map(stage => {
+          const isSelected = stage.id === currentStage?.id
+          const c = stage.color || '#3b82f6'
+          return (
+            <button
+              key={stage.id}
+              onClick={(e) => handleSelect(stage.id, e)}
+              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors ${
+                isSelected ? 'bg-white/[0.06]' : 'hover:bg-white/[0.04]'
+              }`}
+            >
+              <span
+                className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium"
+                style={{ background: `${c}26`, color: c }}
               >
-                <span
-                  className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium"
-                  style={{ background: `${c}26`, color: c }}
-                >
-                  {stage.name}
-                </span>
-                {isSelected && (
-                  <span className="ml-auto text-zinc-400 text-xs">✓</span>
-                )}
-              </button>
-            )
-          })}
-        </div>,
-        document.body
-      )}
+                {stage.name}
+              </span>
+              {isSelected && (
+                <span className="ml-auto text-zinc-400 text-xs">✓</span>
+              )}
+            </button>
+          )
+        })}
+      </PortalDropdown>
     </>
   )
 }
@@ -196,6 +173,7 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
     return stored ? new Set(JSON.parse(stored)) : new Set<string>()
   })
   const [showColPicker, setShowColPicker] = useState(false)
+  const colPickerBtnRef = useRef<HTMLButtonElement>(null)
 
   const visibleCols = ALL_COLUMNS.filter(c => !hiddenCols.has(c.key))
 
@@ -260,26 +238,32 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
       {/* Column picker toggle */}
       <div className="flex justify-end px-4 py-2">
         <button
+          ref={colPickerBtnRef}
           onClick={() => setShowColPicker(!showColPicker)}
           className="text-[11px] text-zinc-500 hover:text-zinc-300 cursor-pointer"
         >
           Columnas ({visibleCols.length}/{ALL_COLUMNS.length})
         </button>
-        {showColPicker && (
-          <div className="absolute right-4 top-10 z-30 bg-[#1e1e2c] rounded-xl border border-white/[0.08] shadow-xl p-3 w-52 max-h-80 overflow-y-auto">
-            {ALL_COLUMNS.map(col => (
-              <label key={col.key} className="flex items-center gap-2 py-1 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={!hiddenCols.has(col.key)}
-                  onChange={() => toggleCol(col.key)}
-                  className="accent-blue-500"
-                />
-                <span className="text-xs text-zinc-400">{col.label}</span>
-              </label>
-            ))}
-          </div>
-        )}
+        <PortalDropdown
+          anchorRef={colPickerBtnRef}
+          open={showColPicker}
+          onClose={() => setShowColPicker(false)}
+          placement="bottom-end"
+          className="bg-[#1e1e2c] border border-white/[0.08] rounded-xl shadow-2xl p-3 max-h-80 overflow-y-auto"
+          minWidth={208}
+        >
+          {ALL_COLUMNS.map(col => (
+            <label key={col.key} className="flex items-center gap-2 py-1 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={!hiddenCols.has(col.key)}
+                onChange={() => toggleCol(col.key)}
+                className="accent-blue-500"
+              />
+              <span className="text-xs text-zinc-400">{col.label}</span>
+            </label>
+          ))}
+        </PortalDropdown>
       </div>
 
       {/* Table */}
