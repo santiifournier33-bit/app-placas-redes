@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 import type { ReactNode } from "react"
 import { resetAllStores } from "@/lib/stores/resetAllStores"
+import { useConsultasBadge } from "@/lib/stores/useConsultasBadge"
 
 const EASE = "cubic-bezier(0.22, 1, 0.36, 1)"
 
@@ -153,6 +154,8 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
 function NavItem({ mod, pathname, collapsed }: { mod: ModuleDefinition; pathname: string; collapsed: boolean }) {
   const active = pathname === mod.href || pathname.startsWith(mod.href + '/')
   const disabled = !mod.enabled
+  const consultasBadge = useConsultasBadge()
+  const badge = mod.id === 'consultas' ? consultasBadge : 0
 
   const labelClass = `whitespace-nowrap overflow-hidden transition-opacity duration-200 ${
     collapsed ? "w-0 opacity-0" : "opacity-100 delay-150"
@@ -203,6 +206,17 @@ function NavItem({ mod, pathname, collapsed }: { mod: ModuleDefinition; pathname
       <span style={{ transitionTimingFunction: EASE }} className={labelClass}>
         {mod.label}
       </span>
+      {badge > 0 && (
+        <span
+          className={`shrink-0 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-amber-500 text-[10px] font-bold text-zinc-950 ${
+            collapsed
+              ? 'absolute top-1 right-1 transform scale-75'
+              : 'ml-auto'
+          }`}
+        >
+          {badge > 99 ? '99+' : badge}
+        </span>
+      )}
     </Link>
   )
 }

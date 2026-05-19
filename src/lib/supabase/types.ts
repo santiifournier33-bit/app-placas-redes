@@ -195,6 +195,70 @@ export type Database = {
           },
         ]
       }
+      contact_emails: {
+        Row: {
+          contact_id: string
+          created_at: string | null
+          email: string
+          id: string
+          source: string | null
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string | null
+          email: string
+          id?: string
+          source?: string | null
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string | null
+          email?: string
+          id?: string
+          source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_emails_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contact_phones: {
+        Row: {
+          contact_id: string
+          created_at: string | null
+          id: string
+          phone: string
+          source: string | null
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string | null
+          id?: string
+          phone: string
+          source?: string | null
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string | null
+          id?: string
+          phone?: string
+          source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_phones_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_notes: {
         Row: {
           body: string
@@ -315,6 +379,7 @@ export type Database = {
           last_activity_at: string | null
           last_contact_date: string | null
           last_name: string | null
+          lead_status: string | null
           notes: string | null
           owner_id: string
           primary_email: string | null
@@ -323,6 +388,7 @@ export type Database = {
           source: string | null
           tags: string[] | null
           tipo: string | null
+          tokko_contact_id: string | null
           ubicacion: string | null
           updated_at: string | null
         }
@@ -367,6 +433,7 @@ export type Database = {
           last_activity_at?: string | null
           last_contact_date?: string | null
           last_name?: string | null
+          lead_status?: string | null
           notes?: string | null
           owner_id?: string
           primary_email?: string | null
@@ -375,6 +442,7 @@ export type Database = {
           source?: string | null
           tags?: string[] | null
           tipo?: string | null
+          tokko_contact_id?: string | null
           ubicacion?: string | null
           updated_at?: string | null
         }
@@ -431,6 +499,148 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      inquiries: {
+        Row: {
+          comment: string | null
+          contact_id: string
+          created_at: string | null
+          first_inquired_at: string
+          id: string
+          last_inquired_at: string
+          owner_id: string | null
+          property_snapshot: Json
+          raw_payload: Json | null
+          responded_at: string | null
+          responded_by: string | null
+          sla_notified_at: string | null
+          source: string | null
+          status: string | null
+          tags: Json | null
+          tokko_property_id: string
+          tokko_property_reference: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          comment?: string | null
+          contact_id: string
+          created_at?: string | null
+          first_inquired_at: string
+          id?: string
+          last_inquired_at: string
+          owner_id?: string | null
+          property_snapshot: Json
+          raw_payload?: Json | null
+          responded_at?: string | null
+          responded_by?: string | null
+          sla_notified_at?: string | null
+          source?: string | null
+          status?: string | null
+          tags?: Json | null
+          tokko_property_id: string
+          tokko_property_reference?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          comment?: string | null
+          contact_id?: string
+          created_at?: string | null
+          first_inquired_at?: string
+          id?: string
+          last_inquired_at?: string
+          owner_id?: string | null
+          property_snapshot?: Json
+          raw_payload?: Json | null
+          responded_at?: string | null
+          responded_by?: string | null
+          sla_notified_at?: string | null
+          source?: string | null
+          status?: string | null
+          tags?: Json | null
+          tokko_property_id?: string
+          tokko_property_reference?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inquiries_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inquiries_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inquiries_responded_by_fkey"
+            columns: ["responded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tokko_sync_failures: {
+        Row: {
+          created_at: string | null
+          endpoint: string
+          error: string | null
+          id: string
+          next_retry_at: string | null
+          params: Json | null
+          resolved_at: string | null
+          retry_count: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          endpoint: string
+          error?: string | null
+          id?: string
+          next_retry_at?: string | null
+          params?: Json | null
+          resolved_at?: string | null
+          retry_count?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          endpoint?: string
+          error?: string | null
+          id?: string
+          next_retry_at?: string | null
+          params?: Json | null
+          resolved_at?: string | null
+          retry_count?: number | null
+        }
+        Relationships: []
+      }
+      tokko_sync_state: {
+        Row: {
+          id: string
+          last_cursor: string | null
+          last_error: string | null
+          last_synced_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id: string
+          last_cursor?: string | null
+          last_error?: string | null
+          last_synced_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          last_cursor?: string | null
+          last_error?: string | null
+          last_synced_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       operation_agents: {
         Row: {

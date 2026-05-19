@@ -44,8 +44,8 @@ export const modules: ModuleDefinition[] = [
     href: '/consultas',
     icon: 'MessageQuestion',
     access: ['admin', 'asesor'],
-    description: 'Consultas de propiedades',
-    enabled: false,
+    description: 'Consultas de propiedades + matching engine',
+    enabled: true,
   },
   {
     id: 'procedimientos',
