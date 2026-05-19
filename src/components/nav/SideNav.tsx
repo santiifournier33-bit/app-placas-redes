@@ -53,9 +53,10 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
     router.push('/login')
   }
 
-  // Fade utility for text segments that should disappear when sidebar collapses
-  const fadeClass = `transition-[opacity,max-width] duration-300 whitespace-nowrap overflow-hidden ${
-    collapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-[200px]"
+  // Fade utility: width snaps instantly (avoids icon clipping when justify-center
+  // is active during transition), opacity fades smoothly.
+  const fadeClass = `whitespace-nowrap overflow-hidden transition-opacity duration-200 ${
+    collapsed ? "w-0 opacity-0" : "opacity-100"
   }`
 
   return (
@@ -94,9 +95,8 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
         {adminModules.length > 0 && (
           <>
             <div
-              style={{ transitionTimingFunction: EASE }}
-              className={`px-3 transition-[opacity,padding,max-height] duration-300 overflow-hidden ${
-                collapsed ? "opacity-0 max-h-0 pt-0 pb-0" : "opacity-100 max-h-10 pt-5 pb-2"
+              className={`px-3 overflow-hidden transition-opacity duration-200 ${
+                collapsed ? "h-0 opacity-0 py-0" : "opacity-100 pt-5 pb-2"
               }`}
             >
               <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.15em] whitespace-nowrap">
@@ -119,9 +119,8 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
       {/* Footer */}
       <div className="p-2 border-t border-white/[0.06] space-y-1 bg-gradient-to-t from-black/30 to-transparent shrink-0">
         <div
-          style={{ transitionTimingFunction: EASE }}
-          className={`flex items-center gap-2 px-3 transition-[opacity,max-height,padding] duration-300 overflow-hidden ${
-            collapsed ? "opacity-0 max-h-0 py-0" : "opacity-100 max-h-10 py-2"
+          className={`flex items-center gap-2 px-3 overflow-hidden transition-opacity duration-200 ${
+            collapsed ? "h-0 opacity-0 py-0" : "opacity-100 py-2"
           }`}
         >
           <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_6px_rgba(52,211,153,0.5)]" />
@@ -156,8 +155,8 @@ function NavItem({ mod, pathname, collapsed }: { mod: ModuleDefinition; pathname
   const active = pathname === mod.href || pathname.startsWith(mod.href + '/')
   const disabled = !mod.enabled
 
-  const labelClass = `transition-[opacity,max-width] duration-300 whitespace-nowrap overflow-hidden ${
-    collapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-[180px]"
+  const labelClass = `whitespace-nowrap overflow-hidden transition-opacity duration-200 ${
+    collapsed ? "w-0 opacity-0" : "opacity-100"
   }`
 
   // Consistent square pill in both states: w-10 h-10 when collapsed (centered),
@@ -179,9 +178,8 @@ function NavItem({ mod, pathname, collapsed }: { mod: ModuleDefinition; pathname
         <Lock
           size={12}
           strokeWidth={2}
-          style={{ transitionTimingFunction: EASE }}
-          className={`text-zinc-700 transition-[opacity,max-width] duration-300 overflow-hidden ${
-            collapsed ? "opacity-0 max-w-0 ml-0" : "opacity-100 max-w-[16px] ml-auto"
+          className={`text-zinc-700 overflow-hidden transition-opacity duration-200 ${
+            collapsed ? "w-0 opacity-0 ml-0" : "opacity-100 ml-auto"
           }`}
         />
       </div>
