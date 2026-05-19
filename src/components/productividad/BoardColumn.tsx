@@ -185,7 +185,7 @@ export function BoardColumn({
 
         {/* Quick add */}
         {showQuickAdd && (
-          <QuickAddTask sectionId={sectionId} onClose={() => setShowQuickAdd(false)} />
+          <QuickAddTask initialSectionId={sectionId} onClose={() => setShowQuickAdd(false)} />
         )}
       </div>
 

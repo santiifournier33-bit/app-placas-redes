@@ -25,22 +25,20 @@ export function ContactTasksCard({ contactId }: { contactId: string }) {
 
   return (
     <div className="px-5 pb-5 space-y-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Tareas</h3>
-        {!adding && (
-          <button
-            onClick={() => setAdding(true)}
-            className="flex items-center gap-1 text-[11px] text-blue-400 hover:text-blue-300 cursor-pointer"
-          >
-            <Plus size={12} />
-            Añadir tarea
-          </button>
-        )}
-      </div>
+      <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Tareas</h3>
+      {!adding && (
+        <button
+          onClick={() => setAdding(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/15 text-blue-400 text-xs font-medium hover:bg-blue-500/25 cursor-pointer"
+        >
+          <Plus size={13} />
+          Añadir tarea
+        </button>
+      )}
 
       {adding && (
         <QuickAddTask
-          sectionId={null}
+          initialSectionId={null}
           preselectedContactId={contactId}
           hideContactPicker={true}
           onClose={() => setAdding(false)}

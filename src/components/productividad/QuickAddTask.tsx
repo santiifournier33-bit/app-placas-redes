@@ -30,14 +30,15 @@ const TYPE_ICONS: Record<TaskType, React.ReactNode> = {
 }
 
 interface QuickAddTaskProps {
-  sectionId: string | null
+  /** Initial section the task lands in. User can change it via the section picker in the footer. */
+  initialSectionId: string | null
   onClose: () => void
   preselectedContactId?: string | null
   hideContactPicker?: boolean
 }
 
-export function QuickAddTask({ sectionId, onClose, preselectedContactId = null, hideContactPicker = false }: QuickAddTaskProps) {
-  const { addTask, updateTask, tasks } = useTaskStore()
+export function QuickAddTask({ initialSectionId, onClose, preselectedContactId = null, hideContactPicker = false }: QuickAddTaskProps) {
+  const { addTask, updateTask, tasks, sections } = useTaskStore()
   const { contacts } = useContactStore()
 
   const [title, setTitle] = useState("")
@@ -49,6 +50,7 @@ export function QuickAddTask({ sectionId, onClose, preselectedContactId = null, 
   const [contactId, setContactId] = useState<string | null>(preselectedContactId)
   const [contactSearch, setContactSearch] = useState("")
   const [recurrenceFreq, setRecurrenceFreq] = useState<string | null>(null)
+  const [currentSectionId, setCurrentSectionId] = useState<string | null>(initialSectionId)
 
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [showPriority, setShowPriority] = useState(false)
@@ -56,6 +58,7 @@ export function QuickAddTask({ sectionId, onClose, preselectedContactId = null, 
   const [showReminder, setShowReminder] = useState(false)
   const [showContactPicker, setShowContactPicker] = useState(false)
   const [showRecurrence, setShowRecurrence] = useState(false)
+  const [showSectionPicker, setShowSectionPicker] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -85,7 +88,7 @@ export function QuickAddTask({ sectionId, onClose, preselectedContactId = null, 
 
   const handleCreate = async () => {
     if (!title.trim()) return
-    await addTask(title.trim(), sectionId)
+    await addTask(title.trim(), currentSectionId)
     const newTask = useTaskStore.getState().tasks.at(-1)
     if (newTask) {
       await updateTask(newTask.id, {
@@ -109,6 +112,7 @@ export function QuickAddTask({ sectionId, onClose, preselectedContactId = null, 
     setShowDatePicker(false)
     setShowPriority(false)
     setShowType(false)
+    setShowSectionPicker(false)
     setShowReminder(false)
     setShowContactPicker(false)
     setShowRecurrence(false)
@@ -379,8 +383,40 @@ export function QuickAddTask({ sectionId, onClose, preselectedContactId = null, 
 
       {/* Buttons */}
       <div className="flex items-center justify-between pt-1 border-t border-white/[0.06]">
-        <div className="text-[10px] text-zinc-600">
-          {sectionId === null ? "(Sin sección)" : ""}
+        <div className="relative">
+          <button
+            onClick={() => { closeAllDropdowns(); setShowSectionPicker(!showSectionPicker) }}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300 cursor-pointer"
+          >
+            {(() => {
+              const sec = sections.find(s => s.id === currentSectionId)
+              return sec ? sec.name : "(Sin sección)"
+            })()}
+            <span className="text-zinc-600">▾</span>
+          </button>
+          {showSectionPicker && (
+            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-white/[0.08] py-1 z-20 shadow-xl min-w-[180px] max-h-60 overflow-y-auto">
+              <button
+                onClick={() => { setCurrentSectionId(null); setShowSectionPicker(false) }}
+                className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-300 cursor-pointer"
+              >
+                (Sin sección)
+                {currentSectionId === null && <span className="ml-auto text-zinc-500">✓</span>}
+              </button>
+              {sections
+                .sort((a, b) => a.position - b.position)
+                .map(s => (
+                  <button
+                    key={s.id}
+                    onClick={() => { setCurrentSectionId(s.id); setShowSectionPicker(false) }}
+                    className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-300 cursor-pointer"
+                  >
+                    <span className="truncate">{s.name}</span>
+                    {currentSectionId === s.id && <span className="ml-auto text-zinc-500 shrink-0">✓</span>}
+                  </button>
+                ))}
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <button

@@ -167,7 +167,7 @@ export default function ContactDetailPage() {
 
       {/* Body — 3-column grid */}
       <div className="flex-1 overflow-hidden">
-        <div className="h-full grid grid-cols-1 xl:grid-cols-[2fr_1fr_1fr] divide-y xl:divide-y-0 xl:divide-x divide-white/[0.06]">
+        <div className="h-full grid grid-cols-1 xl:grid-cols-3 divide-y xl:divide-y-0 xl:divide-x divide-white/[0.06]">
           {/* Column 1: Data + Tasks */}
           <div className="overflow-y-auto">
             <ContactDataTab contact={contact} />
