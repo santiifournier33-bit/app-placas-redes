@@ -33,6 +33,7 @@ export function AppShell({ role, email, children }: AppShellProps) {
       <div className="min-h-screen bg-shell-bg text-shell-text flex flex-col font-sans selection:bg-shell-accent/30">
         <SideNav role={role} email={email} collapsed={collapsed} />
         <main
+          style={{ transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)", willChange: "margin" }}
           className={`transition-[margin] duration-300 pb-20 lg:pb-0 flex-1 relative ${
             collapsed ? "lg:ml-16" : "lg:ml-64"
           }`}

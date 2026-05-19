@@ -60,7 +60,7 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
 
   return (
     <aside
-      style={{ transitionTimingFunction: EASE }}
+      style={{ transitionTimingFunction: EASE, willChange: "width" }}
       className={`hidden lg:flex flex-col h-screen fixed left-0 top-0 bg-[#0A0A0F]/90 backdrop-blur-xl border-r border-white/[0.06] z-50 transition-[width] duration-300 overflow-hidden ${
         collapsed ? "w-16" : "w-64"
       }`}
@@ -135,11 +135,11 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
         <button
           onClick={handleLogout}
           title="Cerrar sesión"
-          className={`group flex items-center gap-3 px-3 py-2.5 w-full rounded-xl text-sm font-medium text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 cursor-pointer ${
-            collapsed ? "justify-center" : ""
+          className={`group flex items-center rounded-xl text-sm font-medium text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-[background-color,color,padding] duration-200 cursor-pointer ${
+            collapsed ? "w-10 h-10 justify-center mx-auto gap-0 px-0" : "w-full h-10 px-3 gap-3"
           }`}
         >
-          <LogOut size={18} strokeWidth={1.8} className="group-hover:-translate-x-1 transition-transform duration-300 shrink-0" />
+          <LogOut size={20} strokeWidth={1.8} className="group-hover:-translate-x-1 transition-transform duration-300 shrink-0" />
           <span
             style={{ transitionTimingFunction: EASE }}
             className={fadeClass}
@@ -160,15 +160,19 @@ function NavItem({ mod, pathname, collapsed }: { mod: ModuleDefinition; pathname
     collapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-[180px]"
   }`
 
+  // Consistent square pill in both states: w-10 h-10 when collapsed (centered),
+  // h-10 stretching wide when expanded.
+  const baseClass = `relative flex items-center rounded-xl text-sm font-medium overflow-hidden cursor-pointer transition-[background-color,color,padding] duration-200 ${
+    collapsed ? "w-10 h-10 justify-center mx-auto gap-0 px-0" : "h-10 px-3 gap-3"
+  }`
+
   if (disabled) {
     return (
       <div
         title={mod.label}
-        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-700 cursor-not-allowed ${
-          collapsed ? "justify-center" : ""
-        }`}
+        className={`${baseClass} text-zinc-700 cursor-not-allowed`}
       >
-        {getIcon(mod.icon, 18)}
+        {getIcon(mod.icon, 20)}
         <span style={{ transitionTimingFunction: EASE }} className={labelClass}>
           {mod.label}
         </span>
@@ -189,18 +193,16 @@ function NavItem({ mod, pathname, collapsed }: { mod: ModuleDefinition; pathname
       href={mod.href}
       scroll={false}
       title={collapsed ? mod.label : undefined}
-      className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 relative overflow-hidden cursor-pointer ${
-        collapsed ? "justify-center" : ""
-      } ${
+      className={`group ${baseClass} ${
         active
           ? "text-blue-400 bg-blue-500/10 shadow-[inset_0_1px_0_0_rgba(59,130,246,0.15)]"
           : "text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04]"
       }`}
     >
-      {active && (
+      {active && !collapsed && (
         <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[60%] bg-blue-500 rounded-r-full shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
       )}
-      {getIcon(mod.icon, 18)}
+      {getIcon(mod.icon, 20)}
       <span style={{ transitionTimingFunction: EASE }} className={labelClass}>
         {mod.label}
       </span>
