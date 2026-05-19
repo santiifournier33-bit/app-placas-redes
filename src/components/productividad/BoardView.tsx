@@ -37,9 +37,9 @@ export function BoardView({ tasks, sections, showCompleted, onSelectTask, onTogg
   }
 
   return (
-    <div className="flex gap-3 overflow-x-auto px-4 pt-4 pb-6 min-h-[60vh]" style={{ scrollSnapType: "x proximity" }}>
+    <div className="flex items-stretch gap-3 overflow-x-auto px-4 pt-4 pb-6 min-h-[60vh]" style={{ scrollSnapType: "x proximity" }}>
       {/* (Sin sección) column */}
-      <div style={{ scrollSnapAlign: "start" }}>
+      <div className="flex" style={{ scrollSnapAlign: "start" }}>
         <BoardColumn
           title="Sin sección"
           sectionId={null}
@@ -57,7 +57,7 @@ export function BoardView({ tasks, sections, showCompleted, onSelectTask, onTogg
       {sortedSections.map((sec) => {
         const sectionTasks = tasks.filter((t) => t.section_id === sec.id)
         return (
-          <div key={sec.id} style={{ scrollSnapAlign: "start" }}>
+          <div key={sec.id} className="flex" style={{ scrollSnapAlign: "start" }}>
             <BoardColumn
               title={sec.name}
               sectionId={sec.id}

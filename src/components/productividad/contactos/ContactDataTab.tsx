@@ -100,11 +100,6 @@ export function ContactDataTab({ contact }: ContactDataTabProps) {
         })}
       </div>
 
-      {/* Meta info */}
-      <div className="text-[10px] text-zinc-700 space-y-1 pt-4 border-t border-white/[0.04]">
-        <p>Creado: {contact.created_at ? new Date(contact.created_at).toLocaleDateString('es-AR') : '—'}</p>
-        <p>Actualizado: {contact.updated_at ? new Date(contact.updated_at).toLocaleDateString('es-AR') : '—'}</p>
-      </div>
     </div>
   )
 }

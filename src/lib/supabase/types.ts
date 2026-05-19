@@ -885,6 +885,8 @@ export type Database = {
           recurrence_interval: number | null
           recurrence_parent_id: string | null
           reminder: string | null
+          reminder_at: string | null
+          reminder_sent_at: string | null
           section_id: string | null
           task_type: string
           title: string
@@ -914,6 +916,8 @@ export type Database = {
           recurrence_interval?: number | null
           recurrence_parent_id?: string | null
           reminder?: string | null
+          reminder_at?: string | null
+          reminder_sent_at?: string | null
           section_id?: string | null
           task_type?: string
           title: string
@@ -943,6 +947,8 @@ export type Database = {
           recurrence_interval?: number | null
           recurrence_parent_id?: string | null
           reminder?: string | null
+          reminder_at?: string | null
+          reminder_sent_at?: string | null
           section_id?: string | null
           task_type?: string
           title?: string

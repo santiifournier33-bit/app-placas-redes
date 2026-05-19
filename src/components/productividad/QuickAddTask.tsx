@@ -44,7 +44,8 @@ export function QuickAddTask({ sectionId, onClose, preselectedContactId = null, 
   const [priority, setPriority] = useState<1 | 2 | 3 | 4>(4)
   const [taskType, setTaskType] = useState<TaskType>("tarea")
   const [dueDate, setDueDate] = useState<string | null>(null)
-  const [reminder, setReminder] = useState<string | null>(null)
+  // reminder preset offset in minutes BEFORE due. null = no reminder.
+  const [reminderOffsetMin, setReminderOffsetMin] = useState<number | null>(null)
   const [contactId, setContactId] = useState<string | null>(preselectedContactId)
   const [contactSearch, setContactSearch] = useState("")
   const [recurrenceFreq, setRecurrenceFreq] = useState<string | null>(null)
@@ -73,6 +74,15 @@ export function QuickAddTask({ sectionId, onClose, preselectedContactId = null, 
     : format(new Date(dueDate + "T12:00:00"), "d MMM", { locale: es })
     : null
 
+  const computeReminderAt = (): string | null => {
+    if (reminderOffsetMin === null || !dueDate) return null
+    // Default to 09:00 local time if no due_time set
+    const dueIso = `${dueDate}T09:00:00`
+    const due = new Date(dueIso)
+    const reminderMs = due.getTime() - reminderOffsetMin * 60 * 1000
+    return new Date(reminderMs).toISOString()
+  }
+
   const handleCreate = async () => {
     if (!title.trim()) return
     await addTask(title.trim(), sectionId)
@@ -82,7 +92,7 @@ export function QuickAddTask({ sectionId, onClose, preselectedContactId = null, 
         priority,
         task_type: taskType,
         due_date: dueDate ?? null,
-        reminder,
+        reminder_at: computeReminderAt(),
         contact_id: contactId,
         ...(recurrenceFreq ? { recurrence_freq: recurrenceFreq } : {}),
       })
@@ -231,23 +241,46 @@ export function QuickAddTask({ sectionId, onClose, preselectedContactId = null, 
         {/* Reminder */}
         <div className="relative">
           <button
-            onClick={() => { closeAllDropdowns(); setShowReminder(!showReminder) }}
-            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-colors cursor-pointer ${
-              reminder ? "bg-amber-500/15 text-amber-400 border border-amber-500/20" : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
+            onClick={() => { if (dueDate) { closeAllDropdowns(); setShowReminder(!showReminder) } }}
+            disabled={!dueDate}
+            title={!dueDate ? "Primero asigná una fecha a la tarea" : undefined}
+            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-colors ${
+              !dueDate
+                ? "text-zinc-700 cursor-not-allowed opacity-50"
+                : reminderOffsetMin !== null
+                  ? "bg-amber-500/15 text-amber-400 border border-amber-500/20 cursor-pointer"
+                  : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300 cursor-pointer"
             }`}
           >
             <Bell size={13} />
-            {reminder ? format(new Date(reminder), "d MMM HH:mm", { locale: es }) : "Recordar"}
+            {reminderOffsetMin === null
+              ? "Recordar"
+              : reminderOffsetMin === 0
+                ? "A la hora"
+                : reminderOffsetMin === 10
+                  ? "10 min antes"
+                  : reminderOffsetMin === 60
+                    ? "1 h antes"
+                    : "1 día antes"}
           </button>
           {showReminder && (
-            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-white/[0.08] p-3 z-20 shadow-xl">
-              <p className="text-[10px] text-zinc-600 mb-2">Fecha y hora del recordatorio</p>
-              <input
-                type="datetime-local"
-                value={reminder ?? ""}
-                onChange={(e) => { setReminder(e.target.value || null); setShowReminder(false) }}
-                className="bg-transparent text-xs text-zinc-300 outline-none [color-scheme:dark]"
-              />
+            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-white/[0.08] py-1 z-20 shadow-xl min-w-[160px]">
+              {[
+                { value: null, label: 'Sin recordatorio' },
+                { value: 0, label: 'A la hora' },
+                { value: 10, label: '10 min antes' },
+                { value: 60, label: '1 h antes' },
+                { value: 1440, label: '1 día antes' },
+              ].map((opt) => (
+                <button
+                  key={opt.value ?? 'none'}
+                  onClick={() => { setReminderOffsetMin(opt.value); setShowReminder(false) }}
+                  className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-300 cursor-pointer"
+                >
+                  {opt.label}
+                  {reminderOffsetMin === opt.value && <span className="ml-auto text-zinc-500">✓</span>}
+                </button>
+              ))}
             </div>
           )}
         </div>

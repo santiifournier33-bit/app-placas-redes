@@ -13,6 +13,8 @@ import {
 import type { ReactNode } from "react"
 import { resetAllStores } from "@/lib/stores/resetAllStores"
 
+const EASE = "cubic-bezier(0.22, 1, 0.36, 1)"
+
 function getIcon(iconName: string, size: number): ReactNode {
   const props = { size, strokeWidth: 1.8 }
   switch (iconName) {
@@ -51,16 +53,22 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
     router.push('/login')
   }
 
+  // Fade utility for text segments that should disappear when sidebar collapses
+  const fadeClass = `transition-[opacity,max-width] duration-300 whitespace-nowrap overflow-hidden ${
+    collapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-[200px]"
+  }`
+
   return (
-    <aside className={`hidden lg:flex flex-col h-screen fixed left-0 top-0 bg-[#0A0A0F]/90 backdrop-blur-xl border-r border-white/[0.06] z-50 transition-[width] duration-300 overflow-hidden ${
-      collapsed ? "w-16" : "w-64"
-    }`}>
+    <aside
+      style={{ transitionTimingFunction: EASE }}
+      className={`hidden lg:flex flex-col h-screen fixed left-0 top-0 bg-[#0A0A0F]/90 backdrop-blur-xl border-r border-white/[0.06] z-50 transition-[width] duration-300 overflow-hidden ${
+        collapsed ? "w-16" : "w-64"
+      }`}
+    >
       {/* Logo block — fixed height (matches PageHeader + TabNav) */}
       <Link
         href="/diseno"
-        className={`h-14 border-b border-white/[0.06] flex items-center shrink-0 cursor-pointer hover:bg-white/[0.02] transition-colors ${
-          collapsed ? "justify-center px-2" : "gap-2.5 px-4"
-        }`}
+        className="h-14 border-b border-white/[0.06] flex items-center shrink-0 cursor-pointer hover:bg-white/[0.02] transition-colors px-4 gap-2.5"
       >
         <Image
           src="/favicon.png"
@@ -69,11 +77,12 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
           height={28}
           className="object-contain shrink-0"
         />
-        {!collapsed && (
-          <span className="text-[13px] font-bold tracking-wide text-zinc-200 truncate">
-            FREIRE
-          </span>
-        )}
+        <span
+          style={{ transitionTimingFunction: EASE }}
+          className={`text-[13px] font-bold tracking-wide text-zinc-200 ${fadeClass}`}
+        >
+          FREIRE
+        </span>
       </Link>
 
       {/* Navigation */}
@@ -84,14 +93,22 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
 
         {adminModules.length > 0 && (
           <>
-            {!collapsed && (
-              <div className="pt-5 pb-2 px-3">
-                <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.15em]">
-                  Administración
-                </span>
-              </div>
-            )}
-            {collapsed && <div className="pt-3 pb-1 border-t border-white/[0.06] mx-2" />}
+            <div
+              style={{ transitionTimingFunction: EASE }}
+              className={`px-3 transition-[opacity,padding,max-height] duration-300 overflow-hidden ${
+                collapsed ? "opacity-0 max-h-0 pt-0 pb-0" : "opacity-100 max-h-10 pt-5 pb-2"
+              }`}
+            >
+              <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.15em] whitespace-nowrap">
+                Administración
+              </span>
+            </div>
+            <div
+              style={{ transitionTimingFunction: EASE }}
+              className={`border-t border-white/[0.06] mx-2 transition-[opacity,padding] duration-300 ${
+                collapsed ? "opacity-100 pt-3 pb-1" : "opacity-0 pt-0 pb-0"
+              }`}
+            />
             {adminModules.map((mod) => (
               <NavItem key={mod.id} mod={mod} pathname={pathname} collapsed={collapsed} />
             ))}
@@ -101,17 +118,20 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
 
       {/* Footer */}
       <div className="p-2 border-t border-white/[0.06] space-y-1 bg-gradient-to-t from-black/30 to-transparent shrink-0">
-        {!collapsed && (
-          <div className="flex items-center gap-2 px-3 py-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_6px_rgba(52,211,153,0.5)]" />
-            <span className="text-[11px] font-medium text-zinc-500 truncate">
-              {email}
-            </span>
-            <span className="ml-auto text-[9px] font-bold uppercase tracking-wider text-blue-400/80 bg-blue-500/15 px-1.5 py-0.5 rounded">
-              {role}
-            </span>
-          </div>
-        )}
+        <div
+          style={{ transitionTimingFunction: EASE }}
+          className={`flex items-center gap-2 px-3 transition-[opacity,max-height,padding] duration-300 overflow-hidden ${
+            collapsed ? "opacity-0 max-h-0 py-0" : "opacity-100 max-h-10 py-2"
+          }`}
+        >
+          <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_6px_rgba(52,211,153,0.5)]" />
+          <span className="text-[11px] font-medium text-zinc-500 truncate">
+            {email}
+          </span>
+          <span className="ml-auto text-[9px] font-bold uppercase tracking-wider text-blue-400/80 bg-blue-500/15 px-1.5 py-0.5 rounded">
+            {role}
+          </span>
+        </div>
         <button
           onClick={handleLogout}
           title="Cerrar sesión"
@@ -120,7 +140,12 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
           }`}
         >
           <LogOut size={18} strokeWidth={1.8} className="group-hover:-translate-x-1 transition-transform duration-300 shrink-0" />
-          {!collapsed && "Cerrar sesión"}
+          <span
+            style={{ transitionTimingFunction: EASE }}
+            className={fadeClass}
+          >
+            Cerrar sesión
+          </span>
         </button>
       </div>
     </aside>
@@ -131,6 +156,10 @@ function NavItem({ mod, pathname, collapsed }: { mod: ModuleDefinition; pathname
   const active = pathname === mod.href || pathname.startsWith(mod.href + '/')
   const disabled = !mod.enabled
 
+  const labelClass = `transition-[opacity,max-width] duration-300 whitespace-nowrap overflow-hidden ${
+    collapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-[180px]"
+  }`
+
   if (disabled) {
     return (
       <div
@@ -140,8 +169,17 @@ function NavItem({ mod, pathname, collapsed }: { mod: ModuleDefinition; pathname
         }`}
       >
         {getIcon(mod.icon, 18)}
-        {!collapsed && <span>{mod.label}</span>}
-        {!collapsed && <Lock size={12} strokeWidth={2} className="ml-auto text-zinc-700" />}
+        <span style={{ transitionTimingFunction: EASE }} className={labelClass}>
+          {mod.label}
+        </span>
+        <Lock
+          size={12}
+          strokeWidth={2}
+          style={{ transitionTimingFunction: EASE }}
+          className={`text-zinc-700 transition-[opacity,max-width] duration-300 overflow-hidden ${
+            collapsed ? "opacity-0 max-w-0 ml-0" : "opacity-100 max-w-[16px] ml-auto"
+          }`}
+        />
       </div>
     )
   }
@@ -163,7 +201,9 @@ function NavItem({ mod, pathname, collapsed }: { mod: ModuleDefinition; pathname
         <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[60%] bg-blue-500 rounded-r-full shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
       )}
       {getIcon(mod.icon, 18)}
-      {!collapsed && mod.label}
+      <span style={{ transitionTimingFunction: EASE }} className={labelClass}>
+        {mod.label}
+      </span>
     </Link>
   )
 }

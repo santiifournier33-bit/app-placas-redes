@@ -83,7 +83,7 @@ export function BoardColumn({
 
   return (
     <div
-      className={`flex flex-col shrink-0 w-72 rounded-2xl border transition-colors ${
+      className={`flex flex-col shrink-0 w-72 h-full min-h-[320px] rounded-2xl border transition-colors ${
         isDragOver
           ? "bg-blue-500/[0.04] border-blue-500/30"
           : "bg-white/[0.02] border-white/[0.06]"
@@ -93,7 +93,7 @@ export function BoardColumn({
       onDrop={handleDrop}
     >
       {/* Column header */}
-      <div className="flex items-center justify-between px-3 pt-3 pb-2">
+      <div className="flex items-center justify-between px-3 h-11 shrink-0">
         <div className="flex items-center gap-2">
           {renaming ? (
             <input

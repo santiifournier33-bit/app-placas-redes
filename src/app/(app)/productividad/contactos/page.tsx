@@ -11,6 +11,7 @@ import {
 import { usePipelinesStore } from '@/lib/stores/pipelinesStore'
 import { ContactsTable } from '@/components/productividad/contactos/ContactsTable'
 import { ContactsCards } from '@/components/productividad/contactos/ContactsCards'
+import { AddContactPanel } from '@/components/productividad/contactos/AddContactPanel'
 import { ImportCSVModal } from '@/components/productividad/contactos/ImportCSVModal'
 import { exportContactsCSV } from '@/lib/csv/export'
 
@@ -186,17 +187,9 @@ export default function ContactosPage() {
         </div>
       </div>
 
-      {/* Quick add modal */}
+      {/* Right-side AddContact panel */}
       {showForm && (
-        <ContactFormModal
-          onSave={async (data) => {
-            const result = await addContact(data)
-            if (result) {
-              setShowForm(false)
-            } else {
-              alert('No se pudo crear el contacto. Verificá tu sesión e intentá nuevamente.')
-            }
-          }}
+        <AddContactPanel
           onClose={() => setShowForm(false)}
         />
       )}
@@ -232,121 +225,6 @@ function FilterChip({ label, value, options, onChange }: {
         ))}
       </select>
       <ChevronDown size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
-    </div>
-  )
-}
-
-function ContactFormModal({
-  onSave, onClose,
-}: {
-  onSave: (data: Partial<Contact> & { first_name: string }) => void
-  onClose: () => void
-}) {
-  const [form, setForm] = useState({
-    first_name: '',
-    last_name: '',
-    primary_phone: '',
-    primary_email: '',
-    source: 'otro',
-  })
-  const [duplicate, setDuplicate] = useState<Contact | undefined>(undefined)
-  const findDuplicate = useContactStore(s => s.findDuplicate)
-
-  const set = (key: string, value: string) => setForm(f => ({ ...f, [key]: value }))
-
-  const checkDuplicate = (phone: string, email: string) => {
-    setDuplicate(findDuplicate(phone, email))
-  }
-
-  const handleSave = () => {
-    if (!form.first_name.trim()) return
-    onSave(form as Partial<Contact> & { first_name: string })
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-end lg:items-center justify-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-      <div
-        className="relative bg-[#1a1a24] rounded-t-2xl lg:rounded-2xl w-full max-w-md max-h-[80vh] overflow-y-auto"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
-          <h3 className="text-sm font-bold text-shell-text">Nuevo contacto</h3>
-          <button onClick={onClose} className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer">
-            <span className="text-zinc-400 text-lg leading-none">&times;</span>
-          </button>
-        </div>
-
-        <div className="p-4 space-y-3">
-          {duplicate && (
-            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3">
-              <p className="text-xs font-bold text-amber-400">
-                Ya existe: {duplicate.first_name} {duplicate.last_name}
-              </p>
-              <p className="text-[11px] text-zinc-500 mt-1">
-                {duplicate.primary_phone || duplicate.primary_email}
-              </p>
-            </div>
-          )}
-          <FormInput label="Nombre *" value={form.first_name} onChange={v => set('first_name', v)} />
-          <FormInput label="Apellido" value={form.last_name} onChange={v => set('last_name', v)} />
-          <FormInput
-            label="Teléfono"
-            value={form.primary_phone}
-            onChange={v => { set('primary_phone', v); checkDuplicate(v, form.primary_email) }}
-            type="tel"
-          />
-          <FormInput
-            label="Email"
-            value={form.primary_email}
-            onChange={v => { set('primary_email', v); checkDuplicate(form.primary_phone, v) }}
-            type="email"
-          />
-          <div>
-            <label className="text-[11px] text-zinc-500 font-medium block mb-1">Origen</label>
-            <select
-              value={form.source}
-              onChange={e => set('source', e.target.value)}
-              className="w-full bg-white/[0.04] rounded-xl px-3 py-2 text-sm text-zinc-300 outline-none border border-white/[0.06] cursor-pointer [color-scheme:dark]"
-            >
-              {SOURCE_OPTIONS.map(s => (
-                <option key={s} value={s}>{SOURCE_LABELS[s]}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="p-4 border-t border-white/[0.06] flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="px-4 py-2.5 rounded-xl text-sm text-zinc-400 hover:bg-white/[0.06] cursor-pointer"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={handleSave}
-            className="px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 cursor-pointer"
-          >
-            Guardar
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function FormInput({ label, value, onChange, type = 'text' }: {
-  label: string; value: string; onChange: (v: string) => void; type?: string
-}) {
-  return (
-    <div>
-      <label className="text-[11px] text-zinc-500 font-medium block mb-1">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        className="w-full bg-white/[0.04] rounded-xl px-3 py-2 text-sm text-shell-text outline-none border border-white/[0.06] focus:border-blue-500/30"
-      />
     </div>
   )
 }

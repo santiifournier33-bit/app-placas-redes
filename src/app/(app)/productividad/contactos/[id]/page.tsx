@@ -94,6 +94,14 @@ export default function ContactDetailPage() {
             )}
           </div>
         </div>
+        <div className="hidden md:flex flex-col items-end text-[10px] text-zinc-600 leading-tight px-2 shrink-0">
+          <span>
+            Creado: {contact.created_at ? new Date(contact.created_at).toLocaleDateString('es-AR') : '—'}
+          </span>
+          <span>
+            Actualizado: {contact.updated_at ? new Date(contact.updated_at).toLocaleDateString('es-AR') : '—'}
+          </span>
+        </div>
         <button
           onClick={() => markContacted(contact.id)}
           className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-medium hover:bg-emerald-500/20 cursor-pointer"
