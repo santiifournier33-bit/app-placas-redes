@@ -54,9 +54,10 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
   }
 
   // Fade utility: width snaps instantly (avoids icon clipping when justify-center
-  // is active during transition), opacity fades smoothly.
+  // is active during transition), opacity fades smoothly. Delay on fade-in so
+  // labels appear AFTER the sidebar finishes growing.
   const fadeClass = `whitespace-nowrap overflow-hidden transition-opacity duration-200 ${
-    collapsed ? "w-0 opacity-0" : "opacity-100"
+    collapsed ? "w-0 opacity-0" : "opacity-100 delay-150"
   }`
 
   return (
@@ -94,21 +95,19 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
 
         {adminModules.length > 0 && (
           <>
-            <div
-              className={`px-3 overflow-hidden transition-opacity duration-200 ${
-                collapsed ? "h-0 opacity-0 py-0" : "opacity-100 pt-5 pb-2"
-              }`}
-            >
-              <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.15em] whitespace-nowrap">
+            {/* Fixed-height divider block (28px). Text label fades, the bottom
+                border line is constant. Keeps total height identical in both
+                expanded and collapsed states so icons don't shift. */}
+            <div className="relative h-7 mt-3 mb-1 mx-2 flex items-end">
+              <span
+                className={`text-[10px] font-bold text-zinc-600 uppercase tracking-[0.15em] whitespace-nowrap px-1 transition-opacity duration-200 ${
+                  collapsed ? "opacity-0" : "opacity-100 delay-150"
+                }`}
+              >
                 Administración
               </span>
+              <span className="absolute left-0 right-0 bottom-0 border-t border-white/[0.06]" />
             </div>
-            <div
-              style={{ transitionTimingFunction: EASE }}
-              className={`border-t border-white/[0.06] mx-2 transition-[opacity,padding] duration-300 ${
-                collapsed ? "opacity-100 pt-3 pb-1" : "opacity-0 pt-0 pb-0"
-              }`}
-            />
             {adminModules.map((mod) => (
               <NavItem key={mod.id} mod={mod} pathname={pathname} collapsed={collapsed} />
             ))}
@@ -156,7 +155,7 @@ function NavItem({ mod, pathname, collapsed }: { mod: ModuleDefinition; pathname
   const disabled = !mod.enabled
 
   const labelClass = `whitespace-nowrap overflow-hidden transition-opacity duration-200 ${
-    collapsed ? "w-0 opacity-0" : "opacity-100"
+    collapsed ? "w-0 opacity-0" : "opacity-100 delay-150"
   }`
 
   // Consistent square pill in both states: w-10 h-10 when collapsed (centered),
