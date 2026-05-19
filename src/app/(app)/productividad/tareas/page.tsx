@@ -259,20 +259,25 @@ export default function TareasPage() {
 
         </div>
 
-        {/* Inline detail panel — desktop only, rendered alongside list */}
-        {selectedTask && (
-          <TaskDetail
-            key={selectedTask.id}
-            task={selectedTask}
-            onClose={() => {
-              refreshSelected()
-              setSelectedTask(null)
-            }}
-            onToggleTask={handleToggleTask}
-            inline={true}
-          />
-        )}
       </div>
+
+      {/* Centered task detail modal (desktop) / bottom sheet (mobile) */}
+      {selectedTask && (
+        <TaskDetail
+          key={selectedTask.id}
+          task={selectedTask}
+          onClose={() => {
+            refreshSelected()
+            setSelectedTask(null)
+          }}
+          onToggleTask={handleToggleTask}
+          siblingIds={rootTasks.map(t => t.id)}
+          onNavigate={(id) => {
+            const next = tasks.find(t => t.id === id)
+            if (next) setSelectedTask(next)
+          }}
+        />
+      )}
 
       {/* Completion toast */}
       {toast && (

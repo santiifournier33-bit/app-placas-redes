@@ -1,17 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
-  X, Flag, Calendar as CalIcon, Trash2, Plus, AlignLeft, Bell, Repeat,
-  ChevronDown, ChevronRight,
+  X, Flag, Trash2, Plus, AlignLeft, Bell,
+  ChevronDown, ChevronRight, ChevronUp,
   CheckSquare, MapPin, Phone, Users, PenLine, UserCircle,
-  Coffee, Gift, Megaphone,
+  Coffee, Gift, Megaphone, MoreHorizontal, Link2, Pencil,
 } from "lucide-react"
-import type { Task, TaskType, TaskState } from "@/lib/stores/taskStore"
+import type { Task, TaskType } from "@/lib/stores/taskStore"
 import { useTaskStore, TASK_TYPES } from "@/lib/stores/taskStore"
 import { useContactStore } from "@/lib/stores/contactStore"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
+import { PortalDropdown } from "@/components/ui/PortalDropdown"
 
 const priorityLabels: Record<number, { label: string; color: string }> = {
   1: { label: "P1", color: "text-red-400" },
@@ -35,10 +34,12 @@ interface TaskDetailProps {
   task: Task
   onClose: () => void
   onToggleTask?: (id: string) => void
-  inline?: boolean
+  /** Ordered task ids of sibling tasks in the same view for prev/next navigation. */
+  siblingIds?: string[]
+  onNavigate?: (taskId: string) => void
 }
 
-export function TaskDetail({ task: initialTask, onClose, onToggleTask, inline = false }: TaskDetailProps) {
+export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingIds, onNavigate }: TaskDetailProps) {
   const { updateTask, deleteTask, addSubtask, toggleTask, tasks, sections } = useTaskStore()
   const doToggle = (id: string) => onToggleTask ? onToggleTask(id) : toggleTask(id)
   const { contacts } = useContactStore()
@@ -58,6 +59,10 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, inline = 
   const [description, setDescription] = useState(task.description ?? '')
   const [showDesc, setShowDesc] = useState(!!task.description)
   const [subtasksOpen, setSubtasksOpen] = useState(true)
+  const [showMenu, setShowMenu] = useState(false)
+  const [showReminder, setShowReminder] = useState(false)
+  const menuBtnRef = useRef<HTMLButtonElement>(null)
+  const reminderBtnRef = useRef<HTMLButtonElement>(null)
 
   const effectiveType = (task.task_type ?? "tarea") as TaskType
 
@@ -67,15 +72,81 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, inline = 
     setNewSubtask("")
   }
 
+  // Prev / next navigation
+  const currentIndex = siblingIds?.indexOf(task.id) ?? -1
+  const prevId = currentIndex > 0 ? siblingIds![currentIndex - 1] : null
+  const nextId = currentIndex >= 0 && siblingIds && currentIndex < siblingIds.length - 1
+    ? siblingIds[currentIndex + 1]
+    : null
+
+  const goPrev = () => { if (prevId && onNavigate) onNavigate(prevId) }
+  const goNext = () => { if (nextId && onNavigate) onNavigate(nextId) }
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose()
+      else if (e.key === "ArrowUp" && !editingTitle && !showDesc) { e.preventDefault(); goPrev() }
+      else if (e.key === "ArrowDown" && !editingTitle && !showDesc) { e.preventDefault(); goNext() }
+    }
+    document.addEventListener("keydown", handler)
+    return () => document.removeEventListener("keydown", handler)
+  }, [prevId, nextId, editingTitle, showDesc])
+
+  // Reminder presets (mirrors QuickAddTask)
+  const reminderOffsetMin: number | null = (() => {
+    if (!task.reminder_at || !task.due_date) return null
+    const due = new Date(`${task.due_date}T09:00:00`).getTime()
+    const r = new Date(task.reminder_at).getTime()
+    return Math.round((due - r) / 60000)
+  })()
+
+  const setReminderPreset = (offsetMin: number | null) => {
+    if (offsetMin === null || !task.due_date) {
+      updateTask(task.id, { reminder_at: null, reminder_sent_at: null })
+      return
+    }
+    const due = new Date(`${task.due_date}T09:00:00`).getTime()
+    const reminderAt = new Date(due - offsetMin * 60 * 1000).toISOString()
+    updateTask(task.id, { reminder_at: reminderAt, reminder_sent_at: null })
+  }
+
+  const reminderLabel = (() => {
+    if (reminderOffsetMin === null) return "Sin recordatorio"
+    if (reminderOffsetMin === 0) return "A la hora"
+    if (reminderOffsetMin === 10) return "10 min antes"
+    if (reminderOffsetMin === 60) return "1 h antes"
+    if (reminderOffsetMin === 1440) return "1 día antes"
+    return "Personalizado"
+  })()
+
+  const handleCopyLink = () => {
+    if (typeof window === "undefined") return
+    navigator.clipboard.writeText(`${window.location.origin}/productividad/tareas?id=${task.id}`)
+    setShowMenu(false)
+  }
+
   return (
     <>
-      {/* Mobile: bottom sheet overlay */}
+      {/* Mobile: bottom sheet overlay with drag handle */}
       <div className="lg:hidden fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
         <div
-          className="relative bg-[#1a1a24] rounded-t-2xl w-full max-h-[90vh] overflow-y-auto"
+          className="relative bg-[#1a1a24] rounded-t-2xl w-full max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom duration-200"
           onClick={(e) => e.stopPropagation()}
+          onTouchStart={(e) => {
+            (e.currentTarget as HTMLElement).dataset.touchStartY = String(e.touches[0].clientY)
+          }}
+          onTouchEnd={(e) => {
+            const start = Number((e.currentTarget as HTMLElement).dataset.touchStartY ?? 0)
+            const end = e.changedTouches[0].clientY
+            const scrollTop = (e.currentTarget as HTMLElement).scrollTop
+            if (scrollTop === 0 && end - start > 80) onClose()
+          }}
         >
+          <div className="flex justify-center pt-2 pb-1">
+            <div className="w-10 h-1 rounded-full bg-zinc-700" />
+          </div>
           <MobileHeader task={task} onClose={onClose} onDelete={() => { deleteTask(task.id); onClose() }} />
           <TaskBody
             task={task} subtasks={subtasks} section={section}
@@ -92,14 +163,17 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, inline = 
         </div>
       </div>
 
-      {/* Desktop: right side panel */}
-      <div className={`hidden lg:flex ${inline ? 'relative w-[680px] h-full' : 'fixed inset-0 z-50'}`}>
-        {/* Backdrop — only in overlay mode */}
-        {!inline && <div className="flex-1" onClick={onClose} />}
-        {/* Panel */}
-        <div className={`${inline ? 'w-full' : 'w-[680px]'} bg-[#13131a] border-l border-white/[0.06] flex flex-col overflow-hidden shadow-2xl`}>
+      {/* Desktop: centered modal */}
+      <div className="hidden lg:flex fixed inset-0 z-50 items-center justify-center p-6 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+        {/* Modal */}
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={(e) => e.stopPropagation()}
+          className="w-full max-w-[760px] max-h-[90vh] bg-[#13131a] border border-white/[0.08] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+        >
           {/* Header bar */}
-          <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06] shrink-0">
+          <div className="flex items-center justify-between px-5 h-12 border-b border-white/[0.06] shrink-0">
             <div className="flex items-center gap-1 text-xs text-zinc-500">
               <span>Bandeja de entrada</span>
               {section && (
@@ -110,13 +184,57 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, inline = 
               )}
             </div>
             <div className="flex items-center gap-1">
-              <button className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer text-zinc-500 hover:text-zinc-300">
+              <button
+                onClick={goPrev}
+                disabled={!prevId}
+                title="Tarea anterior"
+                className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer text-zinc-500 hover:text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+              >
+                <ChevronUp size={16} />
+              </button>
+              <button
+                onClick={goNext}
+                disabled={!nextId}
+                title="Tarea siguiente"
+                className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer text-zinc-500 hover:text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+              >
                 <ChevronDown size={16} />
               </button>
-              <button className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer text-zinc-500 hover:text-zinc-300">
-                <ChevronRight size={16} />
-              </button>
               <div className="w-px h-4 bg-white/[0.08] mx-1" />
+              <button
+                ref={menuBtnRef}
+                onClick={() => setShowMenu(!showMenu)}
+                className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer text-zinc-500 hover:text-zinc-300"
+              >
+                <MoreHorizontal size={16} />
+              </button>
+              <PortalDropdown
+                anchorRef={menuBtnRef}
+                open={showMenu}
+                onClose={() => setShowMenu(false)}
+                placement="bottom-end"
+                className="bg-[#1e1e2c] border border-white/[0.08] rounded-xl shadow-2xl py-1 min-w-[200px]"
+              >
+                <button
+                  onClick={() => { setEditingTitle(true); setShowMenu(false) }}
+                  className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-300 cursor-pointer"
+                >
+                  <Pencil size={13} className="text-zinc-500" /> Editar tarea
+                </button>
+                <button
+                  onClick={handleCopyLink}
+                  className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-300 cursor-pointer"
+                >
+                  <Link2 size={13} className="text-zinc-500" /> Copiar enlace a la tarea
+                </button>
+                <div className="border-t border-white/[0.06] my-1" />
+                <button
+                  onClick={() => { deleteTask(task.id); setShowMenu(false); onClose() }}
+                  className="flex items-center gap-2 px-3 py-2 w-full hover:bg-red-500/10 text-xs text-red-400 cursor-pointer"
+                >
+                  <Trash2 size={13} /> Eliminar tarea
+                </button>
+              </PortalDropdown>
               <button
                 onClick={onClose}
                 className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer text-zinc-500 hover:text-zinc-300"
@@ -332,14 +450,48 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, inline = 
 
               {/* Recordatorio */}
               <MetaRow label="Recordatorio">
-                <input
-                  type="datetime-local"
-                  value={task.reminder ?? ""}
-                  onChange={(e) => updateTask(task.id, { reminder: e.target.value || null })}
-                  className={`bg-transparent text-xs outline-none cursor-pointer [color-scheme:dark] w-full ${
-                    task.reminder ? "text-amber-400" : "text-zinc-500"
+                <button
+                  ref={reminderBtnRef}
+                  onClick={() => {
+                    if (!task.due_date) return
+                    setShowReminder(!showReminder)
+                  }}
+                  disabled={!task.due_date}
+                  title={!task.due_date ? "Asigná una fecha primero" : undefined}
+                  className={`flex items-center gap-1.5 text-xs cursor-pointer w-full text-left ${
+                    !task.due_date
+                      ? "text-zinc-700 cursor-not-allowed"
+                      : reminderOffsetMin !== null
+                        ? "text-amber-400"
+                        : "text-zinc-500 hover:text-zinc-300"
                   }`}
-                />
+                >
+                  <Bell size={13} className="shrink-0" />
+                  {reminderLabel}
+                </button>
+                <PortalDropdown
+                  anchorRef={reminderBtnRef}
+                  open={showReminder}
+                  onClose={() => setShowReminder(false)}
+                  className="bg-[#1e1e2c] border border-white/[0.08] rounded-xl shadow-2xl py-1 min-w-[160px]"
+                >
+                  {[
+                    { value: null, label: "Sin recordatorio" },
+                    { value: 0, label: "A la hora" },
+                    { value: 10, label: "10 min antes" },
+                    { value: 60, label: "1 h antes" },
+                    { value: 1440, label: "1 día antes" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value ?? "none"}
+                      onClick={() => { setReminderPreset(opt.value); setShowReminder(false) }}
+                      className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-300 cursor-pointer"
+                    >
+                      {opt.label}
+                      {reminderOffsetMin === opt.value && <span className="ml-auto text-zinc-500">✓</span>}
+                    </button>
+                  ))}
+                </PortalDropdown>
               </MetaRow>
 
               {/* Contacto */}
@@ -482,7 +634,7 @@ function TaskBody({
   showType: boolean
   setShowType: (v: boolean) => void
   effectiveType: TaskType
-  updateTask: TaskState["updateTask"]
+  updateTask: (id: string, updates: Partial<Task>) => Promise<void>
   toggleTask: (id: string) => void
   handleSubtaskAdd: () => void
 }) {
@@ -502,7 +654,6 @@ function TaskBody({
 
       {/* Date */}
       <div className="flex items-center gap-2">
-        <CalIcon size={15} className="text-zinc-500" />
         <input
           type="date"
           value={task.due_date ? task.due_date.slice(0, 10) : ""}
