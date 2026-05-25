@@ -1,0 +1,47 @@
+name: Zonaprop Locations Sync
+
+# Sync semanal del catálogo de ubicaciones (barrios, countries, localidades) desde
+# Zonaprop hacia Supabase tabla `locations`. Usado por matching engine para
+# point-in-polygon scoring de zonas.
+#
+# Corre lunes 4 AM UTC (1 AM ART) — fuera de horario pico para evitar competencia con
+# el sync de Tokko (que corre 9 AM UTC).
+#
+# Workflow es idempotente: upsert por (source, external_id). Refresca polígonos
+# existentes + agrega los nuevos. No borra rows obsoletas (data histórica permanece).
+
+on:
+  schedule:
+    - cron: '0 4 * * 1'  # Every Monday 04:00 UTC = 01:00 ART
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install curl (should already be present, defensive)
+        run: which curl || sudo apt-get install -y curl
+
+      - name: Run locations sync
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/sync-zonaprop-locations.mjs --max=300 --rate=2000 --jitter=800
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::warning::Zonaprop locations sync failed. Check job logs."

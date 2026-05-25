@@ -7,8 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
@@ -227,38 +225,6 @@ export type Database = {
           },
         ]
       }
-      contact_phones: {
-        Row: {
-          contact_id: string
-          created_at: string | null
-          id: string
-          phone: string
-          source: string | null
-        }
-        Insert: {
-          contact_id: string
-          created_at?: string | null
-          id?: string
-          phone: string
-          source?: string | null
-        }
-        Update: {
-          contact_id?: string
-          created_at?: string | null
-          id?: string
-          phone?: string
-          source?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "contact_phones_contact_id_fkey"
-            columns: ["contact_id"]
-            isOneToOne: false
-            referencedRelation: "contacts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       contact_notes: {
         Row: {
           body: string
@@ -300,6 +266,38 @@ export type Database = {
             columns: ["owner_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contact_phones: {
+        Row: {
+          contact_id: string
+          created_at: string | null
+          id: string
+          phone: string
+          source: string | null
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string | null
+          id?: string
+          phone: string
+          source?: string | null
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string | null
+          id?: string
+          phone?: string
+          source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_phones_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
             referencedColumns: ["id"]
           },
         ]
@@ -407,6 +405,7 @@ export type Database = {
           last_activity_at?: string | null
           last_contact_date?: string | null
           last_name?: string | null
+          lead_status?: string | null
           notes?: string | null
           owner_id: string
           primary_email?: string | null
@@ -415,6 +414,7 @@ export type Database = {
           source?: string | null
           tags?: string[] | null
           tipo?: string | null
+          tokko_contact_id?: string | null
           ubicacion?: string | null
           updated_at?: string | null
         }
@@ -508,18 +508,26 @@ export type Database = {
           first_inquired_at: string
           id: string
           last_inquired_at: string
+          location_id: number | null
+          location_is_approximate: boolean
+          match_method: string | null
+          needs_review: boolean | null
           owner_id: string | null
+          property_active: boolean | null
           property_snapshot: Json
           raw_payload: Json | null
           responded_at: string | null
           responded_by: string | null
           sla_notified_at: string | null
           source: string | null
+          source_portal: string | null
           status: string | null
           tags: Json | null
           tokko_property_id: string
           tokko_property_reference: string | null
+          tokko_web_contact_id: number | null
           updated_at: string | null
+          user_preferences: Json | null
         }
         Insert: {
           comment?: string | null
@@ -528,18 +536,26 @@ export type Database = {
           first_inquired_at: string
           id?: string
           last_inquired_at: string
+          location_id?: number | null
+          location_is_approximate?: boolean
+          match_method?: string | null
+          needs_review?: boolean | null
           owner_id?: string | null
+          property_active?: boolean | null
           property_snapshot: Json
           raw_payload?: Json | null
           responded_at?: string | null
           responded_by?: string | null
           sla_notified_at?: string | null
           source?: string | null
+          source_portal?: string | null
           status?: string | null
           tags?: Json | null
           tokko_property_id: string
           tokko_property_reference?: string | null
+          tokko_web_contact_id?: number | null
           updated_at?: string | null
+          user_preferences?: Json | null
         }
         Update: {
           comment?: string | null
@@ -548,18 +564,26 @@ export type Database = {
           first_inquired_at?: string
           id?: string
           last_inquired_at?: string
+          location_id?: number | null
+          location_is_approximate?: boolean
+          match_method?: string | null
+          needs_review?: boolean | null
           owner_id?: string | null
+          property_active?: boolean | null
           property_snapshot?: Json
           raw_payload?: Json | null
           responded_at?: string | null
           responded_by?: string | null
           sla_notified_at?: string | null
           source?: string | null
+          source_portal?: string | null
           status?: string | null
           tags?: Json | null
           tokko_property_id?: string
           tokko_property_reference?: string | null
+          tokko_web_contact_id?: number | null
           updated_at?: string | null
+          user_preferences?: Json | null
         }
         Relationships: [
           {
@@ -584,63 +608,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      tokko_sync_failures: {
-        Row: {
-          created_at: string | null
-          endpoint: string
-          error: string | null
-          id: string
-          next_retry_at: string | null
-          params: Json | null
-          resolved_at: string | null
-          retry_count: number | null
-        }
-        Insert: {
-          created_at?: string | null
-          endpoint: string
-          error?: string | null
-          id?: string
-          next_retry_at?: string | null
-          params?: Json | null
-          resolved_at?: string | null
-          retry_count?: number | null
-        }
-        Update: {
-          created_at?: string | null
-          endpoint?: string
-          error?: string | null
-          id?: string
-          next_retry_at?: string | null
-          params?: Json | null
-          resolved_at?: string | null
-          retry_count?: number | null
-        }
-        Relationships: []
-      }
-      tokko_sync_state: {
-        Row: {
-          id: string
-          last_cursor: string | null
-          last_error: string | null
-          last_synced_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          id: string
-          last_cursor?: string | null
-          last_error?: string | null
-          last_synced_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          last_cursor?: string | null
-          last_error?: string | null
-          last_synced_at?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
       }
       operation_agents: {
         Row: {
@@ -1201,6 +1168,96 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tokko_panel_session: {
+        Row: {
+          cookies: Json
+          expires_at: string | null
+          id: string
+          jwt: string | null
+          jwt_expires_at: string | null
+          last_error: string | null
+          last_renewed_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cookies: Json
+          expires_at?: string | null
+          id?: string
+          jwt?: string | null
+          jwt_expires_at?: string | null
+          last_error?: string | null
+          last_renewed_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cookies?: Json
+          expires_at?: string | null
+          id?: string
+          jwt?: string | null
+          jwt_expires_at?: string | null
+          last_error?: string | null
+          last_renewed_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      tokko_sync_failures: {
+        Row: {
+          created_at: string | null
+          endpoint: string
+          error: string | null
+          id: string
+          next_retry_at: string | null
+          params: Json | null
+          resolved_at: string | null
+          retry_count: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          endpoint: string
+          error?: string | null
+          id?: string
+          next_retry_at?: string | null
+          params?: Json | null
+          resolved_at?: string | null
+          retry_count?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          endpoint?: string
+          error?: string | null
+          id?: string
+          next_retry_at?: string | null
+          params?: Json | null
+          resolved_at?: string | null
+          retry_count?: number | null
+        }
+        Relationships: []
+      }
+      tokko_sync_state: {
+        Row: {
+          id: string
+          last_cursor: string | null
+          last_error: string | null
+          last_synced_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id: string
+          last_cursor?: string | null
+          last_error?: string | null
+          last_synced_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          last_cursor?: string | null
+          last_error?: string | null
+          last_synced_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {

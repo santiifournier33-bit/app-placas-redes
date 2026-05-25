@@ -1,0 +1,51 @@
+name: Tokko Panel Cookie Renewal
+
+# Runs weekly (Mondays 9 AM UTC = 6 AM ART) and on manual dispatch.
+# Logs into Tokko panel via Playwright headless and stores fresh cookies in Supabase.
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # Every Monday at 09:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  renew:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: ./
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run cookie renewal
+        env:
+          TOKKO_PANEL_LOGIN_URL: ${{ secrets.TOKKO_PANEL_LOGIN_URL }}
+          TOKKO_PANEL_EMAIL: ${{ secrets.TOKKO_PANEL_EMAIL }}
+          TOKKO_PANEL_PASSWORD: ${{ secrets.TOKKO_PANEL_PASSWORD }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/tokko-panel-renew-session.mjs
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          curl -sS -X POST "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}/rest/v1/tokko_panel_session" \
+            -H "apikey: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: resolution=merge-duplicates" \
+            -d '{"id":"default","last_error":"github-action-renew-failed","updated_at":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}'

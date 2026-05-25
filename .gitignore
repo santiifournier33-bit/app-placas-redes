@@ -39,3 +39,30 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# data backups (contain PII: emails, phones, snapshots)
+/backups/
+
+# reverse-engineering captures (contain auth cookies, JWTs, sample responses)
+/scripts/reverse-eng/output/
+
+# netlify
+.netlify/
+
+# logs + screenshots
+*.log
+*.png
+*.bak
+
+# scripts with hardcoded secrets (n8n API keys, Supabase service keys, Tokko passwords)
+# Should be refactored to read from env vars before tracking.
+/scripts/n8n-*.mjs
+/scripts/deploy-n8n-*.mjs
+/scripts/gmail-zonaprop-backfill.mjs
+/scripts/reverse-eng/capture.mjs
+
+# root-level dev/debug utilities (not part of the app)
+/clear_accounts.ts
+/list_accounts.ts
+/test.js
+/temp_production.tsx.bak

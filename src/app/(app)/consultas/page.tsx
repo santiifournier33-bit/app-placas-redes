@@ -175,8 +175,11 @@ function PropertyCard({ property, matchCount }: { property: TokkoProperty; match
           />
         ) : null}
         {matchCount > 0 && (
-          <span className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-blue-500 text-white text-[11px] font-bold shadow">
-            {matchCount} match{matchCount !== 1 ? 'es' : ''}
+          <span
+            className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-blue-500 text-white text-[11px] font-bold shadow"
+            title="Contactos que consultaron exactamente esta propiedad. Abrí para ver también contactos compatibles."
+          >
+            {matchCount} consulta{matchCount !== 1 ? 's' : ''}
           </span>
         )}
         <span

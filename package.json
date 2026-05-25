@@ -24,6 +24,7 @@
     "@zernio/node": "^0.2.42",
     "animejs": "^4.3.6",
     "aws-sdk": "^2.1693.0",
+    "cheerio": "^1.2.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "dotenv": "^17.4.2",
@@ -65,6 +66,7 @@
     "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
+    "playwright": "^1.60.0",
     "tailwindcss": "^4.3.0",
     "typescript": "^5"
   }
