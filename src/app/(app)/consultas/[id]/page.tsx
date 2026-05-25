@@ -7,6 +7,7 @@ import { ArrowLeft, MessageCircle, AlertCircle, ChevronDown, ArrowUpDown } from 
 import ContactDrawer from '@/components/consultas/ContactDrawer'
 
 type ZoneKind =
+  | 'direct_match'
   | 'polygon_same'
   | 'polygon_approximate'
   | 'polygon_neighbor'
@@ -37,6 +38,10 @@ interface Match {
   phone: string | null
   is_own: boolean
   can_see_pii: boolean
+  total_consultas?: number
+  primera_consulta?: string
+  ultima_consulta?: string
+  portales?: string[]
 }
 
 interface PropertyDetail {
@@ -425,7 +430,17 @@ function MatchCard({
               </span>
             )}
           </div>
+          {match.can_see_pii && match.email && (
+            <p className="text-[10px] text-zinc-500 mt-0.5 truncate">{match.email}</p>
+          )}
           <p className="text-[11px] text-zinc-500 mt-1">{match.reasons_text}</p>
+          {match.total_consultas != null && match.total_consultas > 1 && (
+            <p className="text-[10px] text-amber-400/80 mt-1">
+              Consultó {match.total_consultas} veces
+              {match.ultima_consulta && ` · última ${formatRelativeDays(match.ultima_consulta)}`}
+              {match.portales && match.portales.length > 1 && ` · ${match.portales.join(' + ')}`}
+            </p>
+          )}
         </div>
         <button
           onClick={onToggleBreakdown}
@@ -470,6 +485,18 @@ function MatchCard({
       </div>
     </div>
   )
+}
+
+function formatRelativeDays(iso: string): string {
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000)
+  if (days < 1) return 'hoy'
+  if (days === 1) return 'hace 1 día'
+  if (days < 30) return `hace ${days} días`
+  const months = Math.floor(days / 30)
+  if (months === 1) return 'hace 1 mes'
+  if (months < 12) return `hace ${months} meses`
+  const years = Math.floor(months / 12)
+  return years === 1 ? 'hace 1 año' : `hace ${years} años`
 }
 
 function BreakdownPill({ label, value }: { label: string; value: number }) {

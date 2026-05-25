@@ -126,7 +126,7 @@ export async function GET(req: NextRequest) {
     const { data: inquiries, error } = await admin
       .from('inquiries')
       .select(
-        'id, contact_id, owner_id, last_inquired_at, property_snapshot, tokko_property_reference, source, source_portal, status, user_preferences, location_id, location_is_approximate',
+        'id, contact_id, owner_id, last_inquired_at, first_inquired_at, property_snapshot, tokko_property_id, tokko_property_reference, source, source_portal, status, user_preferences, location_id, location_is_approximate',
       )
       .in('property_snapshot->>operation_type', opBucket.map(String))
       .gte('last_inquired_at', cutoffIso)
@@ -151,9 +151,11 @@ export async function GET(req: NextRequest) {
     })
     await enrichLocationIds([propAttrs], admin)
 
-    // 3a-bis. If target prop has a location_id, fetch its neighbor polygons (< 500m edges).
-    // Used by scoreZone tier 1.5 — when inquiry falls in an adjacent polygon, score 80.
-    if (propAttrs.location_id != null) {
+    // 3a-bis. Fetch neighbor polygons solo cuando target tiene location_id PRECISO
+    // (country/barrio). Si es approximate (localidad/partido), el polygon es enorme
+    // y los "vecinos" incluirían todo lo contenido/superpuesto → falsos positivos
+    // masivos. Skip ahorra 1 RPC roundtrip.
+    if (propAttrs.location_id != null && !propAttrs.location_is_approximate) {
       propAttrs.neighbor_location_ids = await fetchNeighborLocationIds(propAttrs.location_id, admin)
     }
 
@@ -169,8 +171,50 @@ export async function GET(req: NextRequest) {
       passing.push({ inq, score })
     })
 
+    // 3c. Dedup por (contact_id, tokko_property_id): mismo contacto + misma propiedad
+    // (re-consultas multi-fecha o cross-portal) colapsan en 1 card con contador.
+    // Distinto tokko_property_id queda como cards separadas (interés en propiedades distintas).
+    // Fallback key cuando tokko_property_id es null: usa snapshot.tokko_id.
+    type PassingEntry = typeof passing[number]
+    interface Group {
+      best: PassingEntry
+      total_consultas: number
+      primera_consulta: string
+      ultima_consulta: string
+      portales: Set<string>
+    }
+    const groups = new Map<string, Group>()
+    for (const p of passing) {
+      const snapTokkoId = (p.inq.property_snapshot as Record<string, unknown> | null)?.tokko_id
+      const propKey = String(p.inq.tokko_property_id ?? snapTokkoId ?? '')
+      const key = `${p.inq.contact_id}::${propKey}`
+      const portal = p.inq.source_portal ?? null
+      const existing = groups.get(key)
+      if (!existing) {
+        groups.set(key, {
+          best: p,
+          total_consultas: 1,
+          primera_consulta: p.inq.first_inquired_at ?? p.inq.last_inquired_at,
+          ultima_consulta: p.inq.last_inquired_at,
+          portales: new Set(portal ? [portal] : []),
+        })
+      } else {
+        existing.total_consultas++
+        if (new Date(p.inq.last_inquired_at) > new Date(existing.ultima_consulta)) {
+          existing.best = p
+          existing.ultima_consulta = p.inq.last_inquired_at
+        }
+        const firstIso = p.inq.first_inquired_at ?? p.inq.last_inquired_at
+        if (new Date(firstIso) < new Date(existing.primera_consulta)) {
+          existing.primera_consulta = firstIso
+        }
+        if (portal) existing.portales.add(portal)
+      }
+    }
+    const passingDeduped = [...groups.values()]
+
     // 4. Batch fetch contacts (+ emails + phones) only for passing inquiries
-    const contactIds = [...new Set(passing.map((p) => p.inq.contact_id))]
+    const contactIds = [...new Set(passingDeduped.map((g) => g.best.inq.contact_id))]
     const [{ data: contacts }, { data: emails }, { data: phones }] = await Promise.all([
       contactIds.length ? admin.from('contacts').select('id, first_name, last_name, owner_id').in('id', contactIds) : Promise.resolve({ data: [], error: null }),
       contactIds.length ? admin.from('contact_emails').select('contact_id, email').in('contact_id', contactIds) : Promise.resolve({ data: [], error: null }),
@@ -193,7 +237,8 @@ export async function GET(req: NextRequest) {
 
     // 5. Mask + assemble
     const matches = []
-    for (const { inq, score } of passing) {
+    for (const g of passingDeduped) {
+      const { inq, score } = g.best
       const contact = contactById.get(inq.contact_id)
       if (!contact) continue
 
@@ -237,6 +282,10 @@ export async function GET(req: NextRequest) {
         source: inq.source,
         source_portal: inq.source_portal,
         status: inq.status,
+        total_consultas: g.total_consultas,
+        primera_consulta: g.primera_consulta,
+        ultima_consulta: g.ultima_consulta,
+        portales: [...g.portales],
         ...display,
       })
     }

@@ -30,6 +30,7 @@ export interface PropertyAttributes {
 }
 
 export type ZoneMatchKind =
+  | 'direct_match'         // inquiry was for THIS exact property (same tokko_id)
   | 'polygon_same'         // both prop and inquiry inside same Zonaprop polygon (exact)
   | 'polygon_approximate'  // same polygon but resolved via parent-level fallback
   | 'polygon_neighbor'     // inquiry inside polygon adjacent to prop's polygon (<500m)
@@ -140,6 +141,11 @@ function scoreZone(
   prop: PropertyAttributes,
   inquiry: PropertyAttributes,
 ): { score: number; reason: string; kind: ZoneMatchKind } {
+  // Tier 0: direct match — la inquiry es por la misma propiedad. Por definición zona perfecta.
+  // No depende de polygons ni coords — basta con que tokko_id coincida.
+  if (prop.tokko_id != null && inquiry.tokko_id != null && String(prop.tokko_id) === String(inquiry.tokko_id)) {
+    return { score: 100, reason: 'consulta directa por esta propiedad', kind: 'direct_match' }
+  }
   // Tier 1: mismo polígono Zonaprop, PRECISO (nivel country o barrio).
   // Si alguno de los dos lados es aproximado (level localidad/partido/region/pais),
   // significa que comparten un polígono "amplio" — fall through a haversine para medir
@@ -152,8 +158,13 @@ function scoreZone(
     }
     // Approximate match: fall through (haversine medirá la distancia real).
   }
-  // Tier 1.5: polígonos vecinos (bordes a <500m, populated by enrichNeighborLocationIds for target prop)
+  // Tier 1.5: polígonos vecinos (bordes a <500m, populated by enrichNeighborLocationIds for target prop).
+  // Solo aplica cuando AMBOS polygons son precisos (country/barrio level).
+  // Si target o inquiry son approximate (localidad/partido), el polygon contiene cosas
+  // muy diversas y "vecino" pierde sentido — cae a haversine que mide distancia real.
   if (
+    !prop.location_is_approximate &&
+    !inquiry.location_is_approximate &&
     prop.neighbor_location_ids?.length &&
     inquiry.location_id != null &&
     prop.neighbor_location_ids.includes(inquiry.location_id)

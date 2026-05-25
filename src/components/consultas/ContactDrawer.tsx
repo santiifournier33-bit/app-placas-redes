@@ -79,6 +79,7 @@ interface ContactPayload {
 }
 
 export type ZoneMatchKind =
+  | 'direct_match'
   | 'polygon_same'
   | 'polygon_approximate'
   | 'polygon_neighbor'
@@ -255,6 +256,11 @@ export default function ContactDrawer(props: DrawerProps) {
                 </div>
               )}
 
+              {matchData.zone_kind === 'direct_match' && (
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
+                  🎯 Consulta directa por esta propiedad
+                </div>
+              )}
               {matchData.zone_kind === 'polygon_same' && (
                 <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 text-[10px] font-medium">
                   📍 Dentro del polígono Zonaprop
