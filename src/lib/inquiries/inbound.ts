@@ -1,6 +1,7 @@
 import crypto from 'node:crypto'
 import { createServiceClient } from '@/lib/supabase/service'
 import { fetchPanelAuth, fetchPropertyQuick, buildSnapshotFromApi3 } from '@/lib/tokko-panel/api3-client'
+import { normalizeLocationFull } from '@/lib/consultas/normalize-location'
 
 const TOKKO_API_KEY = process.env.TOKKO_API_KEY || '1dc0ef58a932195a5ae942f23063314ac8f34ffc'
 const TOKKO_BASE = 'https://www.tokkobroker.com/api/v1'
@@ -159,7 +160,7 @@ function buildSnapshot(prop: any, fallback: { reference_code?: string; tokko_id?
     geo_lat: prop.geo_lat ? Number(prop.geo_lat) : null,
     geo_long: prop.geo_long ? Number(prop.geo_long) : null,
     location_name: prop.location?.name ?? null,
-    location_full: prop.location?.full_location ?? null,
+    location_full: normalizeLocationFull(prop.location?.full_location ?? null, 'public'),
     cover_photo_url: prop.photos?.[0]?.image ?? null,
     producer_email: prop.producer?.email ?? null,
     _source: 'active',

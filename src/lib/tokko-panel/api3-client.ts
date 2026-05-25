@@ -1,3 +1,5 @@
+import { normalizeLocationFull } from '@/lib/consultas/normalize-location'
+
 // Tokko Panel /api3/ client — fetches property data including INACTIVE properties.
 // Required for backfilling inquiries where `property_snapshot._source = 'inactive'`
 // because public Tokko API /api/v1/inactiveproperty/{id}/ does NOT expose geo data.
@@ -169,10 +171,14 @@ export function buildSnapshotFromApi3(apiResponse: any): Record<string, unknown>
     }
   }
 
-  // Location full → name = last segment
-  const locationFull = (data.location as string | undefined) ?? null
-  const locationName = locationFull
-    ? locationFull.split('|').map(s => s.trim()).filter(Boolean).slice(-1)[0] ?? null
+  // Location full normalized to canonical order (pais|region|partido|localidad|barrio).
+  // api3 emits reverse-order ("Pilar | Pilar | G.B.A. Zona Norte"); normalizer reorders.
+  const rawLocationFull = (data.location as string | undefined) ?? null
+  const locationFull = normalizeLocationFull(rawLocationFull, 'api3')
+  // location_name = deepest available (barrio if present, else localidad). Read from raw
+  // because the api3 raw format puts the deepest level first.
+  const locationName = rawLocationFull
+    ? rawLocationFull.split('|').map(s => s.trim()).filter(Boolean)[0] ?? null
     : null
 
   return {

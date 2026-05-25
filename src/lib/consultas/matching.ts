@@ -2,6 +2,8 @@
 // Score 0-100 = weighted sum of zone (40%) + price (30%) + bedrooms (20%) + type (10%).
 // Threshold: scores under 40 are filtered out by the caller.
 
+import { parseLocationHierarchy } from './normalize-location'
+
 export interface PropertyAttributes {
   tokko_id: number | string
   operation_type: number | null    // 1=venta, 2=alquiler, 3=alquiler temporal
@@ -74,18 +76,32 @@ function haversineKm(
   return R * c
 }
 
-/** Compare two `full_location` strings by hierarchy level.
- *  Tokko format: "Argentina | Buenos Aires | Pilar | Barrio Santa María".
- *  Returns 'barrio' | 'localidad' | 'partido' | 'none'. */
+/**
+ * Compare two `full_location` strings by NAMED hierarchy level (not raw index).
+ *
+ * Tokko emits multiple formats (5/4/3/2 segments, plus api3 reverse-order). The
+ * legacy implementation compared raw indices and produced FALSE barrio matches
+ * when partido/localidad shared names ("Pilar | Pilar") or when formats differed.
+ *
+ * This version delegates parsing to `parseLocationHierarchy` (heuristic by length
+ * + dedup of repeated levels) and compares level-by-level via the parsed Map.
+ *
+ * Returns the deepest matching level, or 'none'.
+ *
+ * See src/lib/consultas/normalize-location.ts for parsing rules and edge cases.
+ */
 function hierarchyMatch(a: string | null, b: string | null): 'barrio' | 'localidad' | 'partido' | 'none' {
   if (!a || !b) return 'none'
-  const partsA = a.split('|').map((s) => s.trim().toLowerCase())
-  const partsB = b.split('|').map((s) => s.trim().toLowerCase())
-  // Compare from most specific (last) to least specific.
-  const minLen = Math.min(partsA.length, partsB.length)
-  if (minLen >= 4 && partsA[3] && partsA[3] === partsB[3]) return 'barrio'
-  if (minLen >= 3 && partsA[2] && partsA[2] === partsB[2]) return 'localidad'
-  if (minLen >= 2 && partsA[1] && partsA[1] === partsB[1]) return 'partido'
+  const ha = parseLocationHierarchy(a)
+  const hb = parseLocationHierarchy(b)
+  const eqLevel = (lvl: 'barrio' | 'localidad' | 'partido'): boolean => {
+    const av = ha.get(lvl)
+    const bv = hb.get(lvl)
+    return Boolean(av && bv && av.toLowerCase() === bv.toLowerCase())
+  }
+  if (eqLevel('barrio')) return 'barrio'
+  if (eqLevel('localidad')) return 'localidad'
+  if (eqLevel('partido')) return 'partido'
   return 'none'
 }
 
@@ -141,9 +157,20 @@ function scoreZone(
   ) {
     return { score: 80, reason: 'barrio vecino (polígono adyacente)', kind: 'polygon_neighbor' }
   }
+
+  // Guard: when BOTH sides have polygon-resolved location_ids and they differ
+  // (and they're not neighbors per above), the polygons are the authoritative
+  // geographic answer. Skip tier 2 string_barrio to prevent false "barrio exacto"
+  // overrides caused by repeated names (e.g. "Pilar | Pilar") or format
+  // inconsistencies in Tokko location_full strings.
+  const bothHavePolygons = prop.location_id != null && inquiry.location_id != null
+  const polygonsDisagree = bothHavePolygons && prop.location_id !== inquiry.location_id
+
   // Tier 2: barrio exacto por string (Tokko location_full hierarchy)
+  // Only consulted when polygons did not disagree (i.e. at least one side missing
+  // polygon, or the comparison is ambiguous).
   const h = hierarchyMatch(prop.location_full, inquiry.location_full)
-  if (h === 'barrio') {
+  if (!polygonsDisagree && h === 'barrio') {
     return { score: 100, reason: `${prop.location_name ?? 'Zona'} (barrio exacto)`, kind: 'string_barrio' }
   }
   // Tier 3 / 4: haversine (menos confiable que polígono — score reducido 65/45 vs 80/60 antes)
