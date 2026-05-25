@@ -275,6 +275,7 @@ export async function GET(req: NextRequest) {
         zone_kind: score.zone_kind,
         score_source: score.source,
         match_type: matchType,
+        soft_fail_reasons: score.soft_fail_reasons ?? null,
         reasons_text: buildReasonsText(score, inq.last_inquired_at),
         recency_bucket: recencyBucket(inq.last_inquired_at),
         last_inquired_at: inq.last_inquired_at,

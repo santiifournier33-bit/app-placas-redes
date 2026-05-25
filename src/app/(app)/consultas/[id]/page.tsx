@@ -42,6 +42,7 @@ interface Match {
   primera_consulta?: string
   ultima_consulta?: string
   portales?: string[]
+  soft_fail_reasons?: string[] | null
 }
 
 interface PropertyDetail {
@@ -422,6 +423,14 @@ function MatchCard({
             {matchTypeBadge && (
               <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${matchTypeBadge.cls}`}>
                 {matchTypeBadge.text}
+              </span>
+            )}
+            {match.soft_fail_reasons && match.soft_fail_reasons.length > 0 && (
+              <span
+                className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-purple-500/10 text-purple-300 border border-purple-500/20"
+                title={match.soft_fail_reasons.join(' · ')}
+              >
+                Interés zonal
               </span>
             )}
             {!match.is_own && (

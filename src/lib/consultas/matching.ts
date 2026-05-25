@@ -51,6 +51,11 @@ export interface MatchScore {
   }
   zone_kind: ZoneMatchKind
   reasons: string[]
+  // Set when zone is a precise polygon hit (polygon_same/string_barrio/direct_match)
+  // but the inquiry's property type and/or price would normally invalidate the match.
+  // We override the hard filter because intent is geographic: contact wants THIS area,
+  // type/budget mismatch is a soft signal. UI surfaces this with a "interés zonal" badge.
+  soft_fail_reasons?: string[]
 }
 
 /** Hard filter: matching operations buckets.
@@ -375,18 +380,34 @@ export function computeMatchScore(
     type.score === 100
   const price = scorePrice(prop, inquiry, { expandedRange: highConfidenceMatch })
 
-  // Hard filter: if price or property type is invalid, score is 0
+  // Soft fail: when zone is a precise polygon/barrio hit (mismo country, mismo barrio,
+  // o consulta directa), intent is geographic. Type or price mismatch shouldn't zero
+  // out the match — contact wants THIS area, alternative type/budget is a soft signal.
+  // Outside that bracket, type/price mismatch remains a hard filter (avoids noise from
+  // far-off matches).
+  const preciseZone =
+    zone.kind === 'polygon_same' ||
+    zone.kind === 'string_barrio' ||
+    zone.kind === 'direct_match'
+
   if (!price.isValid || !type.isValid) {
-    return {
-      total: 0,
-      breakdown: { zone: zone.score, price: price.score, bedrooms: bedrooms.score, type: type.score },
-      zone_kind: zone.kind,
-      reasons: [
-        !price.isValid ? price.reason : '',
-        !type.isValid ? type.reason : ''
-      ].filter(Boolean),
+    if (!preciseZone) {
+      return {
+        total: 0,
+        breakdown: { zone: zone.score, price: price.score, bedrooms: bedrooms.score, type: type.score },
+        zone_kind: zone.kind,
+        reasons: [
+          !price.isValid ? price.reason : '',
+          !type.isValid ? type.reason : ''
+        ].filter(Boolean),
+      }
     }
+    // Precise zone → soft fail, continue scoring with 0 in offending dimension.
   }
+
+  const softFailReasons: string[] = []
+  if (preciseZone && !type.isValid) softFailReasons.push(`tipo distinto (${inquiry.property_type ?? '?'} → ${prop.property_type ?? '?'})`)
+  if (preciseZone && !price.isValid) softFailReasons.push(price.reason || 'precio/moneda fuera de rango')
 
   const total = Math.round(
     zone.score * 0.40 +
@@ -397,15 +418,17 @@ export function computeMatchScore(
 
   const reasons: string[] = []
   if (zone.reason) reasons.push(zone.reason)
-  if (price.reason) reasons.push(price.reason)
+  if (price.reason && price.isValid) reasons.push(price.reason)
   if (bedrooms.reason) reasons.push(bedrooms.reason)
-  if (type.reason) reasons.push(type.reason)
+  if (type.reason && type.isValid) reasons.push(type.reason)
+  for (const sr of softFailReasons) reasons.push(`interés zonal · ${sr}`)
 
   return {
     total,
     breakdown: { zone: zone.score, price: price.score, bedrooms: bedrooms.score, type: type.score },
     zone_kind: zone.kind,
     reasons,
+    soft_fail_reasons: softFailReasons.length ? softFailReasons : undefined,
   }
 }
 
