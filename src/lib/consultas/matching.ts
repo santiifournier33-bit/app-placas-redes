@@ -140,14 +140,17 @@ function scoreZone(
   prop: PropertyAttributes,
   inquiry: PropertyAttributes,
 ): { score: number; reason: string; kind: ZoneMatchKind } {
-  // Tier 1: mismo polígono Zonaprop.
-  // Si alguno de los dos lados es aproximado (resolved via parent fallback), tope 70.
+  // Tier 1: mismo polígono Zonaprop, PRECISO (nivel country o barrio).
+  // Si alguno de los dos lados es aproximado (level localidad/partido/region/pais),
+  // significa que comparten un polígono "amplio" — fall through a haversine para medir
+  // distancia real. Evita falsos 100/100 entre 2 propiedades en la misma localidad
+  // pero a 3km de distancia (caso Pilar Centro vs Barrio Bonanza).
   if (prop.location_id != null && inquiry.location_id != null && prop.location_id === inquiry.location_id) {
     const approx = Boolean(prop.location_is_approximate || inquiry.location_is_approximate)
-    if (approx) {
-      return { score: 70, reason: `${prop.location_name ?? 'Zona'} (misma zona, aproximado)`, kind: 'polygon_approximate' }
+    if (!approx) {
+      return { score: 100, reason: `${prop.location_name ?? 'Zona'} (mismo polígono)`, kind: 'polygon_same' }
     }
-    return { score: 100, reason: `${prop.location_name ?? 'Zona'} (mismo polígono)`, kind: 'polygon_same' }
+    // Approximate match: fall through (haversine medirá la distancia real).
   }
   // Tier 1.5: polígonos vecinos (bordes a <500m, populated by enrichNeighborLocationIds for target prop)
   if (
@@ -252,8 +255,15 @@ export async function enrichLocationIds(
       return
     }
     if (!Array.isArray(data)) return
-    for (const row of data as Array<{ idx: number; location_id: number | null }>) {
-      if (attrs[row.idx]) attrs[row.idx].location_id = row.location_id ?? null
+    // Levels considered "broad area" — match is approximate (not a precise barrio/country hit).
+    // Mirrors public.resolve_inquiry_location_v2 logic so target prop + inquiries are tagged
+    // consistently in scoreZone tier 1.
+    const broadLevels = new Set(['localidad', 'partido', 'provincia', 'region', 'pais'])
+    for (const row of data as Array<{ idx: number; location_id: number | null; level?: string | null }>) {
+      if (attrs[row.idx]) {
+        attrs[row.idx].location_id = row.location_id ?? null
+        attrs[row.idx].location_is_approximate = row.level ? broadLevels.has(row.level) : false
+      }
     }
   } catch (err) {
     console.warn('[enrichLocationIds] thrown, falling back to string+haversine:', err)
