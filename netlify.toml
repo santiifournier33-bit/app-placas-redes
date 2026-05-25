@@ -1,3 +1,26 @@
-# Archivo de configuración de Netlify
-# Removido el timeout por incompatibilidad con el plan gratuito.
-# Netlify auto-detectará la configuración de Next.js.
+# Netlify build config — Next.js auto-detected by @netlify/plugin-nextjs.
+# Plugin handles SSR routes, ISR cache, API routes, middleware automatically.
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  # Workaround for Next.js build crash with @react-pdf and similar large deps.
+  NODE_OPTIONS = "--max-old-space-size=8192"
+  # Ensure consistent Node.js version with local dev.
+  NODE_VERSION = "20"
+
+# Branch-based deploy contexts.
+# Production deploys come from `main`; staging from `staging` branch.
+[context.production]
+  command = "npm run build"
+
+[context.staging]
+  command = "npm run build"
+
+[context.deploy-preview]
+  command = "npm run build"
+
+# Next.js plugin is auto-installed by Netlify when it detects Next.js.
+# No explicit [[plugins]] block needed.
