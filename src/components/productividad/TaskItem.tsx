@@ -67,13 +67,13 @@ export function TaskItem({ task, subtaskCount = 0, subtaskDone = 0, onTap, inden
 
         <div className="flex items-center gap-3 mt-1 flex-wrap">
           {task.due_date && (
-            <span className={`text-[11px] flex items-center gap-1 ${overdue ? "text-red-400" : "text-zinc-500"}`}>
+            <span className={`text-xs md:text-[11px] flex items-center gap-1 ${overdue ? "text-red-400" : "text-zinc-500"}`}>
               {format(new Date(task.due_date), "d MMM", { locale: es })}
             </span>
           )}
 
           {subtaskCount > 0 && (
-            <span className="text-[11px] text-zinc-500 flex items-center gap-1">
+            <span className="text-xs md:text-[11px] text-zinc-500 flex items-center gap-1">
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 8h8M8 4v8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
               {subtaskDone}/{subtaskCount}
             </span>

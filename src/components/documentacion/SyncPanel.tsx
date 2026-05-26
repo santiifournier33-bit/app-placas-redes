@@ -131,7 +131,7 @@ export function SyncPanel({ unsyncedCount, agents, onClose, onSyncComplete }: Sy
             <div className="px-5 py-4 space-y-4">
               {/* Mode selection */}
               <div className="space-y-2">
-                <p className="text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em]">Modo</p>
+                <p className="text-xs md:text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em]">Modo</p>
                 <div className="space-y-1.5">
                   {MODES.map(m => {
                     const Icon = m.icon
@@ -154,7 +154,7 @@ export function SyncPanel({ unsyncedCount, agents, onClose, onSyncComplete }: Sy
                         <Icon size={16} className={selected ? "text-blue-400" : "text-zinc-500"} />
                         <div className="text-left">
                           <p className={`text-sm font-medium ${selected ? "text-blue-400" : "text-zinc-300"}`}>{m.label}</p>
-                          <p className="text-[10px] text-zinc-500">{m.desc}</p>
+                          <p className="text-xs md:text-[10px] text-zinc-500">{m.desc}</p>
                         </div>
                       </button>
                     )
@@ -164,7 +164,7 @@ export function SyncPanel({ unsyncedCount, agents, onClose, onSyncComplete }: Sy
 
               {/* Agent filter */}
               <div>
-                <p className="text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em] mb-2">Asesor</p>
+                <p className="text-xs md:text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em] mb-2">Asesor</p>
                 <select
                   value={agent}
                   onChange={e => setAgent(e.target.value)}
@@ -194,7 +194,7 @@ export function SyncPanel({ unsyncedCount, agents, onClose, onSyncComplete }: Sy
               {/* Progress bar */}
               {progress.total > 0 && (
                 <div className="space-y-1">
-                  <div className="flex justify-between text-[10px] text-zinc-500">
+                  <div className="flex justify-between text-xs md:text-[10px] text-zinc-500">
                     <span>{syncing ? "Procesando..." : "Completado"}</span>
                     <span>{progress.current}/{progress.total}</span>
                   </div>
@@ -210,7 +210,7 @@ export function SyncPanel({ unsyncedCount, agents, onClose, onSyncComplete }: Sy
               {/* Log entries */}
               <div
                 ref={logRef}
-                className="max-h-[240px] overflow-y-auto rounded-xl bg-black/30 border border-white/[0.04] p-3 space-y-1 font-mono text-[11px]"
+                className="max-h-[240px] overflow-y-auto rounded-xl bg-black/30 border border-white/[0.04] p-3 space-y-1 font-mono text-xs md:text-[11px]"
               >
                 {logs.map((log, i) => (
                   <div key={i} className="flex items-start gap-2">

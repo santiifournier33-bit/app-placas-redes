@@ -94,7 +94,7 @@ export default function LoginPage() {
 
             <div className="space-y-5">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-shell-text-muted uppercase tracking-wider pl-1">Email Tokko Broker</label>
+                <label className="text-xs md:text-[11px] font-bold text-shell-text-muted uppercase tracking-wider pl-1">Email Tokko Broker</label>
                 <div className="relative group">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-shell-text-muted group-focus-within:text-brand-accent transition-colors duration-200">
                     <Sms size={18} />
@@ -111,7 +111,7 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-shell-text-muted uppercase tracking-wider pl-1">Contraseña</label>
+                <label className="text-xs md:text-[11px] font-bold text-shell-text-muted uppercase tracking-wider pl-1">Contraseña</label>
                 <div className="relative group">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-shell-text-muted group-focus-within:text-brand-accent transition-colors duration-200">
                     <Lock size={18} />
@@ -142,7 +142,7 @@ export default function LoginPage() {
           </form>
 
           <div className="px-8 pb-8 text-center">
-            <p className="text-[10px] font-semibold text-shell-text-muted/70 leading-normal">
+            <p className="text-xs md:text-[10px] font-semibold text-shell-text-muted/70 leading-normal">
               Tus credenciales se validan directamente con Tokko Broker de forma segura y nunca son almacenadas.
             </p>
           </div>

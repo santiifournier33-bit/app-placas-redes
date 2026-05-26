@@ -75,12 +75,12 @@ function PanelContent({ contact, tab, setTab, onClose, markContacted, handleDele
             </h2>
             <div className="flex items-center gap-2 mt-0.5">
               {contact.source && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">
+                <span className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">
                   {SOURCE_LABELS[contact.source as keyof typeof SOURCE_LABELS] ?? contact.source}
                 </span>
               )}
               {contact.circulo && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">
+                <span className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">
                   {contact.circulo}
                 </span>
               )}

@@ -170,7 +170,7 @@ export default function TareasPage() {
             <div className="absolute right-0 top-full mt-1 bg-[#1e1e2c] rounded-xl border border-white/[0.08] py-2 z-30 shadow-xl w-52">
               {/* Vista section */}
               <div className="px-3 pb-1">
-                <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider mb-1.5">Vista</p>
+                <p className="text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider mb-1.5">Vista</p>
                 <div className="flex gap-1">
                   <button
                     onClick={() => setDisplayMode("lista")}
@@ -192,7 +192,7 @@ export default function TareasPage() {
               </div>
 
               <div className="border-t border-white/[0.06] mt-2 pt-2 px-3">
-                <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider mb-1.5">Filtro</p>
+                <p className="text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider mb-1.5">Filtro</p>
                 <button
                   onClick={() => setShowCompleted(!showCompleted)}
                   className="flex items-center justify-between w-full cursor-pointer py-1"

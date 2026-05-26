@@ -119,7 +119,7 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
                 expanded and collapsed states so icons don't shift. */}
             <div className="relative h-7 mt-3 mb-1 mx-2 flex items-end">
               <span
-                className={`text-[10px] font-bold text-shell-text-muted uppercase tracking-[0.15em] whitespace-nowrap px-1 transition-opacity duration-200 ${
+                className={`text-xs md:text-[10px] font-bold text-shell-text-muted uppercase tracking-[0.15em] whitespace-nowrap px-1 transition-opacity duration-200 ${
                   collapsed ? "opacity-0" : "opacity-100 delay-150"
                 }`}
               >
@@ -142,10 +142,10 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
           }`}
         >
           <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_6px_rgba(52,211,153,0.5)]" />
-          <span className="text-[11px] font-medium text-shell-text-muted truncate">
+          <span className="text-xs md:text-[11px] font-medium text-shell-text-muted truncate">
             {email}
           </span>
-          <span className="ml-auto text-[9px] font-bold uppercase tracking-wider text-shell-accent bg-shell-accent-muted px-1.5 py-0.5 rounded">
+          <span className="ml-auto text-xs md:text-[9px] font-bold uppercase tracking-wider text-shell-accent bg-shell-accent-muted px-1.5 py-0.5 rounded">
             {role}
           </span>
         </div>
@@ -245,7 +245,7 @@ function NavItem({ mod, pathname, collapsed }: { mod: ModuleDefinition; pathname
       </span>
       {badge > 0 && (
         <span
-          className={`shrink-0 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-amber-500 text-[10px] font-bold text-zinc-950 ${
+          className={`shrink-0 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-amber-500 text-xs md:text-[10px] font-bold text-zinc-950 ${
             collapsed
               ? 'absolute top-1 right-1 transform scale-75'
               : 'ml-auto'

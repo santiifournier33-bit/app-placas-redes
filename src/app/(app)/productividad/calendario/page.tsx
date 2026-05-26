@@ -109,7 +109,7 @@ export default function CalendarioPage() {
         <div className="flex items-center gap-1">
           <button
             onClick={() => setCurrentMonth(new Date())}
-            className="text-[11px] text-blue-400 font-medium px-2 py-1 hover:bg-blue-500/10 rounded-lg cursor-pointer"
+            className="text-xs md:text-[11px] text-blue-400 font-medium px-2 py-1 hover:bg-blue-500/10 rounded-lg cursor-pointer"
           >
             Hoy
           </button>
@@ -125,7 +125,7 @@ export default function CalendarioPage() {
       {/* Day headers */}
       <div className="grid grid-cols-7 px-4 pt-3">
         {["Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom"].map(day => (
-          <div key={day} className="text-center text-[10px] font-bold text-zinc-600 uppercase tracking-wider py-1">
+          <div key={day} className="text-center text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider py-1">
             {day}
           </div>
         ))}
@@ -218,7 +218,7 @@ export default function CalendarioPage() {
                     <p className={`text-sm ${item.completed ? "text-zinc-600 line-through" : "text-shell-text"}`}>
                       {item.title}
                     </p>
-                    <p className="text-[10px] text-zinc-600 uppercase tracking-wider mt-0.5">
+                    <p className="text-xs md:text-[10px] text-zinc-600 uppercase tracking-wider mt-0.5">
                       {item.type === "task" ? "Tarea" : item.eventType ? EVENT_COLORS[item.eventType].label : "Evento"}
                     </p>
                   </div>
@@ -244,7 +244,7 @@ export default function CalendarioPage() {
 
       {/* Legend */}
       <div className="px-4 pb-4">
-        <div className="flex flex-wrap gap-3 text-[10px] text-zinc-500">
+        <div className="flex flex-wrap gap-3 text-xs md:text-[10px] text-zinc-500">
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-400" /> Tarea</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-400" /> Completada</span>
           {Object.entries(EVENT_COLORS).map(([key, val]) => (
@@ -320,7 +320,7 @@ function EventFormModal({
         <div className="p-4 space-y-3">
           {isAdmin && (
             <div>
-              <label className="text-[11px] text-zinc-500 font-medium block mb-1">Alcance</label>
+              <label className="text-xs md:text-[11px] text-zinc-500 font-medium block mb-1">Alcance</label>
               <div className="flex gap-2">
                 <button
                   onClick={() => set("scope", "personal")}
@@ -347,7 +347,7 @@ function EventFormModal({
           )}
 
           <div>
-            <label className="text-[11px] text-zinc-500 font-medium block mb-1">Titulo *</label>
+            <label className="text-xs md:text-[11px] text-zinc-500 font-medium block mb-1">Titulo *</label>
             <input
               value={form.title}
               onChange={(e) => set("title", e.target.value)}
@@ -357,7 +357,7 @@ function EventFormModal({
           </div>
 
           <div>
-            <label className="text-[11px] text-zinc-500 font-medium block mb-1">Tipo</label>
+            <label className="text-xs md:text-[11px] text-zinc-500 font-medium block mb-1">Tipo</label>
             <div className="flex flex-wrap gap-2">
               {(Object.entries(EVENT_COLORS) as [EventType, typeof EVENT_COLORS[EventType]][]).map(([key, val]) => (
                 <button
@@ -376,7 +376,7 @@ function EventFormModal({
           </div>
 
           <div>
-            <label className="text-[11px] text-zinc-500 font-medium block mb-1">Fecha y hora</label>
+            <label className="text-xs md:text-[11px] text-zinc-500 font-medium block mb-1">Fecha y hora</label>
             <input
               type="datetime-local"
               value={form.event_date}
@@ -386,7 +386,7 @@ function EventFormModal({
           </div>
 
           <div>
-            <label className="text-[11px] text-zinc-500 font-medium block mb-1">Descripcion</label>
+            <label className="text-xs md:text-[11px] text-zinc-500 font-medium block mb-1">Descripcion</label>
             <textarea
               value={form.description}
               onChange={(e) => set("description", e.target.value)}

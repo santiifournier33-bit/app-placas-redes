@@ -99,7 +99,7 @@ export function ContactHistoryTab({ contactId }: { contactId: string }) {
             <div className="mt-0.5">{icon}</div>
             <div className="flex-1 min-w-0">
               <p className="text-xs text-zinc-400">{text}</p>
-              <p className="text-[10px] text-zinc-600 mt-0.5">{when}</p>
+              <p className="text-xs md:text-[10px] text-zinc-600 mt-0.5">{when}</p>
             </div>
           </div>
         )

@@ -114,8 +114,8 @@ export function ReunionLunesView() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-white/[0.04]">
-                      <th className="text-left px-4 py-2 text-[10px] font-bold text-zinc-600 uppercase tracking-wider">#</th>
-                      <th className="text-left px-4 py-2 text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Agente</th>
+                      <th className="text-left px-4 py-2 text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider">#</th>
+                      <th className="text-left px-4 py-2 text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Agente</th>
                       <SortHeader label="Tareas" sortKey="tasks_completed" current={sortBy} onSort={setSortBy} />
                       <SortHeader label="Contactos" sortKey="contacts_created" current={sortBy} onSort={setSortBy} />
                       <SortHeader label="Movimientos" sortKey="contacts_moved" current={sortBy} onSort={setSortBy} />
@@ -137,14 +137,14 @@ export function ReunionLunesView() {
                         </td>
                         <td className="px-4 py-2.5">
                           <div className="flex items-center gap-2.5">
-                            <div className="w-7 h-7 rounded-full bg-blue-500/15 flex items-center justify-center text-[11px] font-bold text-blue-400 shrink-0">
+                            <div className="w-7 h-7 rounded-full bg-blue-500/15 flex items-center justify-center text-xs md:text-[11px] font-bold text-blue-400 shrink-0">
                               {(agent.display_name || agent.email)[0].toUpperCase()}
                             </div>
                             <div className="min-w-0">
                               <p className="text-xs font-medium text-shell-text truncate">
                                 {agent.display_name || agent.email.split("@")[0]}
                               </p>
-                              <p className="text-[10px] text-zinc-600 truncate">{agent.email}</p>
+                              <p className="text-xs md:text-[10px] text-zinc-600 truncate">{agent.email}</p>
                             </div>
                           </div>
                         </td>
@@ -174,7 +174,7 @@ export function ReunionLunesView() {
               <div className="space-y-2">
                 {inactive.map(a => (
                   <div key={a.profile_id} className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-full bg-amber-500/15 flex items-center justify-center text-[9px] font-bold text-amber-400 shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-amber-500/15 flex items-center justify-center text-xs md:text-[9px] font-bold text-amber-400 shrink-0">
                       {(a.display_name || a.email)[0].toUpperCase()}
                     </div>
                     <span className="text-sm text-zinc-400">
@@ -209,7 +209,7 @@ function SummaryCard({ icon, label, value, color }: {
     <div className={`rounded-2xl border border-white/[0.06] ${c.bg} p-4`}>
       <div className={`${c.icon} mb-2`}>{icon}</div>
       <p className={`text-2xl font-bold ${c.text} tabular-nums`}>{value}</p>
-      <p className="text-[11px] text-zinc-500 font-medium mt-1">{label}</p>
+      <p className="text-xs md:text-[11px] text-zinc-500 font-medium mt-1">{label}</p>
     </div>
   )
 }
@@ -223,7 +223,7 @@ function SortHeader({ label, sortKey, current, onSort }: {
   const active = current === sortKey
   return (
     <th
-      className={`px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-center cursor-pointer select-none transition-colors ${
+      className={`px-4 py-2 text-xs md:text-[10px] font-bold uppercase tracking-wider text-center cursor-pointer select-none transition-colors ${
         active ? "text-blue-400" : "text-zinc-600 hover:text-zinc-400"
       }`}
       onClick={() => onSort(sortKey)}

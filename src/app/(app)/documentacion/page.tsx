@@ -104,7 +104,7 @@ export default function DocumentacionPage() {
 
         <div className="flex items-center gap-2 shrink-0">
           {lastUpdatedText && (
-            <span className="hidden sm:flex items-center gap-1 text-[10px] text-zinc-600">
+            <span className="hidden sm:flex items-center gap-1 text-xs md:text-[10px] text-zinc-600">
               <Clock size={10} />
               {lastUpdatedText}
             </span>

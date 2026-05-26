@@ -148,7 +148,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
         {/* Footer info */}
         <div className="px-8 pb-8 text-center">
-          <p className="text-[11px] font-medium text-on-surface-variant/50">
+          <p className="text-xs md:text-[11px] font-medium text-on-surface-variant/50">
             Tus credenciales se validan directamente con Tokko Broker de forma segura y nunca son almacenadas.
           </p>
         </div>

@@ -72,7 +72,7 @@ export function BottomTabs({ role }: BottomTabsProps) {
           <Link
             href="/dashboard"
             scroll={false}
-            className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-2.5 rounded-2xl text-[10px] font-semibold transition-all duration-200 min-h-[48px] ${
+            className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs md:text-[10px] font-semibold transition-all duration-200 min-h-[48px] ${
               homeActive ? "text-shell-accent" : "text-shell-text-muted hover:text-shell-text"
             }`}
           >
@@ -84,7 +84,7 @@ export function BottomTabs({ role }: BottomTabsProps) {
           <Link
             href="/productividad/tareas"
             scroll={false}
-            className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-2.5 rounded-2xl text-[10px] font-semibold transition-all duration-200 min-h-[48px] ${
+            className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs md:text-[10px] font-semibold transition-all duration-200 min-h-[48px] ${
               prodActive ? "text-shell-accent" : "text-shell-text-muted hover:text-shell-text"
             }`}
           >
@@ -96,7 +96,7 @@ export function BottomTabs({ role }: BottomTabsProps) {
           <Link
             href="/diseno"
             scroll={false}
-            className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-2.5 rounded-2xl text-[10px] font-semibold transition-all duration-200 min-h-[48px] ${
+            className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs md:text-[10px] font-semibold transition-all duration-200 min-h-[48px] ${
               disenActive ? "text-shell-accent" : "text-shell-text-muted hover:text-shell-text"
             }`}
           >
@@ -107,7 +107,7 @@ export function BottomTabs({ role }: BottomTabsProps) {
           {/* Apps */}
           <button
             onClick={() => setAppsOpen(true)}
-            className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-2.5 rounded-2xl text-[10px] font-semibold transition-all duration-200 min-h-[48px] cursor-pointer ${
+            className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs md:text-[10px] font-semibold transition-all duration-200 min-h-[48px] cursor-pointer ${
               appsOpen ? "text-shell-accent" : "text-shell-text-muted hover:text-shell-text"
             }`}
           >
@@ -161,7 +161,7 @@ export function BottomTabs({ role }: BottomTabsProps) {
               <div className="px-6 space-y-8">
                 {APPS_SECTIONS.map(section => (
                   <div key={section.title} className="space-y-4">
-                    <p className="text-[11px] font-bold text-shell-text-muted uppercase tracking-[0.15em] px-1">
+                    <p className="text-xs md:text-[11px] font-bold text-shell-text-muted uppercase tracking-[0.15em] px-1">
                       {section.title}
                     </p>
                     <div className="grid grid-cols-3 gap-3">
@@ -179,7 +179,7 @@ export function BottomTabs({ role }: BottomTabsProps) {
                               <div className="w-12 h-12 rounded-2xl bg-shell-text-muted/10 flex items-center justify-center">
                                 <Icon size={20} strokeWidth={1.5} className="text-shell-text-muted" />
                               </div>
-                              <span className="text-[10px] text-shell-text-muted text-center leading-tight font-medium">{item.label}</span>
+                              <span className="text-xs md:text-[10px] text-shell-text-muted text-center leading-tight font-medium">{item.label}</span>
                             </div>
                           )
                         }
@@ -207,7 +207,7 @@ export function BottomTabs({ role }: BottomTabsProps) {
                                 className={active ? "text-shell-accent" : "text-shell-text"}
                               />
                             </div>
-                            <span className={`text-[10px] text-center leading-tight font-semibold ${
+                            <span className={`text-xs md:text-[10px] text-center leading-tight font-semibold ${
                               active ? "text-shell-accent" : "text-shell-text-muted"
                             }`}>
                               {item.label}

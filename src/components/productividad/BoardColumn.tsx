@@ -161,7 +161,7 @@ export function BoardColumn({
         {completed.length > 0 && (
           <>
             <div className="px-1 pt-1">
-              <span className="text-[10px] font-bold text-zinc-700 uppercase tracking-wider">
+              <span className="text-xs md:text-[10px] font-bold text-zinc-700 uppercase tracking-wider">
                 Completadas {completed.length}
               </span>
             </div>
@@ -260,12 +260,12 @@ function TaskCard({ task, subtaskCount, subtaskDone, onTap, onToggle, onDragStar
           {(task.due_date || subtaskCount > 0 || effectiveType !== "tarea") && (
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
               {task.due_date && (
-                <span className={`text-[10px] ${overdue ? "text-red-400" : "text-zinc-600"}`}>
+                <span className={`text-xs md:text-[10px] ${overdue ? "text-red-400" : "text-zinc-600"}`}>
                   {format(new Date(task.due_date), "d MMM", { locale: es })}
                 </span>
               )}
               {subtaskCount > 0 && (
-                <span className="text-[10px] text-zinc-600 flex items-center gap-0.5">
+                <span className="text-xs md:text-[10px] text-zinc-600 flex items-center gap-0.5">
                   <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
                     <path d="M3 8h10M8 3v10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
                   </svg>
@@ -273,7 +273,7 @@ function TaskCard({ task, subtaskCount, subtaskDone, onTap, onToggle, onDragStar
                 </span>
               )}
               {effectiveType !== "tarea" && TASK_TYPES[effectiveType] && (
-                <span className="text-[10px] text-zinc-600 flex items-center gap-0.5">
+                <span className="text-xs md:text-[10px] text-zinc-600 flex items-center gap-0.5">
                   {TYPE_ICONS[effectiveType]}
                   {TASK_TYPES[effectiveType].label}
                 </span>

@@ -54,16 +54,16 @@ export function LeadCard({ contact, stage, onTap }: LeadCardProps) {
           {contact.first_name} {contact.last_name}
         </p>
         {contact.primary_phone && (
-          <p className="text-[11px] text-zinc-500 mt-0.5 truncate">{contact.primary_phone}</p>
+          <p className="text-xs md:text-[11px] text-zinc-500 mt-0.5 truncate">{contact.primary_phone}</p>
         )}
         <div className="flex items-center gap-1.5 mt-1">
           {sourceLabel && (
-            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">
+            <span className="text-xs md:text-[10px] font-medium px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">
               {sourceLabel}
             </span>
           )}
           {health !== 'gray' && (
-            <span className={`text-[10px] font-medium ${
+            <span className={`text-xs md:text-[10px] font-medium ${
               health === 'red' ? 'text-red-400' :
               health === 'orange' ? 'text-amber-400' :
               'text-emerald-400'

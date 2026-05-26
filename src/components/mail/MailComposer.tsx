@@ -161,24 +161,24 @@ export function MailComposer({ onClose, replyTo }: MailComposerProps) {
       <div className="divide-y divide-white/[0.04] shrink-0">
         {/* From */}
         <div className="flex items-center gap-3 px-4 py-2.5">
-          <span className="text-[11px] font-medium text-zinc-500 w-14 shrink-0 uppercase tracking-wider mt-1.5">De</span>
+          <span className="text-xs md:text-[11px] font-medium text-zinc-500 w-14 shrink-0 uppercase tracking-wider mt-1.5">De</span>
           <span className="text-sm text-zinc-400 truncate py-1">{credentials?.user}</span>
         </div>
 
         {/* To */}
         <div className="flex items-start gap-3 px-4 py-1.5 min-h-[44px]">
-          <span className="text-[11px] font-medium text-zinc-500 w-14 shrink-0 uppercase tracking-wider mt-2.5">Para</span>
+          <span className="text-xs md:text-[11px] font-medium text-zinc-500 w-14 shrink-0 uppercase tracking-wider mt-2.5">Para</span>
           <EmailInput value={to} onChange={setTo} placeholder="destinatario@ejemplo.com" />
           <div className="flex gap-2 shrink-0 mt-2">
-            <button onClick={() => setShowCc(!showCc)} className="text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors">Cc</button>
-            <button onClick={() => setShowBcc(!showBcc)} className="text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors">Cco</button>
+            <button onClick={() => setShowCc(!showCc)} className="text-xs md:text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors">Cc</button>
+            <button onClick={() => setShowBcc(!showBcc)} className="text-xs md:text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors">Cco</button>
           </div>
         </div>
 
         {/* CC */}
         {showCc && (
           <div className="flex items-start gap-3 px-4 py-1.5 min-h-[44px]">
-            <span className="text-[11px] font-medium text-zinc-500 w-14 shrink-0 uppercase tracking-wider mt-2.5">Cc</span>
+            <span className="text-xs md:text-[11px] font-medium text-zinc-500 w-14 shrink-0 uppercase tracking-wider mt-2.5">Cc</span>
             <EmailInput value={cc} onChange={setCc} placeholder="copia a..." />
           </div>
         )}
@@ -186,14 +186,14 @@ export function MailComposer({ onClose, replyTo }: MailComposerProps) {
         {/* BCC */}
         {showBcc && (
           <div className="flex items-start gap-3 px-4 py-1.5 min-h-[44px]">
-            <span className="text-[11px] font-medium text-zinc-500 w-14 shrink-0 uppercase tracking-wider mt-2.5">Cco</span>
+            <span className="text-xs md:text-[11px] font-medium text-zinc-500 w-14 shrink-0 uppercase tracking-wider mt-2.5">Cco</span>
             <EmailInput value={bcc} onChange={setBcc} placeholder="copia oculta a..." />
           </div>
         )}
 
         {/* Subject */}
         <div className="flex items-center gap-3 px-4 py-2.5">
-          <span className="text-[11px] font-medium text-zinc-500 w-14 shrink-0 uppercase tracking-wider">Asunto</span>
+          <span className="text-xs md:text-[11px] font-medium text-zinc-500 w-14 shrink-0 uppercase tracking-wider">Asunto</span>
           <input
             type="text"
             value={subject}
@@ -216,7 +216,7 @@ export function MailComposer({ onClose, replyTo }: MailComposerProps) {
       {attachments.length > 0 && (
         <div className="px-4 py-2 flex flex-wrap gap-2 border-t border-white/[0.04] shrink-0">
           {attachments.map((file, i) => (
-            <div key={i} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/[0.06] text-[11px] text-zinc-400">
+            <div key={i} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/[0.06] text-xs md:text-[11px] text-zinc-400">
               <Paperclip size={11} />
               <span className="max-w-[120px] truncate">{file.name}</span>
               <span className="text-zinc-600">({formatFileSize(file.size)})</span>
@@ -232,7 +232,7 @@ export function MailComposer({ onClose, replyTo }: MailComposerProps) {
       {error && (
         <div className="mx-4 mb-2 flex items-start gap-2 p-2.5 rounded-xl bg-red-500/10 border border-red-500/20 shrink-0">
           <AlertCircle size={13} className="text-red-400 shrink-0 mt-0.5" />
-          <p className="text-[11px] text-red-300">{error}</p>
+          <p className="text-xs md:text-[11px] text-red-300">{error}</p>
         </div>
       )}
 

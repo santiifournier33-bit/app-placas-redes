@@ -59,7 +59,7 @@ export function PropertyTable({ properties, loading, onPropertyClick }: Property
   return (
     <div className="space-y-1">
       {/* Header - desktop only */}
-      <div className="hidden lg:grid grid-cols-[60px_1fr_160px_90px_120px_44px] gap-3 px-4 py-2 text-[10px] font-bold text-zinc-600 uppercase tracking-[0.12em]">
+      <div className="hidden lg:grid grid-cols-[60px_1fr_160px_90px_120px_44px] gap-3 px-4 py-2 text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-[0.12em]">
         <span>ID</span>
         <span>Propiedad</span>
         <span>Asesor</span>
@@ -111,14 +111,14 @@ function PropertyRow({ property: p, expanded, onToggle, onClick }: {
               {p.type} {p.location}
             </p>
             {p.fileCount > 0 && (
-              <p className="text-[11px] text-zinc-500">{p.fileCount} archivos</p>
+              <p className="text-xs md:text-[11px] text-zinc-500">{p.fileCount} archivos</p>
             )}
           </div>
           <span className="text-xs text-zinc-400 truncate">{p.agent}</span>
           <span className="text-xs text-zinc-500">{p.operation}</span>
           <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${statusBg} w-fit`}>
             <StatusIcon size={12} strokeWidth={2} className={statusColor} />
-            <span className={`text-[11px] font-semibold ${statusColor}`}>{config.label}</span>
+            <span className={`text-xs md:text-[11px] font-semibold ${statusColor}`}>{config.label}</span>
           </div>
           <div className="flex items-center justify-center">
             {expanded ? <ChevronDown size={16} className="text-zinc-500" /> : <ChevronRight size={16} className="text-zinc-500" />}
@@ -130,14 +130,14 @@ function PropertyRow({ property: p, expanded, onToggle, onClick }: {
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 text-left">
               <p className="text-sm font-medium text-shell-text">{p.type} {p.location}</p>
-              <p className="text-[11px] text-zinc-500 mt-0.5">
+              <p className="text-xs md:text-[11px] text-zinc-500 mt-0.5">
                 {p.agent} • {p.operation} • ID {p.id}
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg ${statusBg}`}>
                 <StatusIcon size={11} strokeWidth={2} className={statusColor} />
-                <span className={`text-[10px] font-semibold ${statusColor}`}>{config.label}</span>
+                <span className={`text-xs md:text-[10px] font-semibold ${statusColor}`}>{config.label}</span>
               </div>
               {expanded ? <ChevronDown size={14} className="text-zinc-500" /> : <ChevronRight size={14} className="text-zinc-500" />}
             </div>
@@ -153,7 +153,7 @@ function PropertyRow({ property: p, expanded, onToggle, onClick }: {
             {p.docsPresent.map(doc => (
               <span
                 key={doc.category}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-[11px] font-medium text-emerald-400"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-xs md:text-[11px] font-medium text-emerald-400"
               >
                 <CheckCircle2 size={11} strokeWidth={2} />
                 {doc.label}
@@ -162,7 +162,7 @@ function PropertyRow({ property: p, expanded, onToggle, onClick }: {
             {p.docsMissing.map(doc => (
               <span
                 key={doc.category}
-                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium ${
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs md:text-[11px] font-medium ${
                   doc.priority === "obligatorio"
                     ? "bg-red-500/10 text-red-400"
                     : "bg-amber-500/10 text-amber-400"
@@ -173,7 +173,7 @@ function PropertyRow({ property: p, expanded, onToggle, onClick }: {
               </span>
             ))}
             {p.unclassifiedFiles.length > 0 && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-500/10 text-[11px] font-medium text-zinc-400">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-500/10 text-xs md:text-[11px] font-medium text-zinc-400">
                 <FileText size={11} strokeWidth={2} />
                 {p.unclassifiedFiles.length} sin clasificar
               </span>
@@ -184,7 +184,7 @@ function PropertyRow({ property: p, expanded, onToggle, onClick }: {
           <div className="flex items-center gap-2">
             <button
               onClick={(e) => { e.stopPropagation(); onClick() }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 text-[11px] font-medium text-blue-400 hover:bg-blue-500/20 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 text-xs md:text-[11px] font-medium text-blue-400 hover:bg-blue-500/20 transition-colors cursor-pointer"
             >
               <FileText size={12} strokeWidth={2} />
               Ver detalle
@@ -195,7 +195,7 @@ function PropertyRow({ property: p, expanded, onToggle, onClick }: {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={e => e.stopPropagation()}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] text-[11px] font-medium text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.06] transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] text-xs md:text-[11px] font-medium text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.06] transition-colors"
               >
                 <ExternalLink size={12} strokeWidth={2} />
                 Abrir en Drive

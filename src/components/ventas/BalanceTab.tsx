@@ -88,11 +88,11 @@ export default function BalanceTab() {
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr className="border-b border-shell-border bg-black/20">
-                <th className="p-3 text-[11px] font-semibold text-shell-text-muted sticky left-0 bg-[#0a0a10] z-10 min-w-[140px]">Asesor</th>
+                <th className="p-3 text-xs md:text-[11px] font-semibold text-shell-text-muted sticky left-0 bg-[#0a0a10] z-10 min-w-[140px]">Asesor</th>
                 {MONTHS.map(m => (
-                  <th key={m} className="p-3 text-[11px] font-semibold text-shell-text-muted text-right w-[60px]">{m}</th>
+                  <th key={m} className="p-3 text-xs md:text-[11px] font-semibold text-shell-text-muted text-right w-[60px]">{m}</th>
                 ))}
-                <th className="p-3 text-[11px] font-semibold text-shell-accent text-right">Total</th>
+                <th className="p-3 text-xs md:text-[11px] font-semibold text-shell-accent text-right">Total</th>
               </tr>
             </thead>
             <tbody>
@@ -125,7 +125,7 @@ export default function BalanceTab() {
                     <tr key={agent.email} className={`border-b border-shell-border/50 hover:bg-white/[0.02] transition-colors ${!agent.isActive ? 'opacity-50' : ''}`}>
                       <td className="p-3 sticky left-0 bg-[#0d0d15] z-10">
                         <p className="text-sm font-medium text-shell-text truncate">{agent.name}</p>
-                        {!agent.isActive && <span className="text-[9px] text-red-400">Inactivo</span>}
+                        {!agent.isActive && <span className="text-xs md:text-[9px] text-red-400">Inactivo</span>}
                       </td>
                       {agent.monthly.map((m, i) => {
                         const val = metric === 'facturacion' ? m.facturacion

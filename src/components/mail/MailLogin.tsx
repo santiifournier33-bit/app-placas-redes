@@ -36,12 +36,12 @@ export function MailLogin() {
 
         {/* Current mail email (read-only, derived from session) */}
         <div className="mb-4 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-          <p className="text-[10px] font-medium text-zinc-600 uppercase tracking-wider mb-1">Tu correo corporativo</p>
+          <p className="text-xs md:text-[10px] font-medium text-zinc-600 uppercase tracking-wider mb-1">Tu correo corporativo</p>
           <div className="flex items-center gap-2">
             <ShieldCheck size={14} className="text-emerald-400" />
             <span className="text-sm text-emerald-300 font-medium">{mailEmail}</span>
           </div>
-          <p className="text-[10px] text-zinc-600 mt-1">Detectado automáticamente de tu sesión</p>
+          <p className="text-xs md:text-[10px] text-zinc-600 mt-1">Detectado automáticamente de tu sesión</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -86,7 +86,7 @@ export function MailLogin() {
           </button>
         </form>
 
-        <p className="text-[11px] text-zinc-600 text-center mt-6 leading-relaxed">
+        <p className="text-xs md:text-[11px] text-zinc-600 text-center mt-6 leading-relaxed">
           La contraseña se guarda solo en este dispositivo.<br />
           No se almacena en ningún servidor.
         </p>

@@ -113,7 +113,7 @@ export function ContactNotesTab({ contactId }: { contactId: string }) {
               className="relative group rounded-xl border border-white/[0.06] bg-white/[0.02] p-3"
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] text-zinc-600">
+                <span className="text-xs md:text-[10px] text-zinc-600">
                   {note.created_at
                     ? new Date(note.created_at).toLocaleString('es-AR', {
                         day: '2-digit', month: 'short', year: 'numeric',

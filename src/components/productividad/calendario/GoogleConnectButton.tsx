@@ -76,7 +76,7 @@ export function GoogleConnectButton() {
 
   return (
     <div className="flex items-center gap-2">
-      <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-500/10 text-[10px] font-medium text-emerald-400">
+      <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-500/10 text-xs md:text-[10px] font-medium text-emerald-400">
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
         {email}
       </div>
@@ -96,7 +96,7 @@ export function GoogleConnectButton() {
         <Unlink size={14} />
       </button>
       {lastSync && (
-        <span className="text-[10px] text-zinc-600">{lastSync}</span>
+        <span className="text-xs md:text-[10px] text-zinc-600">{lastSync}</span>
       )}
     </div>
   )

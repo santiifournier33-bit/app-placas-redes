@@ -255,7 +255,7 @@ export default function OperationForm({ agents, onClose, onSuccess }: { agents: 
                 {reservas.map(r => <option key={r.id} value={r.id}>{r.property_address} - {r.currency} {r.value?.toLocaleString()}</option>)}
               </select>
             </Field>
-            <p className="text-[10px] text-shell-text-muted mt-1.5">Al seleccionar una reserva, se auto-completarán los datos de la propiedad y el valor de cierre.</p>
+            <p className="text-xs md:text-[10px] text-shell-text-muted mt-1.5">Al seleccionar una reserva, se auto-completarán los datos de la propiedad y el valor de cierre.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -345,7 +345,7 @@ export default function OperationForm({ agents, onClose, onSuccess }: { agents: 
 
               <div className="bg-shell-surface border border-shell-border rounded-xl p-3 flex items-center justify-between">
                 <div>
-                  <p className="text-[11px] font-medium text-shell-text-muted">Total Honorarios</p>
+                  <p className="text-xs md:text-[11px] font-medium text-shell-text-muted">Total Honorarios</p>
                   <p className="text-xl font-bold text-emerald-400">{feeCurrency} {totalFeesCalculated.toLocaleString()}</p>
                 </div>
                 <div>
@@ -392,7 +392,7 @@ export default function OperationForm({ agents, onClose, onSuccess }: { agents: 
                         </div>
                         {vendedorAgent && (
                           <div className="bg-black/30 rounded-lg p-3 space-y-3">
-                            <p className="text-[10px] uppercase font-bold text-shell-text-muted">Desglose de Roles</p>
+                            <p className="text-xs md:text-[10px] uppercase font-bold text-shell-text-muted">Desglose de Roles</p>
                             <div className="grid grid-cols-2 gap-2 items-center">
                               <span className="text-xs text-shell-text">Lead/Prospección ({vendedorBand === 'oro' ? '30' : vendedorBand === 'plata' ? '25' : '20'}%)</span>
                               <AgentDropdown value={vendedorRoles.lead} onChange={v => setVendedorRoles(p => ({...p, lead: v}))} />
@@ -449,7 +449,7 @@ export default function OperationForm({ agents, onClose, onSuccess }: { agents: 
                         </div>
                         {compradorAgent && (
                           <div className="bg-black/30 rounded-lg p-3 space-y-3">
-                            <p className="text-[10px] uppercase font-bold text-shell-text-muted">Desglose de Roles</p>
+                            <p className="text-xs md:text-[10px] uppercase font-bold text-shell-text-muted">Desglose de Roles</p>
                             <div className="grid grid-cols-2 gap-2 items-center">
                               <span className="text-xs text-shell-text">Lead/Prospección ({compradorBand === 'oro' ? '30' : compradorBand === 'plata' ? '25' : '20'}%)</span>
                               <AgentDropdown value={compradorRoles.lead} onChange={v => setCompradorRoles(p => ({...p, lead: v}))} />
@@ -497,7 +497,7 @@ export default function OperationForm({ agents, onClose, onSuccess }: { agents: 
 function Field({ label, children }: { label: string, children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="text-[11px] font-medium text-shell-text-muted mb-1.5 block">{label}</span>
+      <span className="text-xs md:text-[11px] font-medium text-shell-text-muted mb-1.5 block">{label}</span>
       {children}
     </label>
   )

@@ -70,7 +70,7 @@ function CopyChip({ value, kind }: { value: string; kind: 'phone' | 'email' }) {
     <button
       onClick={handleCopy}
       title={`Copiar ${kind === 'phone' ? 'teléfono' : 'email'}`}
-      className="group inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 text-[11px] cursor-pointer max-w-full"
+      className="group inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 text-xs md:text-[11px] cursor-pointer max-w-full"
     >
       <span className="truncate">{value}</span>
       {copied ? (
@@ -111,7 +111,7 @@ function PipelineStageCell({
   }
 
   if (!pipeline) {
-    return <span className="text-[11px] text-zinc-700 px-1">—</span>
+    return <span className="text-xs md:text-[11px] text-zinc-700 px-1">—</span>
   }
 
   return (
@@ -119,7 +119,7 @@ function PipelineStageCell({
       <button
         ref={buttonRef}
         onClick={(e) => { e.stopPropagation(); setOpen(o => !o) }}
-        className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] cursor-pointer max-w-full"
+        className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs md:text-[11px] cursor-pointer max-w-full"
         style={
           currentStage
             ? { background: `${currentStage.color}26`, color: currentStage.color || '#a3a3a3' }
@@ -148,7 +148,7 @@ function PipelineStageCell({
               }`}
             >
               <span
-                className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium"
+                className="inline-flex items-center px-2 py-0.5 rounded-md text-xs md:text-[11px] font-medium"
                 style={{ background: `${c}26`, color: c }}
               >
                 {stage.name}
@@ -240,7 +240,7 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
         <button
           ref={colPickerBtnRef}
           onClick={() => setShowColPicker(!showColPicker)}
-          className="text-[11px] text-zinc-500 hover:text-zinc-300 cursor-pointer"
+          className="text-xs md:text-[11px] text-zinc-500 hover:text-zinc-300 cursor-pointer"
         >
           Columnas ({visibleCols.length}/{ALL_COLUMNS.length})
         </button>
@@ -313,7 +313,7 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
                     ) : col.key === 'tags' ? (
                       <div className="flex gap-1 flex-wrap px-1">
                         {(contact.tags ?? []).map((tag, i) => (
-                          <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">{tag}</span>
+                          <span key={i} className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">{tag}</span>
                         ))}
                       </div>
                     ) : col.key === 'pipeline_stage' ? (

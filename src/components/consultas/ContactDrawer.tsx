@@ -201,7 +201,7 @@ export default function ContactDrawer(props: DrawerProps) {
             <p className="text-sm font-bold text-shell-text truncate">
               {data?.contact.full_name ?? 'Cargando...'}
             </p>
-            <p className="text-[10px] text-zinc-500">
+            <p className="text-xs md:text-[10px] text-zinc-500">
               {data?.contact.is_own ? 'Cartera propia' : 'Cartera de otro asesor'}
             </p>
           </div>
@@ -232,7 +232,7 @@ export default function ContactDrawer(props: DrawerProps) {
             {/* ===== A. Por qué hay match ===== */}
             <section className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 space-y-2">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="text-[11px] font-bold text-emerald-300 uppercase tracking-wider">
+                <h3 className="text-xs md:text-[11px] font-bold text-emerald-300 uppercase tracking-wider">
                   Por qué hay match
                 </h3>
                 <span className="text-lg font-bold text-emerald-300">{matchData.score}/100</span>
@@ -240,7 +240,7 @@ export default function ContactDrawer(props: DrawerProps) {
 
               {/* Match type banner */}
               {matchData.match_type && (
-                <div className={`rounded-lg px-3 py-2 text-[11px] font-medium flex items-start gap-2 ${
+                <div className={`rounded-lg px-3 py-2 text-xs md:text-[11px] font-medium flex items-start gap-2 ${
                   matchData.match_type === 'direct'
                     ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-300'
                     : 'bg-indigo-500/10 border border-indigo-500/20 text-indigo-300'
@@ -257,29 +257,29 @@ export default function ContactDrawer(props: DrawerProps) {
               )}
 
               {matchData.zone_kind === 'direct_match' && (
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-xs md:text-[10px] font-bold">
                   🎯 Consulta directa por esta propiedad
                 </div>
               )}
               {matchData.zone_kind === 'polygon_same' && (
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 text-[10px] font-medium">
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 text-xs md:text-[10px] font-medium">
                   📍 Dentro del polígono Zonaprop
                 </div>
               )}
               {matchData.zone_kind === 'polygon_approximate' && (
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-500/20 text-zinc-300 text-[10px] font-medium">
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-500/20 text-zinc-300 text-xs md:text-[10px] font-medium">
                   📍 Misma zona (aproximado)
                 </div>
               )}
               {matchData.zone_kind === 'polygon_neighbor' && (
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 text-[10px] font-medium">
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 text-xs md:text-[10px] font-medium">
                   📍 Barrio vecino (polígono adyacente)
                 </div>
               )}
               <p className="text-xs text-zinc-300">{matchData.reasons_text}</p>
               <button
                 onClick={() => setShowBreakdown(s => !s)}
-                className="text-[10px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1 cursor-pointer"
+                className="text-xs md:text-[10px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1 cursor-pointer"
               >
                 <ChevronDown
                   size={12}
@@ -289,24 +289,24 @@ export default function ContactDrawer(props: DrawerProps) {
               </button>
               {showBreakdown && (
                 <div className="grid grid-cols-2 gap-2 pt-1">
-                  <div className="text-[10px] flex justify-between bg-white/[0.03] rounded px-2 py-1">
+                  <div className="text-xs md:text-[10px] flex justify-between bg-white/[0.03] rounded px-2 py-1">
                     <span className="text-zinc-500">Zona (40%)</span>
                     <span className="font-bold text-zinc-200">{matchData.breakdown.zone}/100</span>
                   </div>
-                  <div className="text-[10px] flex justify-between bg-white/[0.03] rounded px-2 py-1">
+                  <div className="text-xs md:text-[10px] flex justify-between bg-white/[0.03] rounded px-2 py-1">
                     <span className="text-zinc-500">Precio (30%)</span>
                     <span className="font-bold text-zinc-200">{matchData.breakdown.price}/100</span>
                   </div>
-                  <div className="text-[10px] flex justify-between bg-white/[0.03] rounded px-2 py-1">
+                  <div className="text-xs md:text-[10px] flex justify-between bg-white/[0.03] rounded px-2 py-1">
                     <span className="text-zinc-500">Dormitorios (20%)</span>
                     <span className="font-bold text-zinc-200">{matchData.breakdown.bedrooms}/100</span>
                   </div>
-                  <div className="text-[10px] flex justify-between bg-white/[0.03] rounded px-2 py-1">
+                  <div className="text-xs md:text-[10px] flex justify-between bg-white/[0.03] rounded px-2 py-1">
                     <span className="text-zinc-500">Tipo (10%)</span>
                     <span className="font-bold text-zinc-200">{matchData.breakdown.type}/100</span>
                   </div>
                   {matchData.score_source && (
-                    <div className="col-span-2 text-[10px] text-zinc-600 italic pt-1">
+                    <div className="col-span-2 text-xs md:text-[10px] text-zinc-600 italic pt-1">
                       Fuente: snapshot de propiedad consultada
                     </div>
                   )}
@@ -319,7 +319,7 @@ export default function ContactDrawer(props: DrawerProps) {
 
             {/* ===== B. Propiedad consultada en su momento ===== */}
             <section className="space-y-2">
-              <h3 className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
+              <h3 className="text-xs md:text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
                 Propiedad que consultó en su momento
               </h3>
               <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
@@ -333,7 +333,7 @@ export default function ContactDrawer(props: DrawerProps) {
                       sizes="640px"
                     />
                     {currentInquiry.property_active === false && (
-                      <span className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-red-500/80 text-white text-[10px] font-bold">
+                      <span className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-red-500/80 text-white text-xs md:text-[10px] font-bold">
                         Ya no en cartera
                       </span>
                     )}
@@ -341,7 +341,7 @@ export default function ContactDrawer(props: DrawerProps) {
                 )}
                 <div className="p-3 space-y-1.5">
                   {currentInquiry.tokko_property_reference && (
-                    <p className="text-[10px] text-zinc-600 font-mono">
+                    <p className="text-xs md:text-[10px] text-zinc-600 font-mono">
                       {currentInquiry.tokko_property_reference}
                     </p>
                   )}
@@ -350,7 +350,7 @@ export default function ContactDrawer(props: DrawerProps) {
                       currentInquiry.property_snapshot.address ??
                       'Propiedad'}
                   </p>
-                  <p className="text-[11px] text-zinc-500">
+                  <p className="text-xs md:text-[11px] text-zinc-500">
                     {currentInquiry.property_snapshot.address}
                   </p>
                   <p className="text-sm font-bold text-blue-400">
@@ -359,7 +359,7 @@ export default function ContactDrawer(props: DrawerProps) {
                       currentInquiry.property_snapshot.currency,
                     ) ?? '—'}
                   </p>
-                  <div className="flex flex-wrap gap-1.5 text-[10px] text-zinc-500 pt-1">
+                  <div className="flex flex-wrap gap-1.5 text-xs md:text-[10px] text-zinc-500 pt-1">
                     {currentInquiry.property_snapshot.operation_type && (
                       <span className="px-1.5 py-0.5 rounded bg-white/[0.04]">
                         {OP_LABEL[currentInquiry.property_snapshot.operation_type] ?? 'Operación'}
@@ -384,7 +384,7 @@ export default function ContactDrawer(props: DrawerProps) {
                     String(currentInquiry.tokko_property_id) !== String(currentPropertyId) && (
                       <Link
                         href={`/consultas/${currentInquiry.tokko_property_id}`}
-                        className="text-[11px] text-blue-400 hover:underline inline-flex items-center gap-1 mt-1"
+                        className="text-xs md:text-[11px] text-blue-400 hover:underline inline-flex items-center gap-1 mt-1"
                       >
                         Ver matches de esa propiedad <ExternalLink size={11} />
                       </Link>
@@ -395,11 +395,11 @@ export default function ContactDrawer(props: DrawerProps) {
 
             {/* ===== C. Comparativa ===== */}
             <section className="space-y-2">
-              <h3 className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
+              <h3 className="text-xs md:text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
                 Comparativa
               </h3>
               <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
-                <table className="w-full text-[11px]">
+                <table className="w-full text-xs md:text-[11px]">
                   <thead className="bg-white/[0.03]">
                     <tr>
                       <th className="text-left p-2 font-medium text-zinc-500">Atributo</th>
@@ -452,7 +452,7 @@ export default function ContactDrawer(props: DrawerProps) {
 
             {/* ===== D. Datos contacto ===== */}
             <section className="space-y-2">
-              <h3 className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
+              <h3 className="text-xs md:text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
                 Datos del contacto
               </h3>
               <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 space-y-2">
@@ -472,7 +472,7 @@ export default function ContactDrawer(props: DrawerProps) {
                     )}
                   </>
                 ) : (
-                  <p className="text-[11px] text-zinc-600 italic">
+                  <p className="text-xs md:text-[11px] text-zinc-600 italic">
                     Datos sensibles ocultos — contacto pertenece a otro asesor
                   </p>
                 )}
@@ -486,7 +486,7 @@ export default function ContactDrawer(props: DrawerProps) {
                   <div className="flex items-center gap-2 text-xs">
                     <Tag size={13} className="text-zinc-500 shrink-0" />
                     <span
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                      className={`px-1.5 py-0.5 rounded text-xs md:text-[10px] font-medium ${
                         PORTAL_COLORS[currentInquiry.source_portal] ?? 'bg-zinc-700 text-zinc-300'
                       }`}
                     >
@@ -496,8 +496,8 @@ export default function ContactDrawer(props: DrawerProps) {
                 )}
                 {currentInquiry.comment && (
                   <div className="pt-2 mt-2 border-t border-white/[0.04]">
-                    <p className="text-[10px] text-zinc-500 mb-1">Mensaje original:</p>
-                    <p className="text-[11px] text-zinc-300 italic leading-relaxed">
+                    <p className="text-xs md:text-[10px] text-zinc-500 mb-1">Mensaje original:</p>
+                    <p className="text-xs md:text-[11px] text-zinc-300 italic leading-relaxed">
                       &ldquo;{currentInquiry.comment.slice(0, 400)}&rdquo;
                     </p>
                   </div>
@@ -511,10 +511,10 @@ export default function ContactDrawer(props: DrawerProps) {
               if (otherInquiries.length === 0) return null
               return (
                 <section className="space-y-2">
-                  <h3 className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
+                  <h3 className="text-xs md:text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
                     Otras propiedades que consultó en la inmobiliaria ({otherInquiries.length})
                   </h3>
-                  <p className="text-[10px] text-zinc-600">
+                  <p className="text-xs md:text-[10px] text-zinc-600">
                     Estas son las demás propiedades por las que esta persona se interesó. Te permite entender mejor su perfil de búsqueda.
                   </p>
                   <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] divide-y divide-white/[0.04]">
@@ -543,23 +543,23 @@ export default function ContactDrawer(props: DrawerProps) {
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <p className="text-[11px] font-medium text-shell-text truncate">
+                            <p className="text-xs md:text-[11px] font-medium text-shell-text truncate">
                               {inq.property_snapshot.publication_title ??
                                 inq.property_snapshot.address ??
                                 'Propiedad'}
                             </p>
-                            <p className="text-[10px] text-zinc-500">
+                            <p className="text-xs md:text-[10px] text-zinc-500">
                               {priceLabel(inq.property_snapshot.price, inq.property_snapshot.currency) ?? '—'}
                               {inq.property_snapshot.bedrooms ? ` · ${inq.property_snapshot.bedrooms} dorm` : ''}
                               {inq.property_snapshot.property_type ? ` · ${inq.property_snapshot.property_type}` : ''}
                             </p>
-                            <p className="text-[10px] text-zinc-600">
+                            <p className="text-xs md:text-[10px] text-zinc-600">
                               {fmtDate(inq.last_inquired_at)} · {inq.source_portal ?? 'tokko'}
                             </p>
                           </div>
                           <div className="flex flex-col items-end gap-1 shrink-0">
                             {inq.status && (
-                              <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
+                              <span className={`text-xs md:text-[9px] px-1.5 py-0.5 rounded font-medium ${
                                 inq.status === 'responded'
                                   ? 'bg-emerald-500/10 text-emerald-400'
                                   : 'bg-white/[0.04] text-zinc-400'
@@ -571,13 +571,13 @@ export default function ContactDrawer(props: DrawerProps) {
                               String(inq.tokko_property_id) !== String(currentPropertyId) && (
                                 <Link
                                   href={`/consultas/${inq.tokko_property_id}`}
-                                  className="text-[9px] text-blue-400 hover:text-blue-300 flex items-center gap-0.5"
+                                  className="text-xs md:text-[9px] text-blue-400 hover:text-blue-300 flex items-center gap-0.5"
                                 >
                                   Ver matches <ExternalLink size={9} />
                                 </Link>
                               )}
                             {!inq.property_active && (
-                              <span className="text-[9px] text-red-400/60">No activa</span>
+                              <span className="text-xs md:text-[9px] text-red-400/60">No activa</span>
                             )}
                           </div>
                         </div>
@@ -626,7 +626,7 @@ function PrefPill({
 }: { children: React.ReactNode; emphasized?: boolean }) {
   return (
     <span
-      className={`text-[11px] px-2 py-1 rounded-md border whitespace-nowrap ${
+      className={`text-xs md:text-[11px] px-2 py-1 rounded-md border whitespace-nowrap ${
         emphasized
           ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200 font-medium'
           : 'border-white/[0.08] bg-white/[0.03] text-zinc-300'
@@ -692,10 +692,10 @@ function PreferencesSection({ prefs }: { prefs: UserPreferences | null }) {
   return (
     <section className="space-y-2">
       <div className="flex items-center gap-2">
-        <h3 className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
+        <h3 className="text-xs md:text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
           Preferencias declaradas
         </h3>
-        <span className="text-[9px] px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-300 font-medium uppercase">
+        <span className="text-xs md:text-[9px] px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-300 font-medium uppercase">
           Zonaprop
         </span>
       </div>
@@ -703,7 +703,7 @@ function PreferencesSection({ prefs }: { prefs: UserPreferences | null }) {
       <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] divide-y divide-white/[0.04]">
         {(buscaText || priceText) && (
           <div className="p-3 space-y-1.5">
-            <p className="text-[10px] text-zinc-500 font-medium">Tu contacto busca:</p>
+            <p className="text-xs md:text-[10px] text-zinc-500 font-medium">Tu contacto busca:</p>
             <div className="flex flex-wrap items-center gap-2">
               {buscaText && <PrefPill>{buscaText}</PrefPill>}
               {priceText && <PrefPill emphasized>{priceText}</PrefPill>}
@@ -713,7 +713,7 @@ function PreferencesSection({ prefs }: { prefs: UserPreferences | null }) {
 
         {(prefs.zones?.length ?? 0) > 0 && (
           <div className="p-3 space-y-1.5">
-            <p className="text-[10px] text-zinc-500 font-medium">
+            <p className="text-xs md:text-[10px] text-zinc-500 font-medium">
               Le interesa encontrar una propiedad en:
             </p>
             <div className="flex flex-wrap gap-1.5">
@@ -726,7 +726,7 @@ function PreferencesSection({ prefs }: { prefs: UserPreferences | null }) {
 
         {hasChars && (
           <div className="p-3 space-y-1.5">
-            <p className="text-[10px] text-zinc-500 font-medium">
+            <p className="text-xs md:text-[10px] text-zinc-500 font-medium">
               Con las siguientes características:
             </p>
             <div className="flex flex-wrap gap-1.5">

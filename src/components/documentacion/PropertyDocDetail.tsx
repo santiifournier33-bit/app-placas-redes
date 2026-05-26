@@ -72,7 +72,7 @@ export function PropertyDocDetail({ property: p, onClose }: PropertyDocDetailPro
               href={p.driveUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-blue-500/10 text-[11px] font-medium text-blue-400 hover:bg-blue-500/20 transition-colors"
+              className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-blue-500/10 text-xs md:text-[11px] font-medium text-blue-400 hover:bg-blue-500/20 transition-colors"
             >
               <ExternalLink size={12} />
               Abrir carpeta en Drive
@@ -94,7 +94,7 @@ export function PropertyDocDetail({ property: p, onClose }: PropertyDocDetailPro
 
           {/* Obligatorios */}
           <section>
-            <p className="text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em] mb-3">
+            <p className="text-xs md:text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em] mb-3">
               🔴 Documentos obligatorios
             </p>
             <div className="space-y-2">
@@ -112,7 +112,7 @@ export function PropertyDocDetail({ property: p, onClose }: PropertyDocDetailPro
           {/* Recomendados */}
           {(recomendadosMissing.length > 0 || otherPresent.some(d => d.category === "identidad_conyuge" || d.category.includes("conyuge"))) && (
             <section>
-              <p className="text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em] mb-3">
+              <p className="text-xs md:text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em] mb-3">
                 🟡 Documentos recomendados
               </p>
               <div className="space-y-2">
@@ -131,7 +131,7 @@ export function PropertyDocDetail({ property: p, onClose }: PropertyDocDetailPro
           {/* Other docs */}
           {otherPresent.filter(d => d.category !== "identidad_conyuge" && !d.category.includes("conyuge")).length > 0 && (
             <section>
-              <p className="text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em] mb-3">
+              <p className="text-xs md:text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em] mb-3">
                 📄 Otros documentos
               </p>
               <div className="space-y-2">
@@ -147,7 +147,7 @@ export function PropertyDocDetail({ property: p, onClose }: PropertyDocDetailPro
           {/* Unclassified */}
           {p.unclassifiedFiles.length > 0 && (
             <section>
-              <p className="text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em] mb-3">
+              <p className="text-xs md:text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em] mb-3">
                 ⚠️ Sin clasificar ({p.unclassifiedFiles.length})
               </p>
               <div className="space-y-1">
@@ -163,7 +163,7 @@ export function PropertyDocDetail({ property: p, onClose }: PropertyDocDetailPro
 
           {/* Summary */}
           <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-3">
-            <p className="text-[11px] text-zinc-500">
+            <p className="text-xs md:text-[11px] text-zinc-500">
               Total: {p.fileCount} archivo{p.fileCount !== 1 ? "s" : ""} en Drive
             </p>
           </div>
@@ -270,7 +270,7 @@ function FileRow({ file, onPreview, onDownload }: {
   return (
     <div className="flex items-center gap-2 px-3 py-2 group hover:bg-white/[0.02] transition-colors">
       <FileText size={13} className="text-zinc-500 shrink-0" />
-      <span className="text-[11px] text-zinc-300 truncate flex-1 font-mono">{file.name}</span>
+      <span className="text-xs md:text-[11px] text-zinc-300 truncate flex-1 font-mono">{file.name}</span>
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
         {canPreview && (
           <button

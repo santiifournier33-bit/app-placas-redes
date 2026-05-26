@@ -25,7 +25,7 @@ export function ContactTasksCard({ contactId }: { contactId: string }) {
 
   return (
     <div className="px-5 pb-5 space-y-3">
-      <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Tareas</h3>
+      <h3 className="text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Tareas</h3>
       {!adding && (
         <button
           onClick={() => setAdding(true)}
@@ -66,7 +66,7 @@ export function ContactTasksCard({ contactId }: { contactId: string }) {
                 {t.title}
               </p>
               {t.due_date && (
-                <p className="text-[10px] text-zinc-600 flex items-center gap-1 mt-0.5">
+                <p className="text-xs md:text-[10px] text-zinc-600 flex items-center gap-1 mt-0.5">
                   <Calendar size={9} />
                   {format(new Date(t.due_date), "d 'de' MMM", { locale: es })}
                 </p>

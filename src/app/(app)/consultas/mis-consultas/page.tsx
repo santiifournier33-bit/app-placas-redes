@@ -128,7 +128,7 @@ export default function MisConsultasPage() {
         <h1 className="text-sm font-bold text-shell-text">Mis consultas</h1>
         <Link
           href="/consultas"
-          className="ml-auto text-[11px] text-blue-400 hover:underline"
+          className="ml-auto text-xs md:text-[11px] text-blue-400 hover:underline"
         >
           ← Volver al matching
         </Link>
@@ -201,25 +201,25 @@ function InquiryRow({ row, onMarkResponded }: { row: Row; onMarkResponded: (id: 
       </div>
       <div className="flex-1 min-w-[200px]">
         <p className="text-sm font-bold text-shell-text truncate">{fullName}</p>
-        <p className="text-[11px] text-zinc-500 truncate">
+        <p className="text-xs md:text-[11px] text-zinc-500 truncate">
           {row.property_snapshot.address ?? row.tokko_property_reference ?? 'Propiedad'}
         </p>
-        <p className="text-[10px] text-zinc-600 mt-0.5">
+        <p className="text-xs md:text-[10px] text-zinc-600 mt-0.5">
           {format(new Date(row.last_inquired_at), "d MMM yyyy", { locale: es })} ·{' '}
           {formatDistanceToNow(new Date(row.last_inquired_at), { addSuffix: true, locale: es })}
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
         {row.source && (
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500 uppercase">
+          <span className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500 uppercase">
             {row.source}
           </span>
         )}
         {row.status === 'pending' && (
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400">Pendiente</span>
+          <span className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400">Pendiente</span>
         )}
         {row.status === 'responded' && (
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">Respondida</span>
+          <span className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">Respondida</span>
         )}
         {waLink && (
           <a

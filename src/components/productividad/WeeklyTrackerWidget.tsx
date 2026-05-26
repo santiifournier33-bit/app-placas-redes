@@ -28,8 +28,8 @@ export function WeeklyTrackerWidget({ weekDate = new Date() }: WeeklyTrackerWidg
           return (
             <div key={m.label}>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[11px] text-zinc-400">{m.label}</span>
-                <span className={`text-[11px] font-bold ${done ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                <span className="text-xs md:text-[11px] text-zinc-400">{m.label}</span>
+                <span className={`text-xs md:text-[11px] font-bold ${done ? 'text-emerald-400' : 'text-zinc-500'}`}>
                   {m.current}/{m.target}
                 </span>
               </div>

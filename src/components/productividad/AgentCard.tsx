@@ -39,13 +39,13 @@ export function AgentCard({ data, rank, onTap }: AgentCardProps) {
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-shell-text truncate">{agent.displayName}</p>
         <div className="flex items-center gap-3 mt-0.5">
-          <span className="flex items-center gap-1 text-[11px] text-zinc-500">
+          <span className="flex items-center gap-1 text-xs md:text-[11px] text-zinc-500">
             <CheckSquare size={11} /> {metrics.tasksCompleted}
           </span>
-          <span className="flex items-center gap-1 text-[11px] text-zinc-500">
+          <span className="flex items-center gap-1 text-xs md:text-[11px] text-zinc-500">
             <UserPlus size={11} /> {metrics.leadsCreated}
           </span>
-          <span className="flex items-center gap-1 text-[11px] text-zinc-500">
+          <span className="flex items-center gap-1 text-xs md:text-[11px] text-zinc-500">
             <ArrowRightLeft size={11} /> {metrics.leadsMoved}
           </span>
         </div>
@@ -56,7 +56,7 @@ export function AgentCard({ data, rank, onTap }: AgentCardProps) {
         <p className={`text-lg font-bold tabular-nums ${active ? "text-shell-text" : "text-zinc-700"}`}>
           {metrics.totalActions}
         </p>
-        <p className="text-[10px] text-zinc-600">acciones</p>
+        <p className="text-xs md:text-[10px] text-zinc-600">acciones</p>
       </div>
 
       {/* Status dot */}

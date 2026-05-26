@@ -149,7 +149,7 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
         <div className="relative">
           <button
             onClick={() => { closeAllDropdowns(); setShowDatePicker(!showDatePicker) }}
-            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-colors cursor-pointer ${
+            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs md:text-[11px] font-medium transition-colors cursor-pointer ${
               dueDate ? "bg-blue-500/15 text-blue-400 border border-blue-500/20" : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
             }`}
           >
@@ -188,7 +188,7 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
         <div className="relative">
           <button
             onClick={() => { closeAllDropdowns(); setShowPriority(!showPriority) }}
-            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-colors cursor-pointer ${
+            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs md:text-[11px] font-medium transition-colors cursor-pointer ${
               priority < 4 ? "bg-white/[0.06] border border-white/[0.06]" : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
             }`}
           >
@@ -216,7 +216,7 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
         <div className="relative">
           <button
             onClick={() => { closeAllDropdowns(); setShowType(!showType) }}
-            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-colors cursor-pointer ${
+            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs md:text-[11px] font-medium transition-colors cursor-pointer ${
               taskType !== "tarea" ? "bg-violet-500/15 text-violet-400 border border-violet-500/20" : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
             }`}
           >
@@ -248,7 +248,7 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
             onClick={() => { if (dueDate) { closeAllDropdowns(); setShowReminder(!showReminder) } }}
             disabled={!dueDate}
             title={!dueDate ? "Primero asigná una fecha a la tarea" : undefined}
-            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-colors ${
+            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs md:text-[11px] font-medium transition-colors ${
               !dueDate
                 ? "text-zinc-700 cursor-not-allowed opacity-50"
                 : reminderOffsetMin !== null
@@ -293,7 +293,7 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
         <div className="relative">
           <button
             onClick={() => { closeAllDropdowns(); setShowRecurrence(!showRecurrence) }}
-            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-colors cursor-pointer ${
+            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs md:text-[11px] font-medium transition-colors cursor-pointer ${
               recurrenceFreq ? "bg-teal-500/15 text-teal-400 border border-teal-500/20" : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
             }`}
           >
@@ -327,7 +327,7 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
         <div className="relative">
           <button
             onClick={() => { closeAllDropdowns(); setShowContactPicker(!showContactPicker); setContactSearch("") }}
-            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-colors cursor-pointer ${
+            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs md:text-[11px] font-medium transition-colors cursor-pointer ${
               contactId ? "bg-green-500/15 text-green-400 border border-green-500/20" : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
             }`}
           >
@@ -361,7 +361,7 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
                     onClick={() => { setContactId(c.id); setShowContactPicker(false) }}
                     className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs cursor-pointer"
                   >
-                    <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-[10px] text-blue-400 font-bold shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-xs md:text-[10px] text-blue-400 font-bold shrink-0">
                       {(c.first_name || c.last_name || "?")[0]}
                     </div>
                     <div className="flex-1 min-w-0 text-left">
@@ -386,7 +386,7 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
         <div className="relative">
           <button
             onClick={() => { closeAllDropdowns(); setShowSectionPicker(!showSectionPicker) }}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300 cursor-pointer"
+            className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs md:text-[11px] font-medium text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300 cursor-pointer"
           >
             {(() => {
               const sec = sections.find(s => s.id === currentSectionId)

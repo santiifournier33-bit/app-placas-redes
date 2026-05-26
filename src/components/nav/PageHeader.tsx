@@ -42,7 +42,7 @@ export function PageHeader({ title, subtitle, actions, className = "" }: PageHea
       <div className="flex flex-col min-w-0 flex-1 leading-tight">
         <h1 className="text-sm font-bold text-shell-text truncate">{title}</h1>
         {subtitle && (
-          <p className="text-[11px] text-zinc-500 truncate">{subtitle}</p>
+          <p className="text-xs md:text-[11px] text-zinc-500 truncate">{subtitle}</p>
         )}
       </div>
 

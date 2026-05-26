@@ -62,7 +62,7 @@ export function InlineSelectChip({
       <button
         ref={buttonRef}
         onClick={(e) => { e.stopPropagation(); setOpen(o => !o) }}
-        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-medium cursor-pointer transition-colors ${triggerClass}`}
+        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs md:text-[11px] font-medium cursor-pointer transition-colors ${triggerClass}`}
       >
         <span className="truncate max-w-[140px]">{selected?.label ?? placeholder}</span>
         <ChevronDown size={10} className="shrink-0 opacity-70" />
@@ -78,7 +78,7 @@ export function InlineSelectChip({
         {value && (
           <button
             onClick={(e) => { e.stopPropagation(); onChange(null); setOpen(false) }}
-            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-[11px] text-zinc-500 hover:bg-white/[0.04] cursor-pointer"
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs md:text-[11px] text-zinc-500 hover:bg-white/[0.04] cursor-pointer"
           >
             <span className="px-2 py-0.5 rounded-md bg-white/[0.04] text-zinc-500">Sin valor</span>
           </button>
@@ -94,7 +94,7 @@ export function InlineSelectChip({
                 isSelected ? 'bg-white/[0.06]' : 'hover:bg-white/[0.04]'
               }`}
             >
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium ${COLOR_CLASS[color]}`}>
+              <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs md:text-[11px] font-medium ${COLOR_CLASS[color]}`}>
                 {opt.label}
               </span>
               {isSelected && <Check size={12} className="ml-auto text-zinc-400 shrink-0" />}

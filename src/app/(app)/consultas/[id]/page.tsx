@@ -228,7 +228,7 @@ export default function ConsultaPropertyDetailPage() {
           <div className="p-4 space-y-3">
             {/* Filters bar */}
             <div className="flex flex-wrap items-center gap-2 text-xs">
-              <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider mr-auto">
+              <h3 className="text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider mr-auto">
                 Contactos compatibles
               </h3>
               <button
@@ -253,7 +253,7 @@ export default function ConsultaPropertyDetailPage() {
             <div className="flex flex-wrap gap-1 border-b border-white/[0.04] pb-2">
               <button
                 onClick={() => setMatchTypeFilter('all')}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg text-xs md:text-[10px] font-bold transition-all cursor-pointer ${
                   matchTypeFilter === 'all'
                     ? 'bg-blue-600/20 text-blue-300 border border-blue-500/30'
                     : 'bg-white/[0.03] text-zinc-500 border border-transparent hover:bg-white/[0.06]'
@@ -263,7 +263,7 @@ export default function ConsultaPropertyDetailPage() {
               </button>
               <button
                 onClick={() => setMatchTypeFilter('direct')}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg text-xs md:text-[10px] font-bold transition-all cursor-pointer ${
                   matchTypeFilter === 'direct'
                     ? 'bg-emerald-600/20 text-emerald-300 border border-emerald-500/30'
                     : 'bg-white/[0.03] text-zinc-500 border border-transparent hover:bg-white/[0.06]'
@@ -273,7 +273,7 @@ export default function ConsultaPropertyDetailPage() {
               </button>
               <button
                 onClick={() => setMatchTypeFilter('history')}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg text-xs md:text-[10px] font-bold transition-all cursor-pointer ${
                   matchTypeFilter === 'history'
                     ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
                     : 'bg-white/[0.03] text-zinc-500 border border-transparent hover:bg-white/[0.06]'
@@ -288,7 +288,7 @@ export default function ConsultaPropertyDetailPage() {
               <div className="flex flex-wrap gap-1.5">
                 <button
                   onClick={() => setPortalFilter('all')}
-                  className={`px-2 py-0.5 rounded text-[10px] font-medium cursor-pointer ${
+                  className={`px-2 py-0.5 rounded text-xs md:text-[10px] font-medium cursor-pointer ${
                     portalFilter === 'all'
                       ? 'bg-white/[0.12] text-zinc-200'
                       : 'bg-white/[0.04] text-zinc-500 hover:bg-white/[0.06]'
@@ -300,7 +300,7 @@ export default function ConsultaPropertyDetailPage() {
                   <button
                     key={portal}
                     onClick={() => setPortalFilter(portal)}
-                    className={`px-2 py-0.5 rounded text-[10px] font-medium cursor-pointer ${
+                    className={`px-2 py-0.5 rounded text-xs md:text-[10px] font-medium cursor-pointer ${
                       portalFilter === portal
                         ? PORTAL_COLORS[portal] ?? 'bg-zinc-700 text-zinc-300'
                         : 'bg-white/[0.04] text-zinc-500 hover:bg-white/[0.06]'
@@ -417,34 +417,34 @@ function MatchCard({
             >
               {match.full_name}
             </button>
-            <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium uppercase ${portalCls}`}>
+            <span className={`text-xs md:text-[9px] px-1.5 py-0.5 rounded font-medium uppercase ${portalCls}`}>
               {portal}
             </span>
             {matchTypeBadge && (
-              <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${matchTypeBadge.cls}`}>
+              <span className={`text-xs md:text-[9px] px-1.5 py-0.5 rounded font-bold ${matchTypeBadge.cls}`}>
                 {matchTypeBadge.text}
               </span>
             )}
             {match.soft_fail_reasons && match.soft_fail_reasons.length > 0 && (
               <span
-                className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-purple-500/10 text-purple-300 border border-purple-500/20"
+                className="text-xs md:text-[9px] px-1.5 py-0.5 rounded font-bold bg-purple-500/10 text-purple-300 border border-purple-500/20"
                 title={match.soft_fail_reasons.join(' · ')}
               >
                 Interés zonal
               </span>
             )}
             {!match.is_own && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">
+              <span className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">
                 Otro asesor
               </span>
             )}
           </div>
           {match.can_see_pii && match.email && (
-            <p className="text-[10px] text-zinc-500 mt-0.5 truncate">{match.email}</p>
+            <p className="text-xs md:text-[10px] text-zinc-500 mt-0.5 truncate">{match.email}</p>
           )}
-          <p className="text-[11px] text-zinc-500 mt-1">{match.reasons_text}</p>
+          <p className="text-xs md:text-[11px] text-zinc-500 mt-1">{match.reasons_text}</p>
           {match.total_consultas != null && match.total_consultas > 1 && (
-            <p className="text-[10px] text-amber-400/80 mt-1">
+            <p className="text-xs md:text-[10px] text-amber-400/80 mt-1">
               Consultó {match.total_consultas} veces
               {match.ultima_consulta && ` · última ${formatRelativeDays(match.ultima_consulta)}`}
               {match.portales && match.portales.length > 1 && ` · ${match.portales.join(' + ')}`}
@@ -514,7 +514,7 @@ function BreakdownPill({ label, value }: { label: string; value: number }) {
       : value >= 40 ? 'bg-amber-500/10 text-amber-300'
         : 'bg-zinc-800/50 text-zinc-500'
   return (
-    <div className={`rounded-md px-2 py-1 text-[10px] ${cls}`}>
+    <div className={`rounded-md px-2 py-1 text-xs md:text-[10px] ${cls}`}>
       <div className="opacity-70">{label}</div>
       <div className="font-bold">{value}</div>
     </div>

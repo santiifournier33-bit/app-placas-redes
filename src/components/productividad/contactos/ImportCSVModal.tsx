@@ -136,7 +136,7 @@ export function ImportCSVModal({ onClose }: ImportCSVModalProps) {
                 {!hasFirstName && (
                   <div className="flex items-center gap-1.5 text-amber-400">
                     <AlertTriangle size={13} />
-                    <span className="text-[11px]">Falta mapear Nombre</span>
+                    <span className="text-xs md:text-[11px]">Falta mapear Nombre</span>
                   </div>
                 )}
               </div>
@@ -165,12 +165,12 @@ export function ImportCSVModal({ onClose }: ImportCSVModalProps) {
               {/* Preview */}
               {rows.length > 0 && (
                 <div>
-                  <p className="text-[10px] text-zinc-600 uppercase tracking-wider mb-2">Vista previa (primeras 3 filas)</p>
+                  <p className="text-xs md:text-[10px] text-zinc-600 uppercase tracking-wider mb-2">Vista previa (primeras 3 filas)</p>
                   <div className="space-y-2">
                     {rows.slice(0, 3).map((row, i) => (
                       <div key={i} className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-2">
                         {mapping.filter(m => m.dbField).map(m => (
-                          <div key={m.csvHeader} className="flex gap-2 text-[11px]">
+                          <div key={m.csvHeader} className="flex gap-2 text-xs md:text-[11px]">
                             <span className="text-zinc-600 w-20 shrink-0">
                               {MAPPABLE_FIELDS.find(f => f.value === m.dbField)?.label}:
                             </span>

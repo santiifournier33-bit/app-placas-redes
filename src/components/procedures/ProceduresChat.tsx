@@ -267,7 +267,7 @@ export function ProceduresChat() {
         <div className="px-6 pb-2 shrink-0">
           <button
             onClick={() => setShowSuggestions(prev => !prev)}
-            className="flex items-center gap-1 text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors cursor-pointer"
+            className="flex items-center gap-1 text-xs md:text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors cursor-pointer"
           >
             <ChevronDown size={12} className={`transition-transform ${showSuggestions ? "rotate-180" : ""}`} />
             Preguntas sugeridas
@@ -278,7 +278,7 @@ export function ProceduresChat() {
                 <button
                   key={i}
                   onClick={() => { sendMessage(q); setShowSuggestions(false) }}
-                  className="text-[11px] text-zinc-500 hover:text-zinc-200 border border-white/[0.06] hover:border-blue-500/30 px-2.5 py-1 rounded-full transition-all cursor-pointer hover:bg-blue-500/5"
+                  className="text-xs md:text-[11px] text-zinc-500 hover:text-zinc-200 border border-white/[0.06] hover:border-blue-500/30 px-2.5 py-1 rounded-full transition-all cursor-pointer hover:bg-blue-500/5"
                 >
                   {q.slice(0, 40)}...
                 </button>
@@ -318,7 +318,7 @@ export function ProceduresChat() {
             }
           </button>
         </form>
-        <p className="text-[10px] text-zinc-700 mt-2 text-center">
+        <p className="text-xs md:text-[10px] text-zinc-700 mt-2 text-center">
           Respuestas basadas exclusivamente en la documentación interna · Enter para enviar · Shift+Enter para nueva línea
         </p>
       </div>

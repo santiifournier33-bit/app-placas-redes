@@ -80,7 +80,7 @@ export function DocKPICards({ total, complete, partial, incomplete, missing, uns
       {/* Progress bar */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em]">
+          <span className="text-xs md:text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em]">
             Progreso general
           </span>
           <span className="text-sm font-bold text-shell-text tabular-nums">{percentage}%</span>
@@ -109,7 +109,7 @@ export function DocKPICards({ total, complete, partial, incomplete, missing, uns
             )}
           </div>
         </div>
-        <div className="flex gap-4 text-[10px] text-zinc-500">
+        <div className="flex gap-4 text-xs md:text-[10px] text-zinc-500">
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" /> Completa</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500" /> Incompleta</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500/50" /> Sin docs</span>
@@ -134,9 +134,9 @@ function KPICard({ icon, label, value, subtitle, color }: {
       <div className={`${color.icon} mb-2`}>{icon}</div>
       <p className={`text-2xl font-bold ${color.text} tabular-nums`}>{value}</p>
       <div className="flex items-center gap-2 mt-1">
-        <p className="text-[11px] text-zinc-500 font-medium">{label}</p>
+        <p className="text-xs md:text-[11px] text-zinc-500 font-medium">{label}</p>
         {subtitle && (
-          <span className={`text-[10px] font-bold ${color.text} opacity-70`}>{subtitle}</span>
+          <span className={`text-xs md:text-[10px] font-bold ${color.text} opacity-70`}>{subtitle}</span>
         )}
       </div>
     </div>

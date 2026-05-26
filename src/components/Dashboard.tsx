@@ -685,7 +685,7 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
                     </div>
                   )}
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-primary leading-tight line-clamp-1 max-w-[140px]">
+                    <span className="text-xs md:text-[10px] font-bold text-primary leading-tight line-clamp-1 max-w-[140px]">
                       {property.producer?.name || property.branch?.name || "Agente Asignado"}
                     </span>
                     <span className="text-[8px] text-on-surface-variant uppercase tracking-[0.1em] leading-tight">
@@ -704,7 +704,7 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
             <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
               {stats.map((s, i) => (
                 <div key={i} className="flex flex-col items-center justify-center text-center p-2.5 bg-surface rounded-lg shadow-sm border border-outline-variant/50">
-                  <p className="text-[10px] text-on-surface-variant uppercase font-bold tracking-wider mb-0.5">
+                  <p className="text-xs md:text-[10px] text-on-surface-variant uppercase font-bold tracking-wider mb-0.5">
                     {s.label}
                   </p>
                   <p className={`font-bold text-sm ${s.accent ? "text-accent" : "text-primary"}`}>
@@ -732,7 +732,7 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
             </div>
             <div>
               <h3 className="font-heading font-semibold text-sm text-primary">Copy Redes Sociales</h3>
-              <p className="text-[11px] text-on-surface-variant">3 variantes con IA</p>
+              <p className="text-xs md:text-[11px] text-on-surface-variant">3 variantes con IA</p>
             </div>
           </div>
           <p className="text-xs text-on-surface-variant/70 mb-auto leading-relaxed">
@@ -751,7 +751,7 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
             </div>
             <div>
               <h3 className="font-heading font-semibold text-sm text-primary">Placas & Mosaicos</h3>
-              <p className="text-[11px] text-on-surface-variant">Story o Post</p>
+              <p className="text-xs md:text-[11px] text-on-surface-variant">Story o Post</p>
             </div>
           </div>
           <p className="text-xs text-on-surface-variant/70 mb-auto leading-relaxed">
@@ -770,7 +770,7 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
             </div>
             <div>
               <h3 className="font-heading font-semibold text-sm text-primary">Ficha PDF</h3>
-              <p className="text-[11px] text-on-surface-variant">Folleto profesional</p>
+              <p className="text-xs md:text-[11px] text-on-surface-variant">Folleto profesional</p>
             </div>
           </div>
           <p className="text-xs text-on-surface-variant/70 mb-auto leading-relaxed">
@@ -789,7 +789,7 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
             </div>
             <div>
               <h3 className="font-heading font-semibold text-sm text-primary">Video Reel</h3>
-              <p className="text-[11px] text-on-surface-variant">Multi-foto animado</p>
+              <p className="text-xs md:text-[11px] text-on-surface-variant">Multi-foto animado</p>
             </div>
           </div>
           <p className="text-xs text-on-surface-variant/70 mb-auto leading-relaxed">
@@ -866,7 +866,7 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
                     >
                       <div className="px-5 pt-5 pb-3 border-b border-outline-variant">
                         <h4 className="font-heading font-semibold text-sm text-primary">{variant.title}</h4>
-                        <p className="text-[11px] text-on-surface-variant mt-0.5">{variant.subtitle}</p>
+                        <p className="text-xs md:text-[11px] text-on-surface-variant mt-0.5">{variant.subtitle}</p>
                       </div>
                       <div className="px-5 py-4 flex-1">
                         <p className="text-xs text-on-surface-variant whitespace-pre-wrap leading-relaxed">
@@ -988,12 +988,12 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
                     >
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-20 bg-gradient-to-b from-primary/20 to-primary/5 rounded-lg border border-primary/10 flex items-center justify-center">
-                          <span className="text-[9px] font-bold text-primary">9:16</span>
+                          <span className="text-xs md:text-[9px] font-bold text-primary">9:16</span>
                         </div>
                         <div>
                           <h4 className="font-heading font-semibold text-primary">Historia / Story</h4>
                           <p className="text-xs text-on-surface-variant mt-1">1080 × 1920 px — Formato vertical</p>
-                          <p className="text-[11px] text-on-surface-variant/60 mt-0.5">
+                          <p className="text-xs md:text-[11px] text-on-surface-variant/60 mt-0.5">
                             Ideal para Instagram Stories y WhatsApp Status
                           </p>
                         </div>
@@ -1007,12 +1007,12 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
                     >
                       <div className="flex items-center gap-4">
                         <div className="w-16 h-16 bg-gradient-to-b from-secondary/20 to-secondary/5 rounded-lg border border-secondary/10 flex items-center justify-center">
-                          <span className="text-[9px] font-bold text-secondary">1:1</span>
+                          <span className="text-xs md:text-[9px] font-bold text-secondary">1:1</span>
                         </div>
                         <div>
                           <h4 className="font-heading font-semibold text-primary">Post Cuadrado</h4>
                           <p className="text-xs text-on-surface-variant mt-1">1080 × 1080 px — Formato cuadrado</p>
-                          <p className="text-[11px] text-on-surface-variant/60 mt-0.5">
+                          <p className="text-xs md:text-[11px] text-on-surface-variant/60 mt-0.5">
                             Ideal para Feed de Instagram y Facebook
                           </p>
                         </div>
@@ -1051,7 +1051,7 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-16 bg-gradient-to-b from-accent/20 to-accent/5 rounded border border-accent/10 flex items-center justify-center">
-                        <span className="text-[9px] font-bold text-accent">A4 Vert</span>
+                        <span className="text-xs md:text-[9px] font-bold text-accent">A4 Vert</span>
                       </div>
                       <div>
                         <h4 className="font-heading font-semibold text-primary">Formato Vertical</h4>
@@ -1067,7 +1067,7 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-16 h-12 bg-gradient-to-b from-accent/20 to-accent/5 rounded border border-accent/10 flex items-center justify-center">
-                        <span className="text-[9px] font-bold text-accent">A4 Horiz</span>
+                        <span className="text-xs md:text-[9px] font-bold text-accent">A4 Horiz</span>
                       </div>
                       <div>
                         <h4 className="font-heading font-semibold text-primary">Formato Horizontal</h4>
@@ -1203,7 +1203,7 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
                       >
                         <div className="flex items-center justify-between gap-2">
                           <div className="min-w-0 overflow-hidden">
-                            <p className={`text-[11px] font-bold truncate ${isSelected ? 'text-accent' : 'text-primary'}`}>
+                            <p className={`text-xs md:text-[11px] font-bold truncate ${isSelected ? 'text-accent' : 'text-primary'}`}>
                               {track.name}
                             </p>
                           </div>

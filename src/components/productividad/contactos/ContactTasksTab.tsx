@@ -90,7 +90,7 @@ export function ContactTasksTab({ contactId }: { contactId: string }) {
                 {t.title}
               </p>
               {t.due_date && (
-                <p className="text-[10px] text-zinc-600 flex items-center gap-1 mt-0.5">
+                <p className="text-xs md:text-[10px] text-zinc-600 flex items-center gap-1 mt-0.5">
                   <Calendar size={9} />
                   {format(new Date(t.due_date), "d 'de' MMM", { locale: es })}
                 </p>

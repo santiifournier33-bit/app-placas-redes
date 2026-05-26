@@ -270,7 +270,7 @@ export function MailApp() {
               </div>
               <div className="text-left min-w-0 flex-1">
                 <p className="text-sm font-semibold text-zinc-200 truncate leading-tight mb-0.5">{realName}</p>
-                <p className="text-[10px] text-zinc-500 truncate leading-tight">{credentials?.user}</p>
+                <p className="text-xs md:text-[10px] text-zinc-500 truncate leading-tight">{credentials?.user}</p>
               </div>
             </div>
             {showProfileMenu ? <ChevronDown size={14} className="text-zinc-500" /> : <ChevronUp size={14} className="text-zinc-500" />}
@@ -281,7 +281,7 @@ export function MailApp() {
             <div className="absolute bottom-full left-2 right-2 mb-2 bg-[#1c1c26] border border-white/[0.1] rounded-xl shadow-2xl overflow-hidden z-50">
               {isEditingName ? (
                 <form onSubmit={saveSenderName} className="p-3 border-b border-white/[0.06]">
-                  <label className="text-[10px] font-medium text-zinc-500 uppercase mb-1.5 block">Personalizar remitente</label>
+                  <label className="text-xs md:text-[10px] font-medium text-zinc-500 uppercase mb-1.5 block">Personalizar remitente</label>
                   <input 
                     type="text" 
                     value={tempName}
@@ -291,8 +291,8 @@ export function MailApp() {
                     autoFocus
                   />
                   <div className="flex gap-2 mt-2">
-                    <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-[10px] py-1 rounded cursor-pointer transition-colors">Guardar</button>
-                    <button type="button" onClick={() => { setIsEditingName(false); setTempName(realName) }} className="flex-1 bg-white/[0.06] hover:bg-white/[0.1] text-zinc-300 text-[10px] py-1 rounded cursor-pointer transition-colors">Cancelar</button>
+                    <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-xs md:text-[10px] py-1 rounded cursor-pointer transition-colors">Guardar</button>
+                    <button type="button" onClick={() => { setIsEditingName(false); setTempName(realName) }} className="flex-1 bg-white/[0.06] hover:bg-white/[0.1] text-zinc-300 text-xs md:text-[10px] py-1 rounded cursor-pointer transition-colors">Cancelar</button>
                   </div>
                 </form>
               ) : (
@@ -434,7 +434,7 @@ export function MailApp() {
           {selectedUids.size > 0 ? (
             /* ── Bulk Action Bar ── */
             <div className="flex items-center gap-1 flex-1 min-w-0">
-              <span className="text-[11px] text-zinc-500 mr-1 shrink-0">{selectedUids.size} sel.</span>
+              <span className="text-xs md:text-[11px] text-zinc-500 mr-1 shrink-0">{selectedUids.size} sel.</span>
               <button onClick={() => runAction("archive")} disabled={actionLoading} className="p-1.5 rounded-lg hover:bg-white/[0.06] text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer" title="Archivar">
                 <Archive size={15} />
               </button>
@@ -476,7 +476,7 @@ export function MailApp() {
             <div className="flex items-center justify-between flex-1 min-w-0">
               <h2 className="text-sm font-bold text-shell-text truncate">
                 {FOLDERS.find(f => f.id === activeFolder)?.label || activeFolder}
-                {total > 0 && <span className="ml-2 text-[11px] font-normal text-zinc-500">{total} mensajes</span>}
+                {total > 0 && <span className="ml-2 text-xs md:text-[11px] font-normal text-zinc-500">{total} mensajes</span>}
               </h2>
               <div className="flex items-center gap-1 shrink-0">
                 <button
@@ -546,7 +546,7 @@ export function MailApp() {
                         {getSenderName(msg.from)}
                       </span>
                     </div>
-                    <span className={`text-[11px] shrink-0 ${isUnread(msg.flags) ? "font-semibold text-zinc-400" : "font-normal text-zinc-600"}`}>{formatDate(msg.date)}</span>
+                    <span className={`text-xs md:text-[11px] shrink-0 ${isUnread(msg.flags) ? "font-semibold text-zinc-400" : "font-normal text-zinc-600"}`}>{formatDate(msg.date)}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <p className={`text-[13px] truncate flex-1 ${isUnread(msg.flags) ? "font-bold text-zinc-200" : "font-normal text-zinc-400"}`}>
@@ -616,7 +616,7 @@ export function MailApp() {
                   {selectedMsg.attachments?.length > 0 && (
                     <div className="flex items-center gap-1 mt-2">
                       <Paperclip size={12} className="text-zinc-500" />
-                      <span className="text-[11px] text-zinc-500">{selectedMsg.attachments.length} adjunto(s)</span>
+                      <span className="text-xs md:text-[11px] text-zinc-500">{selectedMsg.attachments.length} adjunto(s)</span>
                     </div>
                   )}
                 </div>
@@ -652,14 +652,14 @@ export function MailApp() {
             {/* Attachments */}
             {selectedMsg.attachments?.length > 0 && (
               <div className="px-6 py-3 border-t border-white/[0.06] shrink-0">
-                <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider mb-2">Adjuntos</p>
+                <p className="text-xs md:text-[11px] font-medium text-zinc-500 uppercase tracking-wider mb-2">Adjuntos</p>
                 <div className="flex flex-wrap gap-2">
                   {selectedMsg.attachments.map((att, i) => (
                     <a
                       key={i}
                       href={`data:${att.contentType};base64,${att.content}`}
                       download={att.filename}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-[11px] text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.07] transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-xs md:text-[11px] text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.07] transition-colors"
                     >
                       <Paperclip size={11} />
                       {att.filename}

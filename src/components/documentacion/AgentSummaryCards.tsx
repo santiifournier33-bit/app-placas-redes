@@ -14,7 +14,7 @@ export function AgentSummaryCards({ agents, loading, onAgentClick }: AgentSummar
   if (loading) {
     return (
       <div className="space-y-3">
-        <p className="text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em]">Asesores</p>
+        <p className="text-xs md:text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em]">Asesores</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {[1, 2, 3].map(i => (
             <div key={i} className="h-24 rounded-2xl skeleton" />
@@ -28,7 +28,7 @@ export function AgentSummaryCards({ agents, loading, onAgentClick }: AgentSummar
 
   return (
     <div className="space-y-3">
-      <p className="text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em]">Asesores</p>
+      <p className="text-xs md:text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em]">Asesores</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {agents.map(agent => (
           <AgentCard key={agent.name} agent={agent} onClick={() => onAgentClick?.(agent.name)} />
@@ -63,7 +63,7 @@ function AgentCard({ agent, onClick }: { agent: AgentSummary; onClick: () => voi
           </div>
           <div>
             <p className="text-sm font-medium text-shell-text leading-tight">{agent.name}</p>
-            <p className="text-[11px] text-zinc-500">{agent.total} propiedades</p>
+            <p className="text-xs md:text-[11px] text-zinc-500">{agent.total} propiedades</p>
           </div>
         </div>
         <span className={`text-lg font-bold tabular-nums ${statusColor}`}>
@@ -80,7 +80,7 @@ function AgentCard({ agent, onClick }: { agent: AgentSummary; onClick: () => voi
       </div>
 
       {/* Breakdown */}
-      <div className="flex gap-3 mt-2 text-[10px] text-zinc-500">
+      <div className="flex gap-3 mt-2 text-xs md:text-[10px] text-zinc-500">
         {agent.complete > 0 && <span>✅ {agent.complete}</span>}
         {agent.incomplete > 0 && <span>⚠️ {agent.incomplete}</span>}
         {(agent.missing + agent.unsynced) > 0 && <span>🔴 {agent.missing + agent.unsynced}</span>}

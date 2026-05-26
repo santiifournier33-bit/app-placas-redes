@@ -214,7 +214,7 @@ function FilterChip({ label, value, options, onChange }: {
       <select
         value={value}
         onChange={e => onChange(e.target.value)}
-        className={`appearance-none text-[11px] font-medium px-2.5 py-1.5 pr-6 rounded-lg border cursor-pointer outline-none transition-all [color-scheme:dark] ${
+        className={`appearance-none text-xs md:text-[11px] font-medium px-2.5 py-1.5 pr-6 rounded-lg border cursor-pointer outline-none transition-all [color-scheme:dark] ${
           active
             ? 'border-blue-500/30 bg-blue-500/10 text-blue-400'
             : 'border-white/[0.06] bg-white/[0.04] text-zinc-400'

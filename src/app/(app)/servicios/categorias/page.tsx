@@ -49,7 +49,7 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (v: string)
         />
       ))}
       <label className="w-6 h-6 rounded-full border border-white/[0.15] flex items-center justify-center cursor-pointer hover:bg-white/[0.04] transition-colors overflow-hidden" title="Color personalizado">
-        <span className="text-[9px] text-zinc-400">+</span>
+        <span className="text-xs md:text-[9px] text-zinc-400">+</span>
         <input
           type="color"
           value={value}

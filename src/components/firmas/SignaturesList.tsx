@@ -89,7 +89,7 @@ export default function SignaturesList() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-semibold text-[var(--text-primary)] truncate">{sub.name}</h3>
-                    <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${st.color}`}>
+                    <span className={`text-xs md:text-[11px] font-medium px-2 py-0.5 rounded-full border ${st.color}`}>
                       {st.text}
                     </span>
                   </div>
@@ -102,7 +102,7 @@ export default function SignaturesList() {
                 {/* Progress */}
                 <div className="text-right flex-shrink-0">
                   <p className="text-sm font-bold text-violet-400">{completed}/{total}</p>
-                  <p className="text-[10px] text-[var(--text-muted)]">firmantes</p>
+                  <p className="text-xs md:text-[10px] text-[var(--text-muted)]">firmantes</p>
                 </div>
               </div>
 
@@ -115,7 +115,7 @@ export default function SignaturesList() {
               {/* Submitters */}
               <div className="mt-3 flex flex-wrap gap-2">
                 {sub.submitters.map(s => (
-                  <div key={s.id} className="flex items-center gap-1.5 text-[11px] bg-[var(--bg-secondary)] rounded-lg px-2 py-1">
+                  <div key={s.id} className="flex items-center gap-1.5 text-xs md:text-[11px] bg-[var(--bg-secondary)] rounded-lg px-2 py-1">
                     <div className={`w-2 h-2 rounded-full ${s.status === 'completed' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
                     <span className="text-[var(--text-secondary)]">{s.name || s.email}</span>
                   </div>

@@ -166,7 +166,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
           {/* Left column: DATOS BÁSICOS + CONTEXTO + NOTAS */}
           <div className="w-full lg:w-1/2 border-r-0 lg:border-r border-shell-border p-6 space-y-6 lg:overflow-y-auto shrink-0 lg:shrink">
             <div>
-              <h3 className="text-[10px] font-bold text-shell-text-muted uppercase tracking-[0.15em] mb-4">Datos básicos</h3>
+              <h3 className="text-xs md:text-[10px] font-bold text-shell-text-muted uppercase tracking-[0.15em] mb-4">Datos básicos</h3>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3.5">
                   <Field label="Nombre *">
@@ -231,7 +231,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
 
             {/* Contexto */}
             <div>
-              <h3 className="text-[10px] font-bold text-shell-text-muted uppercase tracking-[0.15em] mb-3">Contexto</h3>
+              <h3 className="text-xs md:text-[10px] font-bold text-shell-text-muted uppercase tracking-[0.15em] mb-3">Contexto</h3>
               <textarea
                 value={contexto}
                 onChange={e => setContexto(e.target.value)}
@@ -243,7 +243,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
 
             {/* Notas iniciales */}
             <div>
-              <h3 className="text-[10px] font-bold text-shell-text-muted uppercase tracking-[0.15em] mb-3">Notas iniciales</h3>
+              <h3 className="text-xs md:text-[10px] font-bold text-shell-text-muted uppercase tracking-[0.15em] mb-3">Notas iniciales</h3>
               <textarea
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
@@ -258,7 +258,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
           <div className="w-full lg:w-1/2 p-6 space-y-6 lg:overflow-y-auto shrink-0 lg:shrink border-t border-shell-border lg:border-t-0">
             {/* Clasificación */}
             <div>
-              <h3 className="text-[10px] font-bold text-shell-text-muted uppercase tracking-[0.15em] mb-4">Clasificación</h3>
+              <h3 className="text-xs md:text-[10px] font-bold text-shell-text-muted uppercase tracking-[0.15em] mb-4">Clasificación</h3>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3.5">
                   <Field label="Origen">
@@ -284,7 +284,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
 
             {/* Flags */}
             <div className="space-y-3.5">
-              <h3 className="text-[10px] font-bold text-shell-text-muted uppercase tracking-[0.15em]">Flags</h3>
+              <h3 className="text-xs md:text-[10px] font-bold text-shell-text-muted uppercase tracking-[0.15em]">Flags</h3>
               <div className="flex flex-wrap gap-4 py-1.5 px-3 bg-shell-bg/40 border border-shell-border rounded-xl">
                 <CheckboxField label="¿Estratégico?" checked={esEstrategico} onChange={setEsEstrategico} />
                 <CheckboxField label="¿Influyente?" checked={esInfluyente} onChange={setEsInfluyente} />
@@ -294,7 +294,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
 
             {/* Pipeline (optional) */}
             <div className="pt-5 border-t border-shell-border space-y-4">
-              <h3 className="text-[10px] font-bold text-shell-text-muted uppercase tracking-[0.15em]">Agregar a pipeline (opcional)</h3>
+              <h3 className="text-xs md:text-[10px] font-bold text-shell-text-muted uppercase tracking-[0.15em]">Agregar a pipeline (opcional)</h3>
               <div className="grid grid-cols-2 gap-3.5">
                 <Field label="Pipeline">
                   <InlineSelectChip
@@ -314,7 +314,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
                 </Field>
               </div>
               {pipelineId && !stageId && (
-                <p className="text-[10px] text-brand-accent/90 flex items-center gap-1.5 mt-2 bg-brand-accent/5 p-2 rounded-lg border border-brand-accent/10">
+                <p className="text-xs md:text-[10px] text-brand-accent/90 flex items-center gap-1.5 mt-2 bg-brand-accent/5 p-2 rounded-lg border border-brand-accent/10">
                   <ChevronDown size={12} />
                   Elegí una etapa para que el contacto aparezca en el kanban
                 </p>
@@ -359,7 +359,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-[11px] text-shell-text-muted font-bold block uppercase tracking-wider">{label}</label>
+      <label className="text-xs md:text-[11px] text-shell-text-muted font-bold block uppercase tracking-wider">{label}</label>
       {children}
     </div>
   )

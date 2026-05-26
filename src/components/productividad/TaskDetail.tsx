@@ -541,7 +541,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                               onClick={() => { updateTask(task.id, { contact_id: c.id }); setShowContactPicker(false) }}
                               className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs cursor-pointer"
                             >
-                              <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-[10px] text-blue-400 font-bold shrink-0">
+                              <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-xs md:text-[10px] text-blue-400 font-bold shrink-0">
                                 {(c.first_name || c.last_name || "?")[0]}
                               </div>
                               <div className="flex-1 min-w-0 text-left">
@@ -586,7 +586,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
 function MetaRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider mb-1">{label}</p>
       {children}
     </div>
   )

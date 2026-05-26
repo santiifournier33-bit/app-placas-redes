@@ -83,7 +83,7 @@ export default function ConsultasPage() {
         <h1 className="text-sm font-bold text-shell-text">Consultas</h1>
         <Link
           href="/consultas/mis-consultas"
-          className="ml-auto text-[11px] text-blue-400 hover:underline"
+          className="ml-auto text-xs md:text-[11px] text-blue-400 hover:underline"
         >
           Mis consultas →
         </Link>
@@ -176,23 +176,23 @@ function PropertyCard({ property, matchCount }: { property: TokkoProperty; match
         ) : null}
         {matchCount > 0 && (
           <span
-            className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-blue-500 text-white text-[11px] font-bold shadow"
+            className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-blue-500 text-white text-xs md:text-[11px] font-bold shadow"
             title="Contactos que consultaron exactamente esta propiedad. Abrí para ver también contactos compatibles."
           >
             {matchCount} consulta{matchCount !== 1 ? 's' : ''}
           </span>
         )}
         <span
-          className={`absolute bottom-2 left-2 px-2 py-0.5 rounded-md text-[10px] font-medium ${opColor}`}
+          className={`absolute bottom-2 left-2 px-2 py-0.5 rounded-md text-xs md:text-[10px] font-medium ${opColor}`}
         >
           {property.operation_type}
         </span>
       </div>
       <div className="p-3 space-y-1 flex-1 flex flex-col">
         <p className="text-xs font-bold text-shell-text truncate">{property.title}</p>
-        <p className="text-[11px] text-zinc-500 truncate">{property.address}</p>
+        <p className="text-xs md:text-[11px] text-zinc-500 truncate">{property.address}</p>
         <p className="text-sm font-bold text-zinc-200 mt-auto">{property.price}</p>
-        <div className="flex items-center gap-3 text-[10px] text-zinc-500">
+        <div className="flex items-center gap-3 text-xs md:text-[10px] text-zinc-500">
           {property.bedrooms > 0 && <span>{property.bedrooms} dorm</span>}
           {property.bathrooms > 0 && <span>{property.bathrooms} baño</span>}
           {property.surface_total > 0 && <span>{property.surface_total} m²</span>}

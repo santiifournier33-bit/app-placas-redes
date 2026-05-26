@@ -83,18 +83,18 @@ export default function ContactDetailPage() {
           <h1 className="text-sm font-bold text-shell-text truncate">{fullName || 'Contacto'}</h1>
           <div className="flex items-center gap-2 mt-0.5">
             {contact.source && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">
+              <span className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">
                 {SOURCE_LABELS[contact.source as keyof typeof SOURCE_LABELS] ?? contact.source}
               </span>
             )}
             {contact.circulo && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">
+              <span className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">
                 {contact.circulo}
               </span>
             )}
           </div>
         </div>
-        <div className="hidden md:flex flex-col items-end text-[10px] text-zinc-600 leading-tight px-2 shrink-0">
+        <div className="hidden md:flex flex-col items-end text-xs md:text-[10px] text-zinc-600 leading-tight px-2 shrink-0">
           <span>
             Creado: {contact.created_at ? new Date(contact.created_at).toLocaleDateString('es-AR') : '—'}
           </span>
@@ -177,7 +177,7 @@ export default function ContactDetailPage() {
           {/* Column 2: Notas */}
           <div className="overflow-y-auto">
             <div className="px-5 pt-5">
-              <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Notas</h3>
+              <h3 className="text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Notas</h3>
             </div>
             <ContactNotesTab contactId={contact.id} />
           </div>
@@ -185,7 +185,7 @@ export default function ContactDetailPage() {
           {/* Column 3: Historial */}
           <div className="overflow-y-auto">
             <div className="px-5 pt-5">
-              <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Historial</h3>
+              <h3 className="text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Historial</h3>
             </div>
             <ContactHistoryTab contactId={contact.id} />
           </div>

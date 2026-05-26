@@ -34,7 +34,7 @@ export function WeekSelector({ weekKey, onChange }: WeekSelectorProps) {
           {format(weekDate, "d MMM", { locale: es })} — {format(weekEnd, "d MMM", { locale: es })}
         </p>
         {current && (
-          <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Semana actual</span>
+          <span className="text-xs md:text-[10px] font-bold text-blue-400 uppercase tracking-wider">Semana actual</span>
         )}
       </div>
       <button onClick={next} className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer">

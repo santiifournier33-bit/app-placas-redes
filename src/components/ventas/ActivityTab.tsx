@@ -113,15 +113,15 @@ export default function ActivityTab() {
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-shell-surface border border-shell-border rounded-2xl p-4">
-          <p className="text-[11px] font-medium text-shell-text-muted mb-1">Reservas</p>
+          <p className="text-xs md:text-[11px] font-medium text-shell-text-muted mb-1">Reservas</p>
           <p className="text-2xl font-bold text-shell-text">{reservas.length}</p>
         </div>
         <div className="bg-shell-surface border border-shell-border rounded-2xl p-4">
-          <p className="text-[11px] font-medium text-shell-text-muted mb-1">Autorizaciones</p>
+          <p className="text-xs md:text-[11px] font-medium text-shell-text-muted mb-1">Autorizaciones</p>
           <p className="text-2xl font-bold text-shell-text">{autorizaciones.length}</p>
         </div>
         <div className="bg-shell-surface border border-shell-border rounded-2xl p-4">
-          <p className="text-[11px] font-medium text-shell-text-muted mb-1">Potencial (USD)</p>
+          <p className="text-xs md:text-[11px] font-medium text-shell-text-muted mb-1">Potencial (USD)</p>
           <p className="text-2xl font-bold text-amber-400">USD {potencial.toLocaleString()}</p>
         </div>
         <button
@@ -231,10 +231,10 @@ export default function ActivityTab() {
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-shell-text-muted">
+                        <span className="text-xs md:text-[10px] font-bold uppercase tracking-wider text-shell-text-muted">
                           {act.type === 'reserva' ? 'Reserva' : 'Autorización'}
                         </span>
-                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${STATUS_COLORS[act.status] || ''}`}>
+                        <span className={`text-xs md:text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${STATUS_COLORS[act.status] || ''}`}>
                           {act.status}
                         </span>
                       </div>
@@ -247,14 +247,14 @@ export default function ActivityTab() {
                   <div className="text-right shrink-0 flex flex-col items-end">
                     <p className="text-xs text-shell-text-muted">{act.currency}</p>
                     <p className="text-sm font-bold text-shell-text">{act.value.toLocaleString()}</p>
-                    {act.estimated_fees && <p className="text-[10px] text-emerald-400">Hon: {act.estimated_fees.toLocaleString()}</p>}
+                    {act.estimated_fees && <p className="text-xs md:text-[10px] text-emerald-400">Hon: {act.estimated_fees.toLocaleString()}</p>}
                     
                     <div className="flex items-center gap-2 mt-2">
                       <button 
                         onClick={(e) => { e.stopPropagation(); setSelectedActivity(act) }} 
                         className="p-1.5 rounded-lg bg-shell-accent/10 text-shell-accent hover:bg-shell-accent/20 transition-colors flex items-center gap-1.5"
                       >
-                        <Eye size={12} /> <span className="text-[10px] font-bold uppercase">Detalles</span>
+                        <Eye size={12} /> <span className="text-xs md:text-[10px] font-bold uppercase">Detalles</span>
                       </button>
                       <button onClick={(e) => handleDelete(act.id, e)} className="p-1.5 rounded-lg hover:bg-red-500/10 text-zinc-600 hover:text-red-400 transition-colors cursor-pointer">
                         <Trash2 size={13} />
@@ -286,27 +286,27 @@ export default function ActivityTab() {
               
               <div>
                 <div className="flex gap-2 mb-2">
-                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${STATUS_COLORS[selectedActivity.status] || ''}`}>
+                  <span className={`text-xs md:text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${STATUS_COLORS[selectedActivity.status] || ''}`}>
                     {selectedActivity.status}
                   </span>
-                  <span className="text-[10px] font-medium text-shell-text-muted bg-white/5 px-2 py-0.5 rounded-full capitalize">
+                  <span className="text-xs md:text-[10px] font-medium text-shell-text-muted bg-white/5 px-2 py-0.5 rounded-full capitalize">
                     {selectedActivity.operation_type}
                   </span>
                 </div>
                 <h2 className="text-lg font-bold text-shell-text leading-tight">{selectedActivity.property_address}</h2>
                 <div className="grid grid-cols-2 gap-4 mt-4">
                   <div className="bg-white/[0.02] border border-white/[0.05] p-3 rounded-xl">
-                    <p className="text-[10px] text-shell-text-muted font-medium mb-1 uppercase tracking-wider">Valor Operación</p>
+                    <p className="text-xs md:text-[10px] text-shell-text-muted font-medium mb-1 uppercase tracking-wider">Valor Operación</p>
                     <p className="text-sm font-bold text-shell-text">{selectedActivity.currency} {selectedActivity.value.toLocaleString()}</p>
                   </div>
                   {selectedActivity.estimated_fees && (
                     <div className="bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl">
-                      <p className="text-[10px] text-amber-500/70 font-medium mb-1 uppercase tracking-wider">Honorarios Est.</p>
+                      <p className="text-xs md:text-[10px] text-amber-500/70 font-medium mb-1 uppercase tracking-wider">Honorarios Est.</p>
                       <p className="text-sm font-bold text-amber-400">{selectedActivity.currency} {selectedActivity.estimated_fees.toLocaleString()}</p>
                     </div>
                   )}
                 </div>
-                <div className="flex items-center gap-4 text-[11px] text-shell-text-muted mt-3">
+                <div className="flex items-center gap-4 text-xs md:text-[11px] text-shell-text-muted mt-3">
                   <span>Fecha de registro: {new Date(selectedActivity.activity_date).toLocaleDateString('es-AR')}</span>
                 </div>
               </div>
@@ -551,7 +551,7 @@ function ActivityForm({ agents, onClose, onSuccess }: { agents: Agent[], onClose
 function Field({ label, children }: { label: string, children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="text-[11px] font-medium text-shell-text-muted mb-1 block">{label}</span>
+      <span className="text-xs md:text-[11px] font-medium text-shell-text-muted mb-1 block">{label}</span>
       {children}
     </label>
   )

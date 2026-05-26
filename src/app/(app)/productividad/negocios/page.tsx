@@ -371,7 +371,7 @@ function QuickLeadModal({
         <div className="p-4 space-y-4">
           {/* Contact Search Field */}
           <div className="relative" onClick={(e) => e.stopPropagation()}>
-            <label className="text-[11px] text-zinc-500 font-medium block mb-1">Nombre del contacto *</label>
+            <label className="text-xs md:text-[11px] text-zinc-500 font-medium block mb-1">Nombre del contacto *</label>
             <div className="relative flex items-center">
               <input
                 value={searchQuery}
@@ -403,7 +403,7 @@ function QuickLeadModal({
                 {filteredContacts.length === 0 ? (
                   <div className="p-3 text-xs text-zinc-500 text-center">
                     No se encontraron contactos.
-                    <p className="mt-1 text-[10px] text-zinc-600">Creá el contacto en la sección de contactos primero.</p>
+                    <p className="mt-1 text-xs md:text-[10px] text-zinc-600">Creá el contacto en la sección de contactos primero.</p>
                   </div>
                 ) : (
                   filteredContacts.map(c => (
@@ -414,7 +414,7 @@ function QuickLeadModal({
                       className="w-full text-left px-3 py-2.5 text-xs text-zinc-300 hover:bg-white/[0.06] hover:text-white transition-colors flex flex-col gap-0.5 cursor-pointer"
                     >
                       <span className="font-semibold">{c.first_name} {c.last_name ?? ''}</span>
-                      <span className="text-zinc-500 text-[10px]">
+                      <span className="text-zinc-500 text-xs md:text-[10px]">
                         📞 {c.primary_phone ?? 'Sin teléfono'} {c.primary_email ? `| ✉️ ${c.primary_email}` : ''}
                       </span>
                     </button>
@@ -427,7 +427,7 @@ function QuickLeadModal({
           {/* Phone & Email Fields */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] text-zinc-500 font-medium block mb-1">Teléfono *</label>
+              <label className="text-xs md:text-[11px] text-zinc-500 font-medium block mb-1">Teléfono *</label>
               <input
                 type="tel"
                 value={primaryPhone}
@@ -438,7 +438,7 @@ function QuickLeadModal({
               />
             </div>
             <div>
-              <label className="text-[11px] text-zinc-500 font-medium block mb-1">Email</label>
+              <label className="text-xs md:text-[11px] text-zinc-500 font-medium block mb-1">Email</label>
               <input
                 type="email"
                 value={primaryEmail}
@@ -453,7 +453,7 @@ function QuickLeadModal({
           {/* Pipeline & Stage Selection */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] text-zinc-500 font-medium block mb-1">Pipeline</label>
+              <label className="text-xs md:text-[11px] text-zinc-500 font-medium block mb-1">Pipeline</label>
               <select
                 value={selectedPipelineId}
                 onChange={(e) => setSelectedPipelineId(e.target.value)}
@@ -465,7 +465,7 @@ function QuickLeadModal({
               </select>
             </div>
             <div>
-              <label className="text-[11px] text-zinc-500 font-medium block mb-1">Fase</label>
+              <label className="text-xs md:text-[11px] text-zinc-500 font-medium block mb-1">Fase</label>
               <select
                 value={selectedStageId}
                 onChange={(e) => setSelectedStageId(e.target.value)}
@@ -480,7 +480,7 @@ function QuickLeadModal({
 
           {/* Notes Selection */}
           <div>
-            <label className="text-[11px] text-zinc-500 font-medium block mb-1">Notas</label>
+            <label className="text-xs md:text-[11px] text-zinc-500 font-medium block mb-1">Notas</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}

@@ -39,22 +39,22 @@ export function ContactsCards({ contacts, onSelectContact }: ContactsCardsProps)
             </p>
             <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
               {contact.source && (
-                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">
+                <span className="text-xs md:text-[10px] font-medium px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">
                   {SOURCE_LABELS[contact.source as keyof typeof SOURCE_LABELS] ?? contact.source}
                 </span>
               )}
               {contact.category && (
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">
+                <span className="text-xs md:text-[10px] font-bold px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">
                   {contact.category}
                 </span>
               )}
               {contact.circulo && (
-                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">
+                <span className="text-xs md:text-[10px] font-medium px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">
                   {contact.circulo}
                 </span>
               )}
               {contact.rol && (
-                <span className="text-[10px] text-zinc-600">{contact.rol}</span>
+                <span className="text-xs md:text-[10px] text-zinc-600">{contact.rol}</span>
               )}
             </div>
           </div>

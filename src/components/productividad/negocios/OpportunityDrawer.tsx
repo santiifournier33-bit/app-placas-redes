@@ -197,21 +197,21 @@ export function OpportunityDrawer({ contact, onClose, onRemove }: OpportunityDra
               </h2>
               <div className="flex flex-wrap items-center gap-1.5 mt-1">
                 {sourceLabel && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">
+                  <span className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">
                     {sourceLabel}
                   </span>
                 )}
                 {freshContact.circulo && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">
+                  <span className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">
                     {freshContact.circulo}
                   </span>
                 )}
-                <span className="text-[10px] text-zinc-600">•</span>
-                <span className="text-[11px] text-zinc-500">
+                <span className="text-xs md:text-[10px] text-zinc-600">•</span>
+                <span className="text-xs md:text-[11px] text-zinc-500">
                   {selectedPipeline?.emoji} {selectedPipeline?.name}
                 </span>
                 <ChevronRight size={10} className="text-zinc-700" />
-                <span className="text-[11px] text-zinc-400">
+                <span className="text-xs md:text-[11px] text-zinc-400">
                   {currentStage?.emoji} {currentStage?.name}
                 </span>
               </div>
@@ -289,13 +289,13 @@ export function OpportunityDrawer({ contact, onClose, onRemove }: OpportunityDra
                 <>{days === 999 ? 'Sin actividad' : `${days}d en esta fase`}{currentStage?.sla_days ? ` / ${currentStage.sla_days}d` : ''}</>
               )}
             </div>
-            <span className="text-[10px] text-zinc-600">{HEALTH_LABELS[health]}</span>
+            <span className="text-xs md:text-[10px] text-zinc-600">{HEALTH_LABELS[health]}</span>
           </div>
 
           {/* Pipeline/Stage movement */}
           <div className="flex items-center gap-3 mt-3">
             <div className="flex items-center gap-2">
-              <label className="text-[10px] text-zinc-600 font-medium">Pipeline</label>
+              <label className="text-xs md:text-[10px] text-zinc-600 font-medium">Pipeline</label>
               <select
                 value={selectedPipelineId}
                 onChange={(e) => handlePipelineChange(e.target.value)}
@@ -307,7 +307,7 @@ export function OpportunityDrawer({ contact, onClose, onRemove }: OpportunityDra
               </select>
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-[10px] text-zinc-600 font-medium">Fase</label>
+              <label className="text-xs md:text-[10px] text-zinc-600 font-medium">Fase</label>
               <select
                 value={selectedStageId}
                 onChange={(e) => handleStageChange(e.target.value)}
@@ -335,7 +335,7 @@ export function OpportunityDrawer({ contact, onClose, onRemove }: OpportunityDra
             {/* Notas section */}
             <div className="border-b border-white/[0.06]">
               <div className="px-5 pt-4 pb-1">
-                <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Notas</h3>
+                <h3 className="text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Notas</h3>
               </div>
               <ContactNotesTab contactId={contact.id} />
             </div>
@@ -343,11 +343,11 @@ export function OpportunityDrawer({ contact, onClose, onRemove }: OpportunityDra
             {/* Tareas section */}
             <div className="px-5 pt-4 pb-4">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Tareas</h3>
+                <h3 className="text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Tareas</h3>
                 {!showAddTask && (
                   <button
                     onClick={() => setShowAddTask(true)}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 text-[11px] font-medium hover:bg-blue-500/20 cursor-pointer"
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 text-xs md:text-[11px] font-medium hover:bg-blue-500/20 cursor-pointer"
                   >
                     + Nueva tarea
                   </button>
@@ -390,24 +390,24 @@ export function OpportunityDrawer({ contact, onClose, onRemove }: OpportunityDra
                         </p>
                         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                           {t.due_date && (
-                            <span className="text-[10px] text-zinc-600 flex items-center gap-0.5">
+                            <span className="text-xs md:text-[10px] text-zinc-600 flex items-center gap-0.5">
                               <Calendar size={9} />
                               {format(new Date(t.due_date), "d 'de' MMM", { locale: es })}
                             </span>
                           )}
                           {t.priority && t.priority < 4 && (
-                            <span className={`text-[10px] flex items-center gap-0.5 ${PRIORITY_COLORS[t.priority]}`}>
+                            <span className={`text-xs md:text-[10px] flex items-center gap-0.5 ${PRIORITY_COLORS[t.priority]}`}>
                               <Flag size={9} />
                               P{t.priority}
                             </span>
                           )}
                           {t.task_type && t.task_type !== 'tarea' && (
-                            <span className="text-[10px] text-violet-400/70">
+                            <span className="text-xs md:text-[10px] text-violet-400/70">
                               {TYPE_LABELS[t.task_type] ?? t.task_type}
                             </span>
                           )}
                           {t.description && (
-                            <span className="text-[10px] text-zinc-700 truncate max-w-[150px]">
+                            <span className="text-xs md:text-[10px] text-zinc-700 truncate max-w-[150px]">
                               {t.description}
                             </span>
                           )}

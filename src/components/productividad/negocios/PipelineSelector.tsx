@@ -24,7 +24,7 @@ export function PipelineSelector() {
           >
             {p.emoji && <span className="text-sm">{p.emoji}</span>}
             {p.name}
-            <span className={`text-[10px] tabular-nums ${active ? 'text-blue-400/60' : 'text-zinc-700'}`}>
+            <span className={`text-xs md:text-[10px] tabular-nums ${active ? 'text-blue-400/60' : 'text-zinc-700'}`}>
               {p.stages.length}
             </span>
           </button>

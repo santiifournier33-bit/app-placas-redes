@@ -320,7 +320,7 @@ export default function SignatureEditor({ onSent }: { onSent: () => void }) {
                     <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-[var(--text-primary)] truncate">{signer.name}</p>
-                      <p className="text-[10px] text-[var(--text-muted)]">{boxCount}/1 firma</p>
+                      <p className="text-xs md:text-[10px] text-[var(--text-muted)]">{boxCount}/1 firma</p>
                     </div>
                     {boxCount === 1
                       ? <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
@@ -336,7 +336,7 @@ export default function SignatureEditor({ onSent }: { onSent: () => void }) {
 
           {/* Instructions */}
           {pdfFile && signers.length > 0 && (
-            <div className="bg-[var(--bg-secondary)] rounded-lg p-3 space-y-1.5 text-[11px] text-[var(--text-muted)]">
+            <div className="bg-[var(--bg-secondary)] rounded-lg p-3 space-y-1.5 text-xs md:text-[11px] text-[var(--text-muted)]">
               <p className="flex items-start gap-1.5"><span>👆</span> Seleccioná un firmante</p>
               <p className="flex items-start gap-1.5"><span>✍️</span> Hacé clic en el PDF para agregar la firma</p>
               <p className="flex items-start gap-1.5"><span>↔️</span> Arrastrá para reposicionarla</p>
@@ -356,7 +356,7 @@ export default function SignatureEditor({ onSent }: { onSent: () => void }) {
             ].map(([label, val]) => (
               <div key={label as string}>
                 <p className="text-base font-bold text-violet-400">{val}</p>
-                <p className="text-[9px] text-[var(--text-muted)] font-semibold">{label}</p>
+                <p className="text-xs md:text-[9px] text-[var(--text-muted)] font-semibold">{label}</p>
               </div>
             ))}
           </div>
@@ -444,7 +444,7 @@ export default function SignatureEditor({ onSent }: { onSent: () => void }) {
                           }}
                           className="border-2 rounded-sm bg-white/10 backdrop-blur-[1px] flex flex-col items-center justify-center gap-0.5 hover:bg-white/20 transition-colors"
                         >
-                          <span className="text-[9px] font-bold leading-tight truncate px-1 w-full text-center" style={{ color }}>
+                          <span className="text-xs md:text-[9px] font-bold leading-tight truncate px-1 w-full text-center" style={{ color }}>
                             {box.signerName}
                           </span>
                           <span className="text-[8px] text-gray-400">Firma aquí</span>
@@ -452,7 +452,7 @@ export default function SignatureEditor({ onSent }: { onSent: () => void }) {
                           <button
                             onMouseDown={e => e.stopPropagation()}
                             onClick={e => { e.stopPropagation(); setBoxes(prev => prev.filter(b => b.id !== box.id)) }}
-                            className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center hover:bg-red-600 transition-colors"
+                            className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-xs md:text-[9px] flex items-center justify-center hover:bg-red-600 transition-colors"
                           >✕</button>
                         </div>
                       )

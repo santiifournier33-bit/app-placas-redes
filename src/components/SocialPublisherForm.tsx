@@ -541,7 +541,7 @@ export function SocialPublisherForm({
                       </div>
                     ))}
                   </div>
-                  <button onClick={() => setOauthUrl("connect")} className="btn-tertiary self-start text-[11px] font-semibold flex items-center gap-1 opacity-80">
+                  <button onClick={() => setOauthUrl("connect")} className="btn-tertiary self-start text-xs md:text-[11px] font-semibold flex items-center gap-1 opacity-80">
                     + Vincular otra cuenta
                   </button>
                 </div>
@@ -570,7 +570,7 @@ export function SocialPublisherForm({
                         key={key}
                         onClick={() => handleSelectStyle(key)}
                         disabled={!hasContent}
-                        className={`flex-1 px-2 py-2 border rounded-xl text-[11px] font-semibold transition-all duration-200 ${
+                        className={`flex-1 px-2 py-2 border rounded-xl text-xs md:text-[11px] font-semibold transition-all duration-200 ${
                           isActive
                             ? "bg-[#2563EB] text-white border-[#2563EB] shadow-sm"
                             : hasContent
@@ -589,7 +589,7 @@ export function SocialPublisherForm({
                     <button
                       onClick={handleGenerateCopyInline}
                       disabled={isGeneratingCopyInline}
-                      className="flex-1 px-2 py-2 border rounded-xl text-[11px] font-semibold bg-primary text-white border-primary hover:bg-primary/90 transition-all duration-200 flex items-center justify-center gap-1.5 disabled:opacity-60"
+                      className="flex-1 px-2 py-2 border rounded-xl text-xs md:text-[11px] font-semibold bg-primary text-white border-primary hover:bg-primary/90 transition-all duration-200 flex items-center justify-center gap-1.5 disabled:opacity-60"
                     >
                       {isGeneratingCopyInline ? (
                         <>
@@ -623,7 +623,7 @@ export function SocialPublisherForm({
                     className="w-full bg-surface-variant/30 border border-outline-variant rounded-xl p-3 text-xs text-on-surface-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-shadow whitespace-pre-wrap resize-none"
                   />
                   <span
-                    className={`absolute bottom-2 right-3 text-[10px] font-mono ${
+                    className={`absolute bottom-2 right-3 text-xs md:text-[10px] font-mono ${
                       charCount > charLimit ? "text-error font-bold" : "text-on-surface-variant/40"
                     }`}
                   >
@@ -640,7 +640,7 @@ export function SocialPublisherForm({
                       exit={{ opacity: 0, height: 0 }}
                       className="mt-3"
                     >
-                      <div className="bg-surface-variant/40 border border-outline-variant/50 rounded-xl p-3 text-[11px] text-on-surface-variant flex items-start gap-2">
+                      <div className="bg-surface-variant/40 border border-outline-variant/50 rounded-xl p-3 text-xs md:text-[11px] text-on-surface-variant flex items-start gap-2">
                         <InfoCircle size={16} className="shrink-0 mt-0.5 text-[#2563EB]" />
                         <div>
                           {copyIncluded.length > 0 && (
@@ -655,7 +655,7 @@ export function SocialPublisherForm({
                               {copyExcluded.join(", ")}
                             </p>
                           )}
-                          <p className="mt-1 text-[10px] text-on-surface-variant/50 italic">
+                          <p className="mt-1 text-xs md:text-[10px] text-on-surface-variant/50 italic">
                             Para historias y estados, solo se envía la imagen/video sin texto.
                           </p>
                         </div>
@@ -672,7 +672,7 @@ export function SocialPublisherForm({
                 <TickCircle size={18} className="text-success" variant="Bulk" />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-primary">Contenido visual adjunto</p>
-                  <p className="text-[10px] text-on-surface-variant truncate">Se incluirá en todas las publicaciones.</p>
+                  <p className="text-xs md:text-[10px] text-on-surface-variant truncate">Se incluirá en todas las publicaciones.</p>
                 </div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={mediaThumb} alt="Preview" className="w-10 h-10 object-cover rounded-md shrink-0" />

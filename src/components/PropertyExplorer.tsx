@@ -318,7 +318,7 @@ export default function PropertyExplorer({ onSelectProperty }: { onSelectPropert
                   </div>
                 )}
                 {/* Operation badge */}
-                <span className={`absolute top-3 left-3 px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider text-white shadow-sm ${
+                <span className={`absolute top-3 left-3 px-2.5 py-0.5 rounded-md text-xs md:text-[10px] font-bold uppercase tracking-wider text-white shadow-sm ${
                   property.operation_type === 'Alquiler' ? 'bg-secondary' :
                   property.operation_type === 'Alquiler Temporal' ? 'bg-accent' :
                   'bg-primary'
@@ -381,7 +381,7 @@ export default function PropertyExplorer({ onSelectProperty }: { onSelectPropert
                     )}
                   </div>
 
-                  <span className="text-[11px] font-semibold text-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <span className="text-xs md:text-[11px] font-semibold text-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     Herramientas →
                   </span>
                 </div>
