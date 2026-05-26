@@ -102,6 +102,25 @@ body {
   min-width: 44px;
 }
 
+/* ── Keyboard focus ring (WCAG 2.1 SC 2.4.7 Focus Visible) ──────────────────
+ * Many inputs/buttons use `focus:outline-none` paired with `focus:border-X`
+ * which loses the standard outline. That's OK for mouse users but kills
+ * keyboard navigation visibility. :focus-visible only fires on keyboard
+ * focus (not pointer clicks), so mouse UX stays clean while keyboard users
+ * get a high-contrast brand ring. !important is intentional — it must
+ * defeat per-component `outline-none` classes. */
+*:focus-visible {
+  outline: 2px solid var(--color-brand-accent) !important;
+  outline-offset: 2px;
+  border-radius: inherit;
+}
+
+/* Opt-in explicit ring (e.g. for nested elements where focus belongs to a wrapper). */
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-brand-accent) !important;
+  outline-offset: 2px;
+}
+
 @layer utilities {
   .text-balance { text-wrap: balance; }
 
