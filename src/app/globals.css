@@ -230,6 +230,23 @@ body {
   outline-offset: 2px;
 }
 
+/* ── Reduce motion (WCAG 2.3.3 + user OS preference) ───────────────────────
+ * Strip non-essential animations + transitions when the user has expressed
+ * a preference for reduced motion. Keeps the app functional (state changes
+ * still happen, just instantly) without inducing vestibular discomfort.
+ * Important: don't kill `transition` for focus rings — visible focus must
+ * remain visible. We scope to 0.01ms (not 0ms) so transitionEnd still
+ * fires and React components depending on it (Framer presence, Radix
+ * Sheet/Dialog exit animations) continue to behave correctly. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ── Horizontal scroll affordance ───────────────────────────────────────────
  * Replaces .scrollbar-hide. Keeps the slim styled scrollbar visible (already
  * themed via ::-webkit-scrollbar in globals.css). On the right edge, paints
