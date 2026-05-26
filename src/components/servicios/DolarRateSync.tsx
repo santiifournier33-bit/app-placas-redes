@@ -39,7 +39,7 @@ export function DolarRateSync() {
         <div className="flex items-center gap-2 mt-1.5">
           <span className="text-zinc-400">Blue compra:</span>
           <input
-            type="number"
+            type="number" inputMode="decimal"
             min="1"
             value={manualValue}
             onChange={(e) => setManualValue(e.target.value)}

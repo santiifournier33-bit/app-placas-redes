@@ -275,7 +275,7 @@ export default function OperationForm({ agents, onClose, onSuccess }: { agents: 
               </Field>
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Valor de cierre *">
-                  <input type="number" value={closeValue} onChange={e => setCloseValue(e.target.value)} className="w-full bg-shell-surface border border-shell-border rounded-xl px-3 py-2 text-sm text-shell-text focus:outline-none focus:border-shell-accent" />
+                  <input type="number" inputMode="decimal" value={closeValue} onChange={e => setCloseValue(e.target.value)} className="w-full bg-shell-surface border border-shell-border rounded-xl px-3 py-2 text-sm text-shell-text focus:outline-none focus:border-shell-accent" />
                 </Field>
                 <Field label="Moneda">
                   <select value={currency} onChange={e => setCurrency(e.target.value)} className="w-full bg-shell-surface border border-shell-border rounded-xl px-3 py-2 text-sm text-shell-text focus:outline-none focus:border-shell-accent">
@@ -286,7 +286,7 @@ export default function OperationForm({ agents, onClose, onSuccess }: { agents: 
               </div>
               {isAlqTemp && (
                 <Field label="Cantidad de meses de contrato">
-                  <input type="number" value={alquilerMonths} onChange={e => setAlquilerMonths(e.target.value)} className="w-full bg-shell-surface border border-shell-border rounded-xl px-3 py-2 text-sm text-shell-text focus:outline-none focus:border-shell-accent" />
+                  <input type="number" inputMode="decimal" value={alquilerMonths} onChange={e => setAlquilerMonths(e.target.value)} className="w-full bg-shell-surface border border-shell-border rounded-xl px-3 py-2 text-sm text-shell-text focus:outline-none focus:border-shell-accent" />
                 </Field>
               )}
               <div className="grid grid-cols-2 gap-3">
@@ -311,7 +311,7 @@ export default function OperationForm({ agents, onClose, onSuccess }: { agents: 
                 {sideVendedor && (
                   <div className="pl-6 grid grid-cols-2 gap-3">
                     <Field label="% Honorarios">
-                      <input type="number" step="0.1" value={isVenta ? feePctVendedor : (isAlqTemp ? feePctAlquilerTemp : feePctAlquiler)} 
+                      <input type="number" inputMode="decimal" step="0.1" value={isVenta ? feePctVendedor : (isAlqTemp ? feePctAlquilerTemp : feePctAlquiler)} 
                         onChange={e => {
                           if (isVenta) setFeePctVendedor(e.target.value)
                           else if (isAlqTemp) setFeePctAlquilerTemp(e.target.value)
@@ -331,7 +331,7 @@ export default function OperationForm({ agents, onClose, onSuccess }: { agents: 
                 {sideComprador && (
                   <div className="pl-6 grid grid-cols-2 gap-3">
                     <Field label="% Honorarios">
-                      <input type="number" step="0.1" value={isVenta ? feePctComprador : (isAlqTemp ? feePctAlquilerTemp : feePctAlquiler)} 
+                      <input type="number" inputMode="decimal" step="0.1" value={isVenta ? feePctComprador : (isAlqTemp ? feePctAlquilerTemp : feePctAlquiler)} 
                         onChange={e => {
                           if (isVenta) setFeePctComprador(e.target.value)
                           else if (isAlqTemp) setFeePctAlquilerTemp(e.target.value)

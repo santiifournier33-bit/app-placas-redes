@@ -480,7 +480,7 @@ function ActivityForm({ agents, onClose, onSuccess }: { agents: Agent[], onClose
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
               <Field label={isAlquiler ? "Valor Mensual *" : "Valor *"}>
-                <input type="number" value={value} onChange={e => setValue(e.target.value)} placeholder="250000" className="w-full bg-shell-surface border border-shell-border rounded-xl px-3 py-2 text-sm text-shell-text focus:outline-none focus:border-shell-accent" />
+                <input type="number" inputMode="decimal" value={value} onChange={e => setValue(e.target.value)} placeholder="250000" className="w-full bg-shell-surface border border-shell-border rounded-xl px-3 py-2 text-sm text-shell-text focus:outline-none focus:border-shell-accent" />
               </Field>
             </div>
             <Field label="Moneda">
@@ -495,15 +495,15 @@ function ActivityForm({ agents, onClose, onSuccess }: { agents: Agent[], onClose
           <div className="bg-white/[0.02] border border-white/[0.05] p-3 rounded-xl grid grid-cols-3 gap-3">
             {isAlquiler && (
               <Field label="Meses Contrato">
-                <input type="number" value={contractMonths} onChange={e => { setContractMonths(e.target.value); setIsManualFee(false); }} className="w-full bg-black/20 border border-white/10 rounded-lg px-2 py-1.5 text-sm text-shell-text focus:outline-none focus:border-shell-accent" />
+                <input type="number" inputMode="decimal" value={contractMonths} onChange={e => { setContractMonths(e.target.value); setIsManualFee(false); }} className="w-full bg-black/20 border border-white/10 rounded-lg px-2 py-1.5 text-sm text-shell-text focus:outline-none focus:border-shell-accent" />
               </Field>
             )}
             <Field label="% Honorarios">
-              <input type="number" step="0.1" value={feePercentage} onChange={e => { setFeePercentage(e.target.value); setIsManualFee(false); }} className="w-full bg-black/20 border border-white/10 rounded-lg px-2 py-1.5 text-sm text-shell-text focus:outline-none focus:border-shell-accent" />
+              <input type="number" inputMode="decimal" step="0.1" value={feePercentage} onChange={e => { setFeePercentage(e.target.value); setIsManualFee(false); }} className="w-full bg-black/20 border border-white/10 rounded-lg px-2 py-1.5 text-sm text-shell-text focus:outline-none focus:border-shell-accent" />
             </Field>
             <div className={isAlquiler ? "col-span-1" : "col-span-2"}>
               <Field label="Honorarios est.">
-                <input type="number" value={estimatedFees} onChange={e => { setEstimatedFees(e.target.value); setIsManualFee(true); }} placeholder="5000" className="w-full bg-black/20 border border-white/10 rounded-lg px-2 py-1.5 text-sm text-emerald-400 font-bold focus:outline-none focus:border-shell-accent" />
+                <input type="number" inputMode="decimal" value={estimatedFees} onChange={e => { setEstimatedFees(e.target.value); setIsManualFee(true); }} placeholder="5000" className="w-full bg-black/20 border border-white/10 rounded-lg px-2 py-1.5 text-sm text-emerald-400 font-bold focus:outline-none focus:border-shell-accent" />
               </Field>
             </div>
           </div>
@@ -516,7 +516,7 @@ function ActivityForm({ agents, onClose, onSuccess }: { agents: Agent[], onClose
             {type === 'autorizacion' && (
               <>
                 <Field label="Días Autorizados">
-                  <input type="number" value={authDays} onChange={e => setAuthDays(e.target.value)} className="w-full bg-shell-surface border border-shell-border rounded-xl px-3 py-2 text-sm text-shell-text focus:outline-none focus:border-shell-accent" />
+                  <input type="number" inputMode="decimal" value={authDays} onChange={e => setAuthDays(e.target.value)} className="w-full bg-shell-surface border border-shell-border rounded-xl px-3 py-2 text-sm text-shell-text focus:outline-none focus:border-shell-accent" />
                 </Field>
                 <Field label="Fecha Fin (Auto)">
                   <input type="date" value={endDate} disabled className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-sm text-shell-text-muted cursor-not-allowed" />

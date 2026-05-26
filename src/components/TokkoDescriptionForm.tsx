@@ -119,34 +119,34 @@ export default function TokkoDescriptionForm() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
               <label className="block text-xs font-semibold text-primary mb-1">Ambientes *</label>
-              <input type="number" name="rooms" required value={formData.rooms} onChange={handleChange} className="w-full text-sm p-2 border border-outline-variant rounded-lg focus:outline-none focus:border-secondary" />
+              <input type="number" inputMode="decimal" name="rooms" required value={formData.rooms} onChange={handleChange} className="w-full text-sm p-2 border border-outline-variant rounded-lg focus:outline-none focus:border-secondary" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-primary mb-1">Dormitorios</label>
-              <input type="number" name="bedrooms" value={formData.bedrooms} onChange={handleChange} className="w-full text-sm p-2 border border-outline-variant rounded-lg focus:outline-none focus:border-secondary" />
+              <input type="number" inputMode="decimal" name="bedrooms" value={formData.bedrooms} onChange={handleChange} className="w-full text-sm p-2 border border-outline-variant rounded-lg focus:outline-none focus:border-secondary" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-primary mb-1">Baños</label>
-              <input type="number" name="bathrooms" value={formData.bathrooms} onChange={handleChange} className="w-full text-sm p-2 border border-outline-variant rounded-lg focus:outline-none focus:border-secondary" />
+              <input type="number" inputMode="decimal" name="bathrooms" value={formData.bathrooms} onChange={handleChange} className="w-full text-sm p-2 border border-outline-variant rounded-lg focus:outline-none focus:border-secondary" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-primary mb-1">Cocheras</label>
-              <input type="number" name="parking" value={formData.parking} onChange={handleChange} className="w-full text-sm p-2 border border-outline-variant rounded-lg focus:outline-none focus:border-secondary" />
+              <input type="number" inputMode="decimal" name="parking" value={formData.parking} onChange={handleChange} className="w-full text-sm p-2 border border-outline-variant rounded-lg focus:outline-none focus:border-secondary" />
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-primary mb-1">Sup. Total (m²)</label>
-              <input type="number" name="surface_total" value={formData.surface_total} onChange={handleChange} className="w-full text-sm p-2 border border-outline-variant rounded-lg focus:outline-none focus:border-secondary" />
+              <input type="number" inputMode="decimal" name="surface_total" value={formData.surface_total} onChange={handleChange} className="w-full text-sm p-2 border border-outline-variant rounded-lg focus:outline-none focus:border-secondary" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-primary mb-1">Sup. Cubierta (m²)</label>
-              <input type="number" name="surface_covered" value={formData.surface_covered} onChange={handleChange} className="w-full text-sm p-2 border border-outline-variant rounded-lg focus:outline-none focus:border-secondary" />
+              <input type="number" inputMode="decimal" name="surface_covered" value={formData.surface_covered} onChange={handleChange} className="w-full text-sm p-2 border border-outline-variant rounded-lg focus:outline-none focus:border-secondary" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-primary mb-1">Semicubierta (m²)</label>
-              <input type="number" name="surface_semicovered" value={formData.surface_semicovered} onChange={handleChange} className="w-full text-sm p-2 border border-outline-variant rounded-lg focus:outline-none focus:border-secondary" />
+              <input type="number" inputMode="decimal" name="surface_semicovered" value={formData.surface_semicovered} onChange={handleChange} className="w-full text-sm p-2 border border-outline-variant rounded-lg focus:outline-none focus:border-secondary" />
             </div>
           </div>
 

@@ -105,7 +105,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                   <Sms size={18} />
                 </div>
                 <input
-                  type="email"
+                  type="email" inputMode="email"
                   value={email}
                   onChange={(e) => { setEmail(e.target.value); setError(null); }}
                   placeholder="tu@email.com"

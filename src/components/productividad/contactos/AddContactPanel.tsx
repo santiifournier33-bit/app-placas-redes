@@ -190,7 +190,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
 
                 <Field label="Teléfono">
                   <input
-                    type="tel"
+                    type="tel" inputMode="tel"
                     value={phone}
                     onChange={e => setPhone(e.target.value)}
                     placeholder="+54 11 1234-5678"
@@ -200,7 +200,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
 
                 <Field label="Email">
                   <input
-                    type="email"
+                    type="email" inputMode="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     placeholder="contacto@email.com"

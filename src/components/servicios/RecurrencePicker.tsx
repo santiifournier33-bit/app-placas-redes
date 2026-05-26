@@ -63,7 +63,7 @@ export function RecurrencePicker({ value, onChange }: RecurrencePickerProps) {
         <div className="flex items-center gap-2">
           <span className="text-xs text-zinc-500 shrink-0">Día del mes:</span>
           <input
-            type="number"
+            type="number" inputMode="decimal"
             min={1}
             max={31}
             value={value.dayOfMonth ?? ""}
@@ -78,7 +78,7 @@ export function RecurrencePicker({ value, onChange }: RecurrencePickerProps) {
         <div className="flex items-center gap-2">
           <span className="text-xs text-zinc-500 shrink-0">Cada</span>
           <input
-            type="number"
+            type="number" inputMode="decimal"
             min={1}
             value={value.customDays ?? ""}
             onChange={(e) => onChange({ ...value, customDays: e.target.value ? parseInt(e.target.value) : undefined })}

@@ -217,7 +217,7 @@ export default function SmartAuthorizationForm({
             </div>
             <div>
               <label className="block text-xs font-medium text-[var(--text-muted)] mb-1.5">Email *</label>
-              <input type="email" value={data.ownerEmail} onChange={e => handleChange('ownerEmail', e.target.value)} className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] focus:border-violet-500 transition-colors" />
+              <input type="email" inputMode="email" value={data.ownerEmail} onChange={e => handleChange('ownerEmail', e.target.value)} className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] focus:border-violet-500 transition-colors" />
             </div>
             <div>
               <label className="block text-xs font-medium text-[var(--text-muted)] mb-1.5">DNI</label>
@@ -299,12 +299,12 @@ export default function SmartAuthorizationForm({
               <label className="block text-xs font-medium text-[var(--text-muted)] mb-1.5">Valor de Propiedad (USD) *</label>
               <div className="relative">
                 <span className="absolute left-3 top-2 text-[var(--text-muted)]">$</span>
-                <input type="number" placeholder="Ej: 145000" value={data.priceUsd} onChange={e => handleChange('priceUsd', e.target.value)} className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-lg pl-7 pr-3 py-2 text-sm text-[var(--text-primary)] focus:border-violet-500 transition-colors" />
+                <input type="number" inputMode="decimal" placeholder="Ej: 145000" value={data.priceUsd} onChange={e => handleChange('priceUsd', e.target.value)} className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-lg pl-7 pr-3 py-2 text-sm text-[var(--text-primary)] focus:border-violet-500 transition-colors" />
               </div>
             </div>
             <div>
               <label className="block text-xs font-medium text-[var(--text-muted)] mb-1.5">Plazo de Exclusiva (Días)</label>
-              <input type="number" value={data.exclusivityDays} onChange={e => handleChange('exclusivityDays', e.target.value)} className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] focus:border-violet-500 transition-colors" />
+              <input type="number" inputMode="decimal" value={data.exclusivityDays} onChange={e => handleChange('exclusivityDays', e.target.value)} className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] focus:border-violet-500 transition-colors" />
             </div>
             <div>
               <label className="block text-xs font-medium text-[var(--text-muted)] mb-1.5">Fecha de Inicio de Exclusiva</label>

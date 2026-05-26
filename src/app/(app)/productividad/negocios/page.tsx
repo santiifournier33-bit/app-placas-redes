@@ -429,7 +429,7 @@ function QuickLeadModal({
             <div>
               <label className="text-xs md:text-[11px] text-zinc-500 font-medium block mb-1">Teléfono *</label>
               <input
-                type="tel"
+                type="tel" inputMode="tel"
                 value={primaryPhone}
                 onChange={(e) => setPrimaryPhone(e.target.value)}
                 placeholder={selectedContactId ? "Obligatorio" : "Seleccioná contacto"}
@@ -440,7 +440,7 @@ function QuickLeadModal({
             <div>
               <label className="text-xs md:text-[11px] text-zinc-500 font-medium block mb-1">Email</label>
               <input
-                type="email"
+                type="email" inputMode="email"
                 value={primaryEmail}
                 onChange={(e) => setPrimaryEmail(e.target.value)}
                 placeholder={selectedContactId ? "Opcional" : "Seleccioná contacto"}

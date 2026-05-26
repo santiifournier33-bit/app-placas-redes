@@ -126,7 +126,7 @@ export function PaymentForm({ payment, onClose, onSaved }: PaymentFormProps) {
                   {form.currency === "ARS" ? "$" : "US$"}
                 </span>
                 <input
-                  type="number"
+                  type="number" inputMode="decimal"
                   min="0"
                   step="0.01"
                   value={form.amount}

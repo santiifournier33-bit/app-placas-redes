@@ -290,7 +290,7 @@ export default function SignatureEditor({ onSent }: { onSent: () => void }) {
               <div className="mt-2 space-y-2">
                 <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nombre completo"
                   className="w-full px-3 py-1.5 text-xs bg-[var(--bg-secondary)] border border-[var(--border-subtle)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-violet-500" />
-                <input value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="Email *" type="email"
+                <input value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="Email *" type="email" inputMode="email"
                   className="w-full px-3 py-1.5 text-xs bg-[var(--bg-secondary)] border border-[var(--border-subtle)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-violet-500" />
                 <input value={newPhone} onChange={e => setNewPhone(e.target.value)} placeholder="Teléfono (opcional)"
                   className="w-full px-3 py-1.5 text-xs bg-[var(--bg-secondary)] border border-[var(--border-subtle)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-violet-500" />
