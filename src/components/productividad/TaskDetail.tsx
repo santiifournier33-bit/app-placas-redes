@@ -11,6 +11,8 @@ import type { Task, TaskType } from "@/lib/stores/taskStore"
 import { useTaskStore, TASK_TYPES } from "@/lib/stores/taskStore"
 import { useContactStore } from "@/lib/stores/contactStore"
 import { PortalDropdown } from "@/components/ui/PortalDropdown"
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 
 const priorityLabels: Record<number, { label: string; color: string }> = {
   1: { label: "P1", color: "text-red-400" },
@@ -126,28 +128,34 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
     setShowMenu(false)
   }
 
+  // Radix Sheet/Dialog need an internal open state so that exit animations
+  // can play before the parent unmounts the component. Parent passes
+  // `task=null` to unmount; we mirror that with a brief delay so the slide-
+  // out/fade-out is visible. onOpenChange fires for Escape, click-outside,
+  // and the built-in close button — all forward to onClose.
+  const [open, setOpen] = useState(true)
+  const handleOpenChange = (next: boolean) => {
+    if (next) return
+    setOpen(false)
+    // Match Sheet's 300ms exit duration before signalling the parent
+    setTimeout(onClose, 280)
+  }
+
   return (
     <>
-      {/* Mobile: bottom sheet overlay with drag handle */}
-      <div className="lg:hidden fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-        <div
-          className="relative bg-[#1a1a24] rounded-t-2xl w-full max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom duration-200"
-          onClick={(e) => e.stopPropagation()}
-          onTouchStart={(e) => {
-            (e.currentTarget as HTMLElement).dataset.touchStartY = String(e.touches[0].clientY)
-          }}
-          onTouchEnd={(e) => {
-            const start = Number((e.currentTarget as HTMLElement).dataset.touchStartY ?? 0)
-            const end = e.changedTouches[0].clientY
-            const scrollTop = (e.currentTarget as HTMLElement).scrollTop
-            if (scrollTop === 0 && end - start > 80) onClose()
-          }}
+      {/* Mobile: bottom Sheet (Radix Dialog under the hood — focus trap +
+          scroll lock + Escape + click-outside handled by primitive) */}
+      <Sheet open={open} onOpenChange={handleOpenChange}>
+        <SheetContent
+          side="bottom"
+          showClose={false}
+          className="lg:hidden rounded-t-2xl max-h-[90vh] overflow-y-auto p-0 bg-surface-1"
         >
+          <SheetTitle className="sr-only">{task.title || "Detalle de tarea"}</SheetTitle>
           <div className="flex justify-center pt-2 pb-1">
-            <div className="w-10 h-1 rounded-full bg-zinc-700" />
+            <div className="w-10 h-1 rounded-full bg-border-strong/40" />
           </div>
-          <MobileHeader task={task} onClose={onClose} onDelete={() => { deleteTask(task.id); onClose() }} />
+          <MobileHeader task={task} onClose={() => handleOpenChange(false)} onDelete={() => { deleteTask(task.id); handleOpenChange(false) }} />
           <TaskBody
             task={task} subtasks={subtasks} section={section}
             title={title} setTitle={setTitle}
@@ -160,18 +168,14 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
             effectiveType={effectiveType}
             updateTask={updateTask} toggleTask={doToggle} handleSubtaskAdd={handleSubtaskAdd}
           />
-        </div>
-      </div>
+        </SheetContent>
+      </Sheet>
 
-      {/* Desktop: centered modal */}
-      <div className="hidden lg:flex fixed inset-0 z-50 items-center justify-center p-6 bg-black/60 backdrop-blur-sm" onClick={onClose}>
-        {/* Modal */}
-        <div
-          role="dialog"
-          aria-modal="true"
-          onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-[760px] max-h-[90vh] bg-[#13131a] border border-border-default rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150"
-        >
+      {/* Desktop: centered Dialog — content tree mirrored from previous
+          hand-rolled modal. Hidden on mobile so the Sheet above takes over. */}
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="hidden lg:flex w-full max-w-[760px] max-h-[90vh] p-0 sm:rounded-2xl bg-[#13131a] flex-col overflow-hidden">
+          <DialogTitle className="sr-only">{task.title || "Detalle de tarea"}</DialogTitle>
           {/* Header bar */}
           <div className="flex items-center justify-between px-5 h-12 border-b border-border-subtle shrink-0">
             <div className="flex items-center gap-1 text-xs text-text-muted">
@@ -575,8 +579,8 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
