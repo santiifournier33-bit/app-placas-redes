@@ -119,10 +119,13 @@ export default function DashboardPage() {
         <WeeklyTrackerWidget />
 
         {/* Pipeline Distribution */}
-        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-3">
-          <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Pipelines</h3>
+        <div className="rounded-xl border border-shell-border bg-shell-surface/40 backdrop-blur p-4 space-y-3">
+          <h3 className="text-xs font-bold text-shell-text-muted uppercase tracking-wider">Pipelines</h3>
           {pipelines.length === 0 ? (
-            <p className="text-xs text-zinc-600 py-4 text-center">Sin pipelines</p>
+            <div className="flex flex-col items-center justify-center py-6 text-center text-shell-text-muted">
+              <Briefcase size={20} className="stroke-[1.5] mb-2 opacity-50" />
+              <p className="text-xs font-medium">Sin pipelines configurados</p>
+            </div>
           ) : (
             <div className="space-y-2">
               {pipelines.map(p => {
@@ -131,13 +134,13 @@ export default function DashboardPage() {
                   <Link
                     key={p.id}
                     href="/productividad/negocios"
-                    className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-white/[0.04] transition-colors"
+                    className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-shell-surface-hover transition-colors"
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-sm">{p.emoji}</span>
-                      <span className="text-xs font-medium text-zinc-300">{p.name}</span>
+                      <span className="text-xs font-medium text-shell-text">{p.name}</span>
                     </div>
-                    <span className="text-[10px] text-zinc-600">{stageCount} etapas</span>
+                    <span className="text-[10px] text-shell-text-muted">{stageCount} etapas</span>
                   </Link>
                 )
               })}
@@ -148,8 +151,8 @@ export default function DashboardPage() {
 
       {/* Quick Actions */}
       <div>
-        <p className="text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em] mb-3">Acciones rapidas</p>
-        <div className="grid grid-cols-4 gap-3">
+        <p className="text-[11px] font-bold text-shell-text-muted uppercase tracking-[0.12em] mb-3">Acciones rápidas</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <QuickAction
             icon={<UserPlus size={20} strokeWidth={1.5} />}
             label="Nuevo contacto"
@@ -170,7 +173,7 @@ export default function DashboardPage() {
           />
           <QuickAction
             icon={<BarChart3 size={20} strokeWidth={1.5} />}
-            label="Metricas"
+            label="Métricas"
             color="amber"
             onClick={() => router.push("/productividad/equipo")}
           />
@@ -180,15 +183,18 @@ export default function DashboardPage() {
       {/* Two-column: urgent tasks + unhealthy leads */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Top 5 urgent tasks */}
-        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-2">
+        <div className="rounded-xl border border-shell-border bg-shell-surface/40 backdrop-blur p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Tareas urgentes</h3>
-            <Link href="/productividad/tareas" className="text-[10px] text-blue-400 hover:text-blue-300">
+            <h3 className="text-xs font-bold text-shell-text-muted uppercase tracking-wider">Tareas urgentes</h3>
+            <Link href="/productividad/tareas" className="text-[10px] text-shell-accent hover:text-shell-accent/80 font-medium">
               Ver todas
             </Link>
           </div>
           {metrics.urgentTasks.length === 0 ? (
-            <p className="text-xs text-zinc-600 py-4 text-center">Sin tareas con fecha</p>
+            <div className="flex flex-col items-center justify-center py-6 text-center text-shell-text-muted">
+              <CheckSquare size={20} className="stroke-[1.5] mb-2 opacity-50" />
+              <p className="text-xs font-medium">No hay tareas urgentes</p>
+            </div>
           ) : (
             <div className="space-y-1">
               {metrics.urgentTasks.map(task => {
@@ -197,11 +203,11 @@ export default function DashboardPage() {
                   <Link
                     key={task.id}
                     href="/productividad/tareas"
-                    className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-white/[0.04] transition-colors"
+                    className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-shell-surface-hover transition-colors"
                   >
-                    <Clock size={12} className={overdue ? "text-red-400" : "text-zinc-600"} />
-                    <span className="text-xs text-zinc-300 flex-1 truncate">{task.title}</span>
-                    <span className={`text-[10px] shrink-0 ${overdue ? "text-red-400 font-bold" : "text-zinc-600"}`}>
+                    <Clock size={12} className={overdue ? "text-red-400" : "text-shell-text-muted"} />
+                    <span className="text-xs text-shell-text flex-1 truncate">{task.title}</span>
+                    <span className={`text-[10px] shrink-0 ${overdue ? "text-red-400 font-bold" : "text-shell-text-muted"}`}>
                       {format(new Date(task.due_date!), "d MMM", { locale: es })}
                     </span>
                   </Link>
@@ -212,15 +218,18 @@ export default function DashboardPage() {
         </div>
 
         {/* Top 5 unhealthy contacts */}
-        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-2">
+        <div className="rounded-xl border border-shell-border bg-shell-surface/40 backdrop-blur p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Contactos sin actividad</h3>
-            <Link href="/productividad/contactos" className="text-[10px] text-blue-400 hover:text-blue-300">
+            <h3 className="text-xs font-bold text-shell-text-muted uppercase tracking-wider">Contactos sin actividad</h3>
+            <Link href="/productividad/contactos" className="text-[10px] text-shell-accent hover:text-shell-accent/80 font-medium">
               Ver todos
             </Link>
           </div>
           {metrics.unhealthyLeads.length === 0 ? (
-            <p className="text-xs text-zinc-600 py-4 text-center">Todos con actividad reciente</p>
+            <div className="flex flex-col items-center justify-center py-6 text-center text-shell-text-muted">
+              <Users size={20} className="stroke-[1.5] mb-2 opacity-50" />
+              <p className="text-xs font-medium">Todos los contactos al día</p>
+            </div>
           ) : (
             <div className="space-y-1">
               {metrics.unhealthyLeads.map(c => {
@@ -231,15 +240,15 @@ export default function DashboardPage() {
                   <Link
                     key={c.id}
                     href="/productividad/contactos"
-                    className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-white/[0.04] transition-colors"
+                    className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-shell-surface-hover transition-colors"
                   >
-                    <div className="w-5 h-5 rounded-full bg-red-500/15 flex items-center justify-center text-[9px] font-bold text-red-400 shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-red-500/10 flex items-center justify-center text-[9px] font-bold text-red-500 shrink-0 border border-red-500/20">
                       {(c.first_name || '?')[0]}
                     </div>
-                    <span className="text-xs text-zinc-300 flex-1 truncate">
+                    <span className="text-xs text-shell-text flex-1 truncate">
                       {c.first_name} {c.last_name}
                     </span>
-                    <span className="text-[10px] text-red-400/70 shrink-0">
+                    <span className="text-[10px] text-red-500/70 shrink-0 font-medium">
                       {days !== null ? `${days}d` : 'nunca'}
                     </span>
                   </Link>
@@ -278,17 +287,17 @@ export default function DashboardPage() {
 }
 
 const COLOR_MAP = {
-  blue: { bg: "bg-blue-500/10", text: "text-blue-400", icon: "text-blue-400/70" },
-  emerald: { bg: "bg-emerald-500/10", text: "text-emerald-400", icon: "text-emerald-400/70" },
-  amber: { bg: "bg-amber-500/10", text: "text-amber-400", icon: "text-amber-400/70" },
-  violet: { bg: "bg-violet-500/10", text: "text-violet-400", icon: "text-violet-400/70" },
+  blue: { bg: "bg-blue-500/5 hover:bg-blue-500/10", border: "hover:border-blue-500/30", text: "text-blue-500", icon: "text-blue-400" },
+  emerald: { bg: "bg-emerald-500/5 hover:bg-emerald-500/10", border: "hover:border-emerald-500/30", text: "text-emerald-500", icon: "text-emerald-400" },
+  amber: { bg: "bg-amber-500/5 hover:bg-amber-500/10", border: "hover:border-amber-500/30", text: "text-amber-500", icon: "text-amber-400" },
+  violet: { bg: "bg-violet-500/5 hover:bg-violet-500/10", border: "hover:border-violet-500/30", text: "text-violet-500", icon: "text-violet-400" },
 }
 
 const ACTION_COLOR_MAP = {
-  blue: { bg: "bg-blue-500/10 hover:bg-blue-500/20", icon: "text-blue-400", border: "border-blue-500/20" },
-  emerald: { bg: "bg-emerald-500/10 hover:bg-emerald-500/20", icon: "text-emerald-400", border: "border-emerald-500/20" },
-  amber: { bg: "bg-amber-500/10 hover:bg-amber-500/20", icon: "text-amber-400", border: "border-amber-500/20" },
-  violet: { bg: "bg-violet-500/10 hover:bg-violet-500/20", icon: "text-violet-400", border: "border-violet-500/20" },
+  blue: { bg: "bg-blue-500/5 hover:bg-blue-500/10", icon: "text-blue-500", border: "border-blue-500/10 hover:border-blue-500/30" },
+  emerald: { bg: "bg-emerald-500/5 hover:bg-emerald-500/10", icon: "text-emerald-500", border: "border-emerald-500/10 hover:border-emerald-500/30" },
+  amber: { bg: "bg-amber-500/5 hover:bg-amber-500/10", icon: "text-amber-500", border: "border-amber-500/10 hover:border-amber-500/30" },
+  violet: { bg: "bg-violet-500/5 hover:bg-violet-500/10", icon: "text-violet-500", border: "border-violet-500/10 hover:border-violet-500/30" },
 }
 
 function QuickAction({ icon, label, color, onClick }: {
@@ -301,12 +310,12 @@ function QuickAction({ icon, label, color, onClick }: {
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-all"
+      className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-all group"
     >
-      <div className={`w-14 h-14 rounded-2xl border ${c.border} ${c.bg} flex items-center justify-center transition-colors`}>
-        <span className={c.icon}>{icon}</span>
+      <div className={`w-14 h-14 rounded-2xl border ${c.border} ${c.bg} flex items-center justify-center transition-colors duration-200`}>
+        <span className={`${c.icon} transition-transform duration-300 group-hover:scale-110`}>{icon}</span>
       </div>
-      <span className="text-[10px] text-zinc-500 text-center leading-tight font-medium">{label}</span>
+      <span className="text-[10px] text-shell-text-muted text-center leading-tight font-medium transition-colors group-hover:text-shell-text">{label}</span>
     </button>
   )
 }
@@ -322,11 +331,11 @@ function KPICard({ icon, label, value, href, color }: {
   return (
     <Link
       href={href}
-      className={`rounded-2xl border border-white/[0.06] ${c.bg} p-4 hover:scale-[1.02] transition-all`}
+      className={`rounded-2xl border border-shell-border bg-shell-surface/60 backdrop-blur p-4 hover:scale-[1.02] transition-all duration-200 shadow-sm relative overflow-hidden group ${c.border} ${c.bg}`}
     >
-      <div className={`${c.icon} mb-2`}>{icon}</div>
-      <p className={`text-2xl font-bold ${c.text} tabular-nums`}>{value}</p>
-      <p className="text-[11px] text-zinc-500 font-medium mt-1">{label}</p>
+      <div className={`${c.icon} mb-2 transition-transform duration-300 group-hover:scale-110`}>{icon}</div>
+      <p className="text-2xl font-bold text-shell-text tabular-nums tracking-tight">{value}</p>
+      <p className="text-[11px] text-shell-text-muted font-medium mt-1 uppercase tracking-wider">{label}</p>
     </Link>
   )
 }

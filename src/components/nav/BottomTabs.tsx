@@ -61,8 +61,11 @@ export function BottomTabs({ role }: BottomTabsProps) {
   return (
     <>
       {/* Bottom nav bar */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-[#0A0A0F]/95 backdrop-blur-xl border-t border-white/[0.06] z-50 lg:hidden shadow-[0_-4px_24px_rgba(0,0,0,0.5)]">
-        <div className="flex items-stretch px-2 pt-1.5 pb-safe-or-2">
+      <nav
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        className="fixed bottom-0 left-0 right-0 bg-shell-surface/95 backdrop-blur-xl border-t border-shell-border z-50 lg:hidden shadow-[0_-4px_24px_rgba(0,0,0,0.5)]"
+      >
+        <div className="flex items-stretch px-2 pt-1.5 pb-2">
 
           {/* Home */}
           <Link
@@ -148,7 +151,7 @@ export function BottomTabs({ role }: BottomTabsProps) {
                   <p className="text-xs font-bold text-zinc-600 uppercase tracking-[0.12em] mb-3 px-1">
                     {section.title}
                   </p>
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     {section.items.map(item => {
                       const Icon = item.icon
                       const active = pathname === item.href || pathname.startsWith(item.href + "/")

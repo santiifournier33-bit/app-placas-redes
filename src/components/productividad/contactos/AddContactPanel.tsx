@@ -128,13 +128,13 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 lg:p-4" onClick={onClose}>
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
 
       {/* Modal */}
       <div
-        className="relative w-[90vw] max-w-5xl h-[85vh] bg-[#14141e] border border-white/[0.08] rounded-2xl flex flex-col overflow-hidden shadow-2xl"
+        className="relative w-full h-full lg:w-[90vw] lg:max-w-5xl lg:h-[85vh] bg-[#14141e] border-0 lg:border border-white/[0.08] rounded-none lg:rounded-2xl flex flex-col overflow-hidden shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Header ─────────────────────────────────── */}
@@ -162,9 +162,9 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
         </div>
 
         {/* ── Body: 2-column layout ──────────────────── */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden">
           {/* Left column: DATOS BÁSICOS + CONTEXTO + NOTAS */}
-          <div className="w-1/2 border-r border-white/[0.06] overflow-y-auto p-6 space-y-5">
+          <div className="w-full lg:w-1/2 border-r-0 lg:border-r border-white/[0.06] p-6 space-y-5 lg:overflow-y-auto shrink-0 lg:shrink">
             <div>
               <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider mb-3">Datos básicos</h3>
               <div className="space-y-3">
@@ -255,7 +255,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
           </div>
 
           {/* Right column: CLASIFICACIÓN + FLAGS + PIPELINE */}
-          <div className="w-1/2 overflow-y-auto p-6 space-y-5">
+          <div className="w-full lg:w-1/2 p-6 space-y-5 lg:overflow-y-auto shrink-0 lg:shrink border-t border-white/[0.06] lg:border-t-0">
             {/* Clasificación */}
             <div>
               <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider mb-3">Clasificación</h3>

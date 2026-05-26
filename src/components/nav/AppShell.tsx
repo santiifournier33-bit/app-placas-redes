@@ -6,6 +6,7 @@ import { BottomTabs } from "./BottomTabs"
 import { PushBanner } from "@/components/push/PushBanner"
 import { SidebarProvider } from "./SidebarContext"
 import type { UserRole } from "@/lib/auth/session"
+import { initTheme } from "@/lib/theme"
 
 interface AppShellProps {
   role: UserRole
@@ -17,6 +18,7 @@ export function AppShell({ role, email, children }: AppShellProps) {
   const [collapsed, setCollapsed] = useState(false)
 
   useEffect(() => {
+    initTheme()
     const saved = localStorage.getItem("sidebar-collapsed")
     if (saved === "true") setCollapsed(true)
   }, [])

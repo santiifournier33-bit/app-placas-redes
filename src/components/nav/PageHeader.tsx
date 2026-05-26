@@ -1,8 +1,9 @@
 "use client"
 
-import { PanelLeftClose, PanelLeftOpen } from "lucide-react"
-import type { ReactNode } from "react"
+import { PanelLeftClose, PanelLeftOpen, Sun, Moon } from "lucide-react"
+import { ReactNode, useState, useEffect } from "react"
 import { useSidebar } from "./SidebarContext"
+import { getTheme, toggleTheme } from "@/lib/theme"
 
 interface PageHeaderProps {
   title: ReactNode
@@ -13,6 +14,14 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, subtitle, actions, className = "" }: PageHeaderProps) {
   const { collapsed, toggle } = useSidebar()
+  const [theme, setThemeState] = useState<'light' | 'dark'>('dark')
+
+  useEffect(() => {
+    setThemeState(getTheme())
+    const handler = () => setThemeState(getTheme())
+    window.addEventListener("theme-change", handler)
+    return () => window.removeEventListener("theme-change", handler)
+  }, [])
 
   return (
     <div
@@ -37,7 +46,20 @@ export function PageHeader({ title, subtitle, actions, className = "" }: PageHea
         )}
       </div>
 
-      {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
+      <div className="flex items-center gap-2 shrink-0">
+        <button
+          onClick={toggleTheme}
+          className="p-2 rounded-xl hover:bg-white/[0.06] hover:text-shell-text text-zinc-500 transition-colors cursor-pointer"
+          title="Cambiar tema"
+        >
+          {theme === "light" ? (
+            <Moon size={18} strokeWidth={1.8} />
+          ) : (
+            <Sun size={18} strokeWidth={1.8} />
+          )}
+        </button>
+        {actions && <div className="flex items-center gap-2">{actions}</div>}
+      </div>
     </div>
   )
 }

@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "design-taste-frontend": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/taste-skill/SKILL.md",
+      "computedHash": "7af2802be2a40e5530e16ea3d19cfef88845f31a168a35167b3e8f0dc80fd0c8"
+    }
+  }
+}

@@ -8,11 +8,12 @@ import type { UserRole } from "@/lib/auth/session"
 import {
   LayoutDashboard, Paintbrush, ListTodo, MessageCircleQuestion, BookOpen,
   FolderOpen, BarChart3, DollarSign, Receipt, Mail,
-  LogOut, Lock, PenLine
+  LogOut, Lock, PenLine, Sun, Moon
 } from "lucide-react"
-import type { ReactNode } from "react"
+import { ReactNode, useState, useEffect } from "react"
 import { resetAllStores } from "@/lib/stores/resetAllStores"
 import { useConsultasBadge } from "@/lib/stores/useConsultasBadge"
+import { getTheme, toggleTheme } from "@/lib/theme"
 
 const EASE = "cubic-bezier(0.22, 1, 0.36, 1)"
 
@@ -43,6 +44,15 @@ interface SideNavProps {
 export function SideNav({ role, email, collapsed = false }: SideNavProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const [theme, setThemeState] = useState<'light' | 'dark'>('dark')
+
+  useEffect(() => {
+    setThemeState(getTheme())
+    const handler = () => setThemeState(getTheme())
+    window.addEventListener("theme-change", handler)
+    return () => window.removeEventListener("theme-change", handler)
+  }, [])
+
   const allModules = getModulesForRole(role)
 
   const sharedModules = allModules.filter(m => m.access.includes('asesor'))
@@ -131,6 +141,25 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
             {role}
           </span>
         </div>
+        <button
+          onClick={toggleTheme}
+          title="Cambiar tema"
+          className={`group flex items-center rounded-xl text-sm font-medium text-zinc-500 hover:text-blue-400 hover:bg-blue-500/10 transition-[background-color,color,padding] duration-200 cursor-pointer ${
+            collapsed ? "w-10 h-10 justify-center mx-auto gap-0 px-0" : "w-full h-10 px-3 gap-3"
+          }`}
+        >
+          {theme === "light" ? (
+            <Moon size={20} strokeWidth={1.8} className="group-hover:rotate-12 transition-transform duration-300 shrink-0" />
+          ) : (
+            <Sun size={20} strokeWidth={1.8} className="group-hover:rotate-45 transition-transform duration-300 shrink-0" />
+          )}
+          <span
+            style={{ transitionTimingFunction: EASE }}
+            className={fadeClass}
+          >
+            Tema {theme === "light" ? "Oscuro" : "Claro"}
+          </span>
+        </button>
         <button
           onClick={handleLogout}
           title="Cerrar sesión"

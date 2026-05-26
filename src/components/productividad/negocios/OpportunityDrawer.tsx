@@ -173,13 +173,13 @@ export function OpportunityDrawer({ contact, onClose, onRemove }: OpportunityDra
     : null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 lg:p-4" onClick={onClose}>
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
 
       {/* Modal */}
       <div
-        className="relative w-[90vw] max-w-6xl h-[85vh] bg-[#14141e] border border-white/[0.08] rounded-2xl flex flex-col overflow-hidden shadow-2xl"
+        className="relative w-full h-full lg:w-[90vw] lg:max-w-6xl lg:h-[85vh] bg-[#14141e] border-0 lg:border border-white/[0.08] rounded-none lg:rounded-2xl flex flex-col overflow-hidden shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Header ────────────────────────────────────── */}
@@ -322,16 +322,16 @@ export function OpportunityDrawer({ contact, onClose, onRemove }: OpportunityDra
         </div>
 
         {/* ── Body: 2-column layout ─────────────────────── */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden">
           {/* Left column: DATOS (35%) */}
-          <div className="w-[35%] border-r border-white/[0.06] overflow-y-auto">
+          <div className="w-full lg:w-[35%] border-r-0 lg:border-r border-white/[0.06] lg:overflow-y-auto shrink-0 lg:shrink">
             <div className="px-1">
               <ContactDataTab contact={freshContact} />
             </div>
           </div>
 
           {/* Right column: NOTAS + TAREAS (65%) */}
-          <div className="w-[65%] overflow-y-auto">
+          <div className="w-full lg:w-[65%] lg:overflow-y-auto shrink-0 lg:shrink border-t border-white/[0.06] lg:border-t-0">
             {/* Notas section */}
             <div className="border-b border-white/[0.06]">
               <div className="px-5 pt-4 pb-1">

@@ -1,15 +1,39 @@
 @import "tailwindcss";
 
+:root {
+  /* ── Dark Mode by default (Shell / Global) ── */
+  --shell-bg: #0A0A0F;
+  --shell-surface: #111118;
+  --shell-surface-hover: #1a1a24;
+  --shell-border: rgba(255, 255, 255, 0.06);
+  --shell-text: #f4f4f5;
+  --shell-text-muted: #71717a;
+  --shell-accent: #3b82f6;
+  --shell-accent-muted: rgba(59, 130, 246, 0.15);
+}
+
+:root.light, body.light {
+  /* ── Light Mode override ── */
+  --shell-bg: #f4f6fb;
+  --shell-surface: #ffffff;
+  --shell-surface-hover: #eef1f9;
+  --shell-border: rgba(0, 37, 72, 0.08);
+  --shell-text: #0f172a;
+  --shell-text-muted: #475569;
+  --shell-accent: #006689;
+  --shell-accent-muted: rgba(0, 102, 137, 0.1);
+}
+
 @theme {
-  /* ── Dark Mode (Shell / Global) ── */
-  --color-shell-bg: #0A0A0F;
-  --color-shell-surface: #111118;
-  --color-shell-surface-hover: #1a1a24;
-  --color-shell-border: rgba(255, 255, 255, 0.06);
-  --color-shell-text: #f4f4f5;
-  --color-shell-text-muted: #71717a;
-  --color-shell-accent: #3b82f6;
-  --color-shell-accent-muted: rgba(59, 130, 246, 0.15);
+  /* ── Adaptative Colors ── */
+  --color-shell-bg: var(--shell-bg);
+  --color-shell-surface: var(--shell-surface);
+  --color-shell-surface-hover: var(--shell-surface-hover);
+  --color-shell-border: var(--shell-border);
+  --color-shell-text: var(--shell-text);
+  --color-shell-text-muted: var(--shell-text-muted);
+  --color-shell-accent: var(--shell-accent);
+  --color-shell-accent-muted: var(--shell-accent-muted);
 
   /* ── Brand Colors ── */
   --color-brand-primary: #002548;
@@ -237,22 +261,22 @@ body {
   /* ── Input ── */
   .input-architectural {
     width: 100%;
-    padding: 1rem 1.25rem;
-    background-color: var(--color-surface-container-lowest);
-    border: 1.5px solid rgba(0, 37, 72, 0.1);
+    padding: 0.625rem 0.875rem;
+    background-color: var(--color-shell-surface);
+    border: 1px solid var(--color-shell-border);
     border-radius: 0.75rem;
-    font-size: 0.9375rem;
-    transition: all 0.3s;
-    color: var(--color-on-surface);
+    font-size: 0.875rem;
+    transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    color: var(--color-shell-text);
   }
   .input-architectural::placeholder {
-    color: var(--color-on-surface-variant);
+    color: var(--color-shell-text-muted);
     opacity: 0.6;
   }
   .input-architectural:focus {
-    border-color: var(--color-secondary);
+    border-color: var(--color-shell-accent);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(0, 102, 137, 0.1);
+    box-shadow: 0 0 0 3px var(--color-shell-accent-muted);
   }
 
   /* ── Badges ── */
