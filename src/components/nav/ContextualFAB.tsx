@@ -50,12 +50,10 @@ const FAB_ACTIONS: FabAction[] = [
     Icon: Send,
     eventName: "fab:new-email",
   },
-  {
-    match: (p) => p === "/diseno" || p.startsWith("/diseno/"),
-    label: "Publicar",
-    Icon: Send,
-    eventName: "fab:publish",
-  },
+  // Diseño removed: the primary action ("Publicar") depends on whether a
+  // property is loaded inside PropertyExplorer (deep client state, not URL).
+  // Surfacing a FAB that no-ops 80% of the time is worse than no FAB.
+  // Re-introduce if /diseno/[propertyId] becomes a real route.
   {
     match: (p) => p === "/servicios/gastos" || p === "/servicios/ingresos",
     label: "Nuevo movimiento",
