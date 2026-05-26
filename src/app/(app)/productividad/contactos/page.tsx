@@ -45,6 +45,13 @@ export default function ContactosPage() {
     if (activePipelineId) fetchKanban(activePipelineId)
   }, [activePipelineId])
 
+  // Wire mobile ContextualFAB (fab:new-contact) to open the add panel.
+  useEffect(() => {
+    const open = () => setShowForm(true)
+    window.addEventListener("fab:new-contact", open)
+    return () => window.removeEventListener("fab:new-contact", open)
+  }, [])
+
   const filtered = useMemo(() => {
     return contacts
       .filter(c => {
