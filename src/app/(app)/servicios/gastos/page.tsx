@@ -17,6 +17,16 @@ export default function GastosPage() {
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
 
+  // Mobile FAB fab:new-payment → open payment form (fresh, no edit).
+  useEffect(() => {
+    const open = () => {
+      setEditPayment(undefined)
+      setFormOpen(true)
+    }
+    window.addEventListener("fab:new-payment", open)
+    return () => window.removeEventListener("fab:new-payment", open)
+  }, [])
+
   const { payments, categories, providers } = useServiciosStore()
 
   // Filters

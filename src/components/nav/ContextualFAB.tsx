@@ -55,7 +55,7 @@ const FAB_ACTIONS: FabAction[] = [
   // Surfacing a FAB that no-ops 80% of the time is worse than no FAB.
   // Re-introduce if /diseno/[propertyId] becomes a real route.
   {
-    match: (p) => p === "/servicios/gastos" || p === "/servicios/ingresos",
+    match: (p) => p === "/servicios/gastos",
     label: "Nuevo movimiento",
     Icon: Plus,
     eventName: "fab:new-payment",
