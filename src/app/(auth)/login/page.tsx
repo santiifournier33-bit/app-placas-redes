@@ -4,9 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Sms, Warning2 } from "iconsax-react";
+import { Lock, Sms } from "iconsax-react";
 import { InfiniteGrid } from "@/components/ui/infinite-grid";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ErrorState } from "@/components/ui/error-state";
 import { resetAllStores } from "@/lib/stores/resetAllStores";
+import { cn } from "@/lib/utils";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -56,8 +60,9 @@ export default function LoginPage() {
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="w-full max-w-[420px] bg-surface-1/60 backdrop-blur-2xl rounded-[32px] shadow-modal border border-border-subtle overflow-hidden relative z-10 my-auto"
         >
+          {/* Header with brand gradient strip + logo */}
           <div className="pt-10 pb-8 px-8 text-center bg-shell-bg/40 border-b border-border-subtle relative overflow-hidden">
-            <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent" />
+            <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-brand-navy via-brand-navy-600 to-brand-gold" />
             <div className="mx-auto flex justify-center mb-6">
               <Image
                 src="/logo-blanco-oficial.png"
@@ -65,6 +70,7 @@ export default function LoginPage() {
                 width={160}
                 height={50}
                 className="object-contain"
+                priority
               />
             </div>
             <h1 className="text-xl font-heading font-bold text-text-primary tracking-tight">
@@ -75,66 +81,74 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-8">
+          <form onSubmit={handleSubmit} className="p-8 space-y-5">
             <AnimatePresence mode="wait">
               {error && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                  animate={{ opacity: 1, height: "auto", marginBottom: 20 }}
-                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
                   className="overflow-hidden"
                 >
-                  <div className="bg-error/5 border border-error/10 p-3 rounded-xl flex items-start gap-2.5 text-error">
-                    <Warning2 size={18} className="shrink-0 mt-0.5" />
-                    <span className="text-xs font-semibold leading-snug flex-1">{error}</span>
-                  </div>
+                  <ErrorState title="No pudimos iniciar sesión" description={error} />
                 </motion.div>
               )}
             </AnimatePresence>
 
-            <div className="space-y-5">
-              <div className="space-y-1.5">
-                <label className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-wider pl-1">Email Tokko Broker</label>
-                <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-brand-accent transition-colors duration-200">
-                    <Sms size={18} />
-                  </div>
-                  <input
-                    type="email" inputMode="email"
-                    value={email}
-                    onChange={(e) => { setEmail(e.target.value); setError(null); }}
-                    placeholder="tu@email.com"
-                    className="w-full h-12 bg-shell-bg/40 border border-border-subtle rounded-xl pl-11 pr-4 text-sm font-medium text-text-primary placeholder:text-text-muted/50 focus:outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/15 transition-all"
-                    required
-                  />
+            <div className="space-y-2">
+              <Label htmlFor="login-email" className="text-[11px] font-bold text-text-muted uppercase tracking-wider pl-1">
+                Email Tokko Broker
+              </Label>
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none z-10">
+                  <Sms size={18} />
                 </div>
+                <Input
+                  id="login-email"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); setError(null); }}
+                  placeholder="tu@email.com"
+                  className="h-12 pl-11 bg-shell-bg/40 focus-visible:border-brand-gold"
+                  required
+                />
               </div>
+            </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-wider pl-1">Contraseña</label>
-                <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-brand-accent transition-colors duration-200">
-                    <Lock size={18} />
-                  </div>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => { setPassword(e.target.value); setError(null); }}
-                    placeholder="Tu contraseña de Tokko"
-                    className="w-full h-12 bg-shell-bg/40 border border-border-subtle rounded-xl pl-11 pr-4 text-sm font-medium text-text-primary placeholder:text-text-muted/50 focus:outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/15 transition-all"
-                    required
-                  />
+            <div className="space-y-2">
+              <Label htmlFor="login-password" className="text-[11px] font-bold text-text-muted uppercase tracking-wider pl-1">
+                Contraseña
+              </Label>
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none z-10">
+                  <Lock size={18} />
                 </div>
+                <Input
+                  id="login-password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => { setPassword(e.target.value); setError(null); }}
+                  placeholder="Tu contraseña de Tokko"
+                  className="h-12 pl-11 bg-shell-bg/40 focus-visible:border-brand-gold"
+                  required
+                />
               </div>
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-12 mt-8 bg-gradient-to-r from-brand-accent to-brand-accent-light text-brand-primary hover:brightness-105 rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none shadow-[0_4px_20px_rgba(200,164,90,0.25)] cursor-pointer"
+              className={cn(
+                "w-full h-12 mt-2 rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none cursor-pointer",
+                "bg-gradient-to-r from-brand-gold to-brand-gold-light text-brand-navy hover:brightness-105",
+                "shadow-[0_4px_20px_rgba(200,164,90,0.25)]"
+              )}
             >
               {isLoading ? (
-                <div className="h-5 w-5 border-2 border-brand-primary/30 border-t-brand-primary rounded-full animate-spin" />
+                <div className="h-5 w-5 border-2 border-brand-navy/30 border-t-brand-navy rounded-full animate-spin" />
               ) : (
                 "Ingresar"
               )}
@@ -142,7 +156,7 @@ export default function LoginPage() {
           </form>
 
           <div className="px-8 pb-8 text-center">
-            <p className="text-xs md:text-[10px] font-semibold text-text-muted/70 leading-normal">
+            <p className="text-[10px] font-semibold text-text-muted/70 leading-normal">
               Tus credenciales se validan directamente con Tokko Broker de forma segura y nunca son almacenadas.
             </p>
           </div>
