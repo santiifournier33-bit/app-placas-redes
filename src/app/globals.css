@@ -84,6 +84,24 @@ body {
 ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
 
+/* ── Mobile touch target floor (Apple HIG 44pt, Material 48dp) ──────────────
+ * Applies min 44×44 to interactive elements on mobile WITHOUT explicit size.
+ * `:where()` keeps specificity 0 — any explicit Tailwind h-N / w-N / size-N
+ * / min-h-N / min-w-N / aspect-N class overrides this. Opt-out via
+ * `.no-tap-target` on the element. Active only via media query (coarse
+ * pointers / narrow viewports) so dense desktop UIs are unaffected. */
+@media (max-width: 767px), (pointer: coarse) {
+  :where(button, [role="button"], a[href], input[type="checkbox"], input[type="radio"], input[type="button"], input[type="submit"], summary):not(.no-tap-target) {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+/* Manual opt-in for any element that needs guaranteed tap area regardless of platform. */
+.tap-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
 @layer utilities {
   .text-balance { text-wrap: balance; }
 
