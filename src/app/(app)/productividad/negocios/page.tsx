@@ -15,13 +15,14 @@ import {
 } from '@/lib/stores/contactStore'
 import { KanbanBoard } from '@/components/productividad/KanbanBoard'
 import { PipelineSelector } from '@/components/productividad/negocios/PipelineSelector'
+import { OpportunityDrawer } from '@/components/productividad/negocios/OpportunityDrawer'
 
 export default function NegociosPage() {
   const [search, setSearch] = useState('')
   const [filterSource, setFilterSource] = useState<Source | 'all'>('all')
   const [filterHealth, setFilterHealth] = useState<HealthStatus | 'all'>('all')
   const [showForm, setShowForm] = useState(false)
-  const [editingContact, setEditingContact] = useState<KanbanContact | null>(null)
+  const [viewingContact, setViewingContact] = useState<KanbanContact | null>(null)
 
   const pipelinesStore = usePipelinesStore()
   const contactStore = useContactStore()
@@ -102,8 +103,16 @@ export default function NegociosPage() {
 
   if (!activePipeline) {
     return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <p className="text-zinc-500 text-sm">No hay pipelines configurados. Iniciá sesión para crear los pipelines por defecto.</p>
+      <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
+        <p className="text-zinc-500 text-sm">No hay pipelines configurados.</p>
+        <button
+          onClick={async () => {
+            await pipelinesStore.seedDefaultPipelines()
+          }}
+          className="px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 transition-colors cursor-pointer"
+        >
+          Crear pipelines por defecto
+        </button>
       </div>
     )
   }
@@ -158,7 +167,7 @@ export default function NegociosPage() {
           <span className="text-xs text-zinc-600 tabular-nums">{filtered.length} leads</span>
 
           <button
-            onClick={() => { setEditingContact(null); setShowForm(true) }}
+            onClick={() => setShowForm(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition-colors cursor-pointer"
           >
             <Plus size={16} />
@@ -173,39 +182,74 @@ export default function NegociosPage() {
           contacts={filtered}
           stages={activeStages}
           onDrop={contactStore.moveToStage}
-          onTapContact={(contact) => { setEditingContact(contact); setShowForm(true) }}
+          onTapContact={(contact) => setViewingContact(contact)}
         />
       </div>
 
-      {/* Quick add/edit modal */}
+      {/* Quick add modal (new leads only) */}
       {showForm && (
         <QuickLeadModal
-          contact={editingContact}
           stages={activeStages}
           pipelineId={activePipeline.id}
           onSave={async (data) => {
-            if (editingContact) {
-              await contactStore.updateContact(editingContact.id, data)
-            } else {
-              const firstStage = activeStages[0]
-              if (firstStage) {
-                const result = await contactStore.addContact(data, activePipeline.id, firstStage.id)
-                if (!result) {
-                  alert('No se pudo crear el lead. Verificá tu sesión e intentá nuevamente.')
-                  return
-                }
-              }
+            const sb = createClient()
+            await contactStore.updateContact(data.contactId, {
+              primary_phone: data.primary_phone,
+              primary_email: data.primary_email,
+              notes: data.notes,
+            })
+
+            const { data: { user } } = await sb.auth.getUser()
+            if (!user) {
+              alert('Sesión expirada. Por favor, volvé a iniciar sesión.')
+              return
             }
+
+            // Check for duplicates
+            const { data: existing } = await sb
+              .from('contact_pipelines')
+              .select('id')
+              .eq('contact_id', data.contactId)
+              .eq('pipeline_id', data.pipelineId)
+              .eq('owner_id', user.id)
+              .limit(1)
+
+            if (existing && existing.length > 0) {
+              alert('Este contacto ya se encuentra en este pipeline.')
+              return
+            }
+
+            const { error } = await sb
+              .from('contact_pipelines')
+              .insert({
+                contact_id: data.contactId,
+                pipeline_id: data.pipelineId,
+                stage_id: data.stageId,
+                owner_id: user.id,
+              })
+
+            if (error) {
+              console.error('Error adding to pipeline:', error)
+              alert('No se pudo asociar el contacto al pipeline.')
+              return
+            }
+
             await contactStore.fetchKanban(activePipeline.id)
             setShowForm(false)
-            setEditingContact(null)
           }}
-          onDelete={editingContact ? async () => {
-            await contactStore.deleteContact(editingContact.id)
-            setShowForm(false)
-            setEditingContact(null)
-          } : undefined}
-          onClose={() => { setShowForm(false); setEditingContact(null) }}
+          onClose={() => setShowForm(false)}
+        />
+      )}
+
+      {/* Opportunity detail drawer */}
+      {viewingContact && (
+        <OpportunityDrawer
+          contact={viewingContact}
+          onClose={() => setViewingContact(null)}
+          onRemove={async () => {
+            await contactStore.removeFromPipeline(viewingContact.contactPipelineId)
+            setViewingContact(null)
+          }}
         />
       )}
     </div>
@@ -213,46 +257,99 @@ export default function NegociosPage() {
 }
 
 function QuickLeadModal({
-  contact,
   stages,
   pipelineId,
   onSave,
-  onDelete,
   onClose,
 }: {
-  contact: KanbanContact | null
   stages: { id: string; name: string; emoji: string | null }[]
   pipelineId: string
-  onSave: (data: Partial<KanbanContact> & { first_name: string }) => void
-  onDelete?: () => void
+  onSave: (data: {
+    contactId: string
+    pipelineId: string
+    stageId: string
+    primary_phone: string
+    primary_email: string
+    notes: string
+  }) => void
   onClose: () => void
 }) {
-  const findDuplicate = useContactStore(s => s.findDuplicate)
-  const [duplicate, setDuplicate] = useState<ReturnType<typeof findDuplicate>>(undefined)
+  const { contacts } = useContactStore()
+  const { pipelines } = usePipelinesStore()
 
-  const [form, setForm] = useState({
-    first_name: contact?.first_name ?? '',
-    last_name: contact?.last_name ?? '',
-    primary_phone: contact?.primary_phone ?? '',
-    primary_email: contact?.primary_email ?? '',
-    source: contact?.source ?? 'otro',
-    notes: contact?.notes ?? '',
-    tags: contact?.tags ?? [],
-  })
+  const [selectedContactId, setSelectedContactId] = useState<string>('')
+  const [searchQuery, setSearchQuery] = useState<string>('')
+  const [showSuggestions, setShowSuggestions] = useState(false)
 
-  const set = (key: string, value: unknown) => setForm(f => ({ ...f, [key]: value }))
+  // Selected pipeline & stage
+  const [selectedPipelineId, setSelectedPipelineId] = useState<string>(pipelineId)
+  const [selectedStageId, setSelectedStageId] = useState<string>('')
 
-  const checkDup = (phone: string, email: string) => {
-    if (!contact) {
-      const d = findDuplicate(phone, email)
-      setDuplicate(d)
+  // Contact details
+  const [primaryPhone, setPrimaryPhone] = useState<string>('')
+  const [primaryEmail, setPrimaryEmail] = useState<string>('')
+  const [notes, setNotes] = useState<string>('')
+
+  const selectedPipeline = pipelines.find(p => p.id === selectedPipelineId)
+  const pipelineStages = selectedPipeline
+    ? [...selectedPipeline.stages].sort((a, b) => a.position - b.position)
+    : []
+
+  // Update selected stage when pipeline changes
+  useEffect(() => {
+    const firstStage = pipelineStages[0]?.id ?? ''
+    setSelectedStageId(firstStage)
+  }, [selectedPipelineId, pipelineStages.length])
+
+  // Close suggestions on click outside
+  useEffect(() => {
+    const handleOutsideClick = () => {
+      setShowSuggestions(false)
     }
+    window.addEventListener('click', handleOutsideClick)
+    return () => window.removeEventListener('click', handleOutsideClick)
+  }, [])
+
+  const filteredContacts = useMemo(() => {
+    if (!searchQuery.trim()) return []
+    const query = searchQuery.toLowerCase()
+    return contacts.filter(c => {
+      const fullName = `${c.first_name} ${c.last_name ?? ''}`.toLowerCase()
+      return fullName.includes(query)
+    })
+  }, [searchQuery, contacts])
+
+  const handleSelectContact = (c: typeof contacts[0]) => {
+    setSelectedContactId(c.id)
+    setSearchQuery(`${c.first_name} ${c.last_name ?? ''}`.trim())
+    setPrimaryPhone(c.primary_phone ?? '')
+    setPrimaryEmail(c.primary_email ?? '')
+    setNotes(c.notes ?? '')
+    setShowSuggestions(false)
+  }
+
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val)
+    setSelectedContactId('')
+    setPrimaryPhone('')
+    setPrimaryEmail('')
+    setNotes('')
+    setShowSuggestions(true)
   }
 
   const handleSave = () => {
-    if (!form.first_name.trim()) return
-    if (!form.primary_phone.trim() && !form.primary_email.trim()) return
-    onSave(form)
+    if (!selectedContactId) return
+    if (!primaryPhone.trim()) return
+    if (!selectedPipelineId || !selectedStageId) return
+
+    onSave({
+      contactId: selectedContactId,
+      pipelineId: selectedPipelineId,
+      stageId: selectedStageId,
+      primary_phone: primaryPhone.trim(),
+      primary_email: primaryEmail.trim(),
+      notes: notes.trim(),
+    })
   }
 
   return (
@@ -264,92 +361,137 @@ function QuickLeadModal({
       >
         <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
           <h3 className="text-sm font-bold text-shell-text">
-            {contact ? `${contact.first_name} ${contact.last_name ?? ''}` : 'Nuevo lead'}
+            Nuevo lead
           </h3>
           <button onClick={onClose} className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer">
             <X size={20} className="text-zinc-400" />
           </button>
         </div>
 
-        <div className="p-4 space-y-3">
-          {duplicate && (
-            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3">
-              <p className="text-xs font-bold text-amber-400">
-                Ya existe: {duplicate.first_name} {duplicate.last_name}
-              </p>
+        <div className="p-4 space-y-4">
+          {/* Contact Search Field */}
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <label className="text-[11px] text-zinc-500 font-medium block mb-1">Nombre del contacto *</label>
+            <div className="relative flex items-center">
+              <input
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                onFocus={() => setShowSuggestions(true)}
+                placeholder="Buscar por nombre..."
+                className="w-full bg-white/[0.04] rounded-xl px-3 py-2.5 text-sm text-shell-text outline-none border border-white/[0.06] focus:border-blue-500/30 disabled:opacity-60"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery('')
+                    setSelectedContactId('')
+                    setPrimaryPhone('')
+                    setPrimaryEmail('')
+                    setNotes('')
+                  }}
+                  className="absolute right-3 text-zinc-500 hover:text-zinc-300"
+                >
+                  <X size={16} />
+                </button>
+              )}
             </div>
-          )}
 
+            {/* Suggestions Dropdown */}
+            {showSuggestions && searchQuery.trim() && !selectedContactId && (
+              <div className="absolute left-0 right-0 mt-1 bg-[#1e1e2d] border border-white/[0.08] rounded-xl shadow-2xl z-50 max-h-60 overflow-y-auto divide-y divide-white/[0.04]">
+                {filteredContacts.length === 0 ? (
+                  <div className="p-3 text-xs text-zinc-500 text-center">
+                    No se encontraron contactos.
+                    <p className="mt-1 text-[10px] text-zinc-600">Creá el contacto en la sección de contactos primero.</p>
+                  </div>
+                ) : (
+                  filteredContacts.map(c => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => handleSelectContact(c)}
+                      className="w-full text-left px-3 py-2.5 text-xs text-zinc-300 hover:bg-white/[0.06] hover:text-white transition-colors flex flex-col gap-0.5 cursor-pointer"
+                    >
+                      <span className="font-semibold">{c.first_name} {c.last_name ?? ''}</span>
+                      <span className="text-zinc-500 text-[10px]">
+                        📞 {c.primary_phone ?? 'Sin teléfono'} {c.primary_email ? `| ✉️ ${c.primary_email}` : ''}
+                      </span>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Phone & Email Fields */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] text-zinc-500 font-medium block mb-1">Nombre *</label>
+              <label className="text-[11px] text-zinc-500 font-medium block mb-1">Teléfono *</label>
               <input
-                value={form.first_name}
-                onChange={(e) => set('first_name', e.target.value)}
-                className="w-full bg-white/[0.04] rounded-xl px-3 py-2 text-sm text-shell-text outline-none border border-white/[0.06] focus:border-blue-500/30"
+                type="tel"
+                value={primaryPhone}
+                onChange={(e) => setPrimaryPhone(e.target.value)}
+                placeholder={selectedContactId ? "Obligatorio" : "Seleccioná contacto"}
+                disabled={!selectedContactId}
+                className="w-full bg-white/[0.04] rounded-xl px-3 py-2.5 text-sm text-shell-text outline-none border border-white/[0.06] focus:border-blue-500/30 disabled:opacity-50"
               />
             </div>
             <div>
-              <label className="text-[11px] text-zinc-500 font-medium block mb-1">Apellido</label>
+              <label className="text-[11px] text-zinc-500 font-medium block mb-1">Email</label>
               <input
-                value={form.last_name}
-                onChange={(e) => set('last_name', e.target.value)}
-                className="w-full bg-white/[0.04] rounded-xl px-3 py-2 text-sm text-shell-text outline-none border border-white/[0.06] focus:border-blue-500/30"
+                type="email"
+                value={primaryEmail}
+                onChange={(e) => setPrimaryEmail(e.target.value)}
+                placeholder={selectedContactId ? "Opcional" : "Seleccioná contacto"}
+                disabled={!selectedContactId}
+                className="w-full bg-white/[0.04] rounded-xl px-3 py-2.5 text-sm text-shell-text outline-none border border-white/[0.06] focus:border-blue-500/30 disabled:opacity-50"
               />
             </div>
           </div>
 
-          <div>
-            <label className="text-[11px] text-zinc-500 font-medium block mb-1">Teléfono *</label>
-            <input
-              type="tel"
-              value={form.primary_phone}
-              onChange={(e) => { set('primary_phone', e.target.value); checkDup(e.target.value, form.primary_email) }}
-              className="w-full bg-white/[0.04] rounded-xl px-3 py-2 text-sm text-shell-text outline-none border border-white/[0.06] focus:border-blue-500/30"
-            />
+          {/* Pipeline & Stage Selection */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[11px] text-zinc-500 font-medium block mb-1">Pipeline</label>
+              <select
+                value={selectedPipelineId}
+                onChange={(e) => setSelectedPipelineId(e.target.value)}
+                className="w-full bg-[#1a1a24] rounded-xl px-3 py-2.5 text-sm text-zinc-300 outline-none border border-white/[0.06] cursor-pointer [color-scheme:dark]"
+              >
+                {pipelines.map(p => (
+                  <option key={p.id} value={p.id}>{p.emoji} {p.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-[11px] text-zinc-500 font-medium block mb-1">Fase</label>
+              <select
+                value={selectedStageId}
+                onChange={(e) => setSelectedStageId(e.target.value)}
+                className="w-full bg-[#1a1a24] rounded-xl px-3 py-2.5 text-sm text-zinc-300 outline-none border border-white/[0.06] cursor-pointer [color-scheme:dark]"
+              >
+                {pipelineStages.map(s => (
+                  <option key={s.id} value={s.id}>{s.emoji} {s.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          <div>
-            <label className="text-[11px] text-zinc-500 font-medium block mb-1">Email</label>
-            <input
-              type="email"
-              value={form.primary_email}
-              onChange={(e) => { set('primary_email', e.target.value); checkDup(form.primary_phone, e.target.value) }}
-              className="w-full bg-white/[0.04] rounded-xl px-3 py-2 text-sm text-shell-text outline-none border border-white/[0.06] focus:border-blue-500/30"
-            />
-          </div>
-
-          <div>
-            <label className="text-[11px] text-zinc-500 font-medium block mb-1">Origen</label>
-            <select
-              value={form.source}
-              onChange={(e) => set('source', e.target.value)}
-              className="w-full bg-white/[0.04] rounded-xl px-3 py-2 text-sm text-zinc-300 outline-none border border-white/[0.06] cursor-pointer [color-scheme:dark]"
-            >
-              {SOURCE_OPTIONS.map(s => <option key={s} value={s}>{SOURCE_LABELS[s]}</option>)}
-            </select>
-          </div>
-
+          {/* Notes Selection */}
           <div>
             <label className="text-[11px] text-zinc-500 font-medium block mb-1">Notas</label>
             <textarea
-              value={form.notes}
-              onChange={(e) => set('notes', e.target.value)}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              disabled={!selectedContactId}
               rows={2}
-              className="w-full bg-white/[0.04] rounded-xl px-3 py-2 text-sm text-shell-text placeholder:text-zinc-700 outline-none resize-none border border-white/[0.06] focus:border-blue-500/30"
+              className="w-full bg-white/[0.04] rounded-xl px-3 py-2.5 text-sm text-shell-text placeholder:text-zinc-700 outline-none resize-none border border-white/[0.06] focus:border-blue-500/30 disabled:opacity-50"
             />
           </div>
         </div>
 
         <div className="p-4 border-t border-white/[0.06] flex gap-2">
-          {onDelete && (
-            <button
-              onClick={onDelete}
-              className="px-4 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 cursor-pointer"
-            >
-              Eliminar
-            </button>
-          )}
           <div className="flex-1" />
           <button
             onClick={onClose}
@@ -359,7 +501,8 @@ function QuickLeadModal({
           </button>
           <button
             onClick={handleSave}
-            className="px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 cursor-pointer"
+            disabled={!selectedContactId || !primaryPhone.trim()}
+            className="px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 disabled:bg-blue-500/40 disabled:text-white/40 cursor-pointer transition-colors"
           >
             Guardar
           </button>

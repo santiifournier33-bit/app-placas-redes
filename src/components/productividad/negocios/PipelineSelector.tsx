@@ -1,9 +1,10 @@
 'use client'
 
 import { usePipelinesStore } from '@/lib/stores/pipelinesStore'
+import { RotateCcw } from 'lucide-react'
 
 export function PipelineSelector() {
-  const { pipelines, activePipelineId, setActivePipeline } = usePipelinesStore()
+  const { pipelines, activePipelineId, setActivePipeline, seedDefaultPipelines } = usePipelinesStore()
 
   if (pipelines.length <= 1) return null
 
@@ -29,6 +30,17 @@ export function PipelineSelector() {
           </button>
         )
       })}
+      <button
+        onClick={() => {
+          if (confirm('¿Restablecer todos los pipelines a los valores por defecto? Se perderán los pipelines actuales.')) {
+            seedDefaultPipelines()
+          }
+        }}
+        title="Restablecer pipelines por defecto"
+        className="p-1.5 rounded-lg text-zinc-600 hover:text-zinc-400 hover:bg-white/[0.06] transition-colors cursor-pointer shrink-0"
+      >
+        <RotateCcw size={14} />
+      </button>
     </div>
   )
 }

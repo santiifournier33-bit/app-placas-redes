@@ -38,10 +38,6 @@ export function KanbanColumn({ stage, contacts, allStages, onDrop, onTapContact 
     >
       <div className="flex items-center gap-2 px-3 py-3 border-b border-white/[0.04]">
         {stage.emoji && <span className="text-sm">{stage.emoji}</span>}
-        <span
-          className="w-2.5 h-2.5 rounded-full shrink-0"
-          style={{ backgroundColor: stage.color ?? '#3b82f6' }}
-        />
         <span className="text-sm font-medium text-shell-text truncate">{stage.name}</span>
         <span className="text-xs font-bold text-zinc-600 tabular-nums ml-auto">{contacts.length}</span>
       </div>
