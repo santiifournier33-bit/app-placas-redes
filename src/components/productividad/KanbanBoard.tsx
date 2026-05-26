@@ -32,7 +32,7 @@ export function KanbanBoard({ contacts, stages, onDrop, onTapContact }: KanbanBo
   }, [contacts, sorted])
 
   return (
-    <div className="flex gap-3 overflow-x-auto pb-4 px-4 scrollbar-hide">
+    <div className="flex gap-3 overflow-x-auto pb-4 px-4 scroll-x-affordance">
       {sorted.map(stage => (
         <KanbanColumn
           key={stage.id}

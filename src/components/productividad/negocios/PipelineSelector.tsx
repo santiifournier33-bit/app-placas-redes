@@ -9,7 +9,7 @@ export function PipelineSelector() {
   if (pipelines.length <= 1) return null
 
   return (
-    <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
+    <div className="flex items-center gap-1.5 overflow-x-auto scroll-x-affordance">
       {pipelines.map(p => {
         const active = p.id === activePipelineId
         return (

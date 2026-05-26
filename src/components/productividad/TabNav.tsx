@@ -44,7 +44,7 @@ export function TabNav({ role }: TabNavProps) {
       >
         {collapsed ? <PanelLeftOpen size={18} strokeWidth={1.8} /> : <PanelLeftClose size={18} strokeWidth={1.8} />}
       </button>
-      <nav className="flex gap-1 overflow-x-auto scrollbar-hide flex-1">
+      <nav className="flex gap-1 overflow-x-auto scroll-x-affordance flex-1">
         {visibleTabs.map(({ href, label, icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/")
           return (

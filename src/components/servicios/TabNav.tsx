@@ -20,7 +20,7 @@ export function TabNav() {
 
   return (
     <div className="sticky top-0 z-20 bg-shell-bg/90 backdrop-blur-xl border-b border-white/[0.06]">
-      <nav className="flex gap-1 px-4 lg:px-6 overflow-x-auto scrollbar-hide py-2">
+      <nav className="flex gap-1 px-4 lg:px-6 overflow-x-auto scroll-x-affordance py-2">
         {tabs.map(({ href, label, icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/")
           return (

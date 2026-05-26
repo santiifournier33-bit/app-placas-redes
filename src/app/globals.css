@@ -121,6 +121,23 @@ body {
   outline-offset: 2px;
 }
 
+/* ── Horizontal scroll affordance ───────────────────────────────────────────
+ * Replaces .scrollbar-hide. Keeps the slim styled scrollbar visible (already
+ * themed via ::-webkit-scrollbar in globals.css). On the right edge, paints
+ * a fade gradient that disappears as content scrolls to the end — signals
+ * "more content this way" without occupying layout. Lea Verou scroll-shadow
+ * pattern via background-attachment: local + scroll. */
+.scroll-x-affordance {
+  background:
+    /* Mask layers (solid shell-bg) hide the fade when at start/end. background-attachment: local makes them follow the scroll. */
+    linear-gradient(to right, var(--color-shell-bg), transparent 32px) left / 24px 100% no-repeat,
+    linear-gradient(to left, var(--color-shell-bg), transparent 32px) right / 24px 100% no-repeat,
+    /* Edge fade (radial). background-attachment: scroll keeps it pinned so it appears when content extends past viewport. */
+    radial-gradient(farthest-side at 0% 50%, rgba(0, 0, 0, 0.25), transparent) left / 14px 100% no-repeat,
+    radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, 0.25), transparent) right / 14px 100% no-repeat;
+  background-attachment: local, local, scroll, scroll;
+}
+
 @layer utilities {
   .text-balance { text-wrap: balance; }
 

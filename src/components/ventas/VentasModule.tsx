@@ -14,7 +14,7 @@ export default function VentasModule() {
   return (
     <div className="space-y-6">
       {/* Tabs Navigation */}
-      <div className="flex space-x-1 bg-shell-surface border border-shell-border p-1 rounded-xl overflow-x-auto scrollbar-hide">
+      <div className="flex space-x-1 bg-shell-surface border border-shell-border p-1 rounded-xl overflow-x-auto scroll-x-affordance">
         <TabButton 
           id="produccion" 
           label="Producción" 

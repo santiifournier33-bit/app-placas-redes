@@ -138,7 +138,7 @@ export default function ContactosPage() {
               className="flex-1 bg-transparent text-xs text-shell-text placeholder:text-zinc-700 outline-none"
             />
           </div>
-          <div className="flex gap-1.5 overflow-x-auto scrollbar-hide shrink-0">
+          <div className="flex gap-1.5 overflow-x-auto scroll-x-affordance shrink-0">
             <FilterChip
               label="Origen"
               value={filterSource}
