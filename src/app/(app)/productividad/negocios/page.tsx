@@ -44,6 +44,13 @@ export default function NegociosPage() {
     contactStore.init()
   }, [])
 
+  // Mobile FAB fab:new-opportunity → open contact creation form.
+  useEffect(() => {
+    const open = () => setShowForm(true)
+    window.addEventListener("fab:new-opportunity", open)
+    return () => window.removeEventListener("fab:new-opportunity", open)
+  }, [])
+
   useEffect(() => {
     if (activePipeline) {
       contactStore.fetchKanban(activePipeline.id)
