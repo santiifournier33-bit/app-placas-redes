@@ -1,18 +1,25 @@
 {
   "name": "Freire Propiedades",
   "short_name": "Freire",
-  "description": "Plataforma integral de gestión interna",
+  "description": "Plataforma interna CRM Freire Propiedades",
   "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#0A0A0F",
-  "theme_color": "#0A0A0F",
+  "background_color": "#002548",
+  "theme_color": "#002548",
   "orientation": "portrait-primary",
+  "categories": ["business", "productivity"],
   "icons": [
     {
       "src": "/logo-pequeno.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/logo-pequeno.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/logo-blanco-oficial.png",

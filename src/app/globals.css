@@ -230,6 +230,57 @@ body {
   outline-offset: 2px;
 }
 
+/* ── Print stylesheet ───────────────────────────────────────────────────────
+ * The CRM is dark-by-default. Without overrides, Ctrl+P / Save-as-PDF on
+ * Documentación and Ventas would emit white-text-on-black pages — useless
+ * on paper, ink-hungry, ugly to share. Forces a clean light layout: white
+ * background, black text, hide chrome (sidebar, bottom nav, FABs, theme
+ * toggle), table borders visible. Each module can opt out by setting
+ * `data-print="off"` on the root. */
+@media print {
+  :root, :root.light, body, body.light {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  body { font-size: 11pt; }
+
+  /* Hide app chrome — viewers don't need nav on paper. */
+  [data-print-hide="true"],
+  aside,
+  nav.fixed,
+  .fixed.bottom-0,
+  button[aria-label="Cambiar tema"],
+  button[aria-label*="sidebar"],
+  .no-print {
+    display: none !important;
+  }
+
+  /* Strip backdrops + shadows + gradients. */
+  *, *::before, *::after {
+    background-image: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Tables: simple black grid. */
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #999 !important; padding: 4pt 6pt; }
+  thead th { font-weight: bold; border-bottom: 2px solid #333 !important; }
+
+  /* Don't break inside cards / rows. */
+  .card, tr, li, h1, h2, h3 { page-break-inside: avoid; }
+  h1, h2, h3 { color: #000000 !important; }
+
+  /* Links: show URL after text so the reader can find the source. */
+  a[href]::after { content: " (" attr(href) ")"; font-size: 9pt; color: #555; }
+  a[href^="javascript:"]::after,
+  a[href^="#"]::after { content: ""; }
+
+  /* Margins. */
+  @page { margin: 1.5cm; }
+}
+
 /* ── Reduce motion (WCAG 2.3.3 + user OS preference) ───────────────────────
  * Strip non-essential animations + transitions when the user has expressed
  * a preference for reduced motion. Keeps the app functional (state changes
