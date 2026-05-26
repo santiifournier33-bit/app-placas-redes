@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Search, MessageSquare } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface TokkoProperty {
   id: number
@@ -78,31 +79,32 @@ export default function ConsultasPage() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="h-14 flex items-center gap-3 px-4 border-b border-white/[0.06] shrink-0">
-        <MessageSquare size={18} className="text-blue-400" />
-        <h1 className="text-sm font-bold text-shell-text">Consultas</h1>
+      <div className="h-14 flex items-center gap-3 px-4 border-b border-border-subtle shrink-0">
+        <MessageSquare size={18} className="text-brand-navy-500" />
+        <h1 className="text-sm font-bold text-text-primary">Consultas</h1>
         <Link
           href="/consultas/mis-consultas"
-          className="ml-auto text-xs md:text-[11px] text-blue-400 hover:underline"
+          className="ml-auto text-xs md:text-[11px] text-brand-navy-500 hover:underline"
         >
           Mis consultas →
         </Link>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 px-4 py-3 border-b border-white/[0.06] shrink-0">
-        <div className="flex items-center gap-2 bg-white/[0.04] rounded-xl px-3 py-1.5 border border-white/[0.06] flex-1 max-w-xs">
-          <Search size={14} className="text-zinc-600 shrink-0" />
+      <div className="flex flex-wrap items-center gap-2 px-4 py-3 border-b border-border-subtle shrink-0">
+        <div className="flex items-center gap-2 bg-surface-overlay rounded-xl px-3 py-1.5 border border-border-subtle flex-1 max-w-xs">
+          <Search size={14} className="text-text-muted shrink-0" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar propiedad..."
-            className="flex-1 bg-transparent text-sm text-shell-text placeholder:text-zinc-700 outline-none"
+            inputMode="search"
+            className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-muted/60 outline-none"
           />
         </div>
         <select
           value={opFilter}
           onChange={(e) => setOpFilter(e.target.value)}
-          className="text-xs font-medium px-3 py-1.5 rounded-lg border border-white/[0.06] bg-white/[0.04] text-zinc-400 cursor-pointer outline-none [color-scheme:dark]"
+          className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border-subtle bg-surface-overlay text-text-secondary cursor-pointer outline-none [color-scheme:dark]"
         >
           {OP_FILTERS.map((o) => (
             <option key={o} value={o}>
@@ -113,7 +115,7 @@ export default function ConsultasPage() {
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          className="text-xs font-medium px-3 py-1.5 rounded-lg border border-white/[0.06] bg-white/[0.04] text-zinc-400 cursor-pointer outline-none [color-scheme:dark]"
+          className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border-subtle bg-surface-overlay text-text-secondary cursor-pointer outline-none [color-scheme:dark]"
         >
           {TYPE_FILTERS.map((t) => (
             <option key={t} value={t}>
@@ -121,7 +123,7 @@ export default function ConsultasPage() {
             </option>
           ))}
         </select>
-        <span className="text-xs text-zinc-600 ml-auto">
+        <span className="text-xs text-text-muted ml-auto">
           {filtered.length} {filtered.length === 1 ? 'propiedad' : 'propiedades'}
         </span>
       </div>
@@ -130,11 +132,11 @@ export default function ConsultasPage() {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-              <div key={i} className="animate-pulse aspect-[4/3] bg-white/[0.04] rounded-2xl" />
+              <Skeleton key={i} className="aspect-[4/3] rounded-2xl" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <p className="text-center text-zinc-600 text-sm py-12">Sin propiedades</p>
+          <p className="text-center text-text-muted text-sm py-12">Sin propiedades</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             {filtered.map((p) => (
@@ -154,17 +156,17 @@ export default function ConsultasPage() {
 function PropertyCard({ property, matchCount }: { property: TokkoProperty; matchCount: number }) {
   const opColor =
     property.operation_type === 'Venta'
-      ? 'bg-emerald-500/15 text-emerald-400'
+      ? 'bg-emerald-500/15 text-emerald-300'
       : property.operation_type.startsWith('Alquiler Temporal')
-        ? 'bg-amber-500/15 text-amber-400'
-        : 'bg-blue-500/15 text-blue-400'
+        ? 'bg-amber-500/15 text-amber-300'
+        : 'bg-brand-navy-600/15 text-brand-navy-500'
 
   return (
     <Link
       href={`/consultas/${property.id}`}
-      className="group rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden hover:border-white/[0.12] transition-colors cursor-pointer flex flex-col"
+      className="group rounded-2xl border border-border-subtle bg-surface-overlay overflow-hidden hover:border-border-default transition-colors cursor-pointer flex flex-col"
     >
-      <div className="relative aspect-[4/3] bg-zinc-900">
+      <div className="relative aspect-[4/3] bg-surface-2">
         {property.thumbnail ? (
           <Image
             src={property.thumbnail}
@@ -176,7 +178,7 @@ function PropertyCard({ property, matchCount }: { property: TokkoProperty; match
         ) : null}
         {matchCount > 0 && (
           <span
-            className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-blue-500 text-white text-xs md:text-[11px] font-bold shadow"
+            className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-brand-gold text-brand-navy text-xs md:text-[11px] font-bold shadow"
             title="Contactos que consultaron exactamente esta propiedad. Abrí para ver también contactos compatibles."
           >
             {matchCount} consulta{matchCount !== 1 ? 's' : ''}
@@ -189,10 +191,10 @@ function PropertyCard({ property, matchCount }: { property: TokkoProperty; match
         </span>
       </div>
       <div className="p-3 space-y-1 flex-1 flex flex-col">
-        <p className="text-xs font-bold text-shell-text truncate">{property.title}</p>
-        <p className="text-xs md:text-[11px] text-zinc-500 truncate">{property.address}</p>
-        <p className="text-sm font-bold text-zinc-200 mt-auto">{property.price}</p>
-        <div className="flex items-center gap-3 text-xs md:text-[10px] text-zinc-500">
+        <p className="text-xs font-bold text-text-primary truncate">{property.title}</p>
+        <p className="text-xs md:text-[11px] text-text-muted truncate">{property.address}</p>
+        <p className="text-sm font-bold text-text-primary mt-auto">{property.price}</p>
+        <div className="flex items-center gap-3 text-xs md:text-[10px] text-text-muted">
           {property.bedrooms > 0 && <span>{property.bedrooms} dorm</span>}
           {property.bathrooms > 0 && <span>{property.bathrooms} baño</span>}
           {property.surface_total > 0 && <span>{property.surface_total} m²</span>}
