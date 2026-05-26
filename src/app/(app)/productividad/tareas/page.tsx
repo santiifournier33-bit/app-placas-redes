@@ -5,6 +5,12 @@ import {
   Inbox, CalendarDays, Plus, FolderPlus,
   LayoutDashboard, List, Columns, CheckSquare2, X,
 } from "lucide-react"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
+} from "@/components/ui/sheet"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 import { useTaskStore, TASK_TYPES, type TaskType } from "@/lib/stores/taskStore"
 import { useContactStore } from "@/lib/stores/contactStore"
 import { TaskItem } from "@/components/productividad/TaskItem"
@@ -40,6 +46,8 @@ export default function TareasPage() {
   const [mounted, setMounted] = useState(false)
   const [toast, setToast] = useState<{ count: number; undoIds: string[] } | null>(null)
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [fabOpen, setFabOpen] = useState(false)
+  const [fabText, setFabText] = useState("")
 
   const formatMenuRef = useRef<HTMLDivElement>(null)
 
@@ -61,6 +69,23 @@ export default function TareasPage() {
     document.addEventListener("mousedown", handler)
     return () => document.removeEventListener("mousedown", handler)
   }, [])
+
+  // ContextualFAB on mobile dispatches `fab:new-task` from the bottom-right
+  // FAB; we open a Sheet with a quick-create input. Keyboard auto-focuses
+  // via Radix Sheet's initial focus, no manual ref needed.
+  useEffect(() => {
+    const open = () => setFabOpen(true)
+    window.addEventListener("fab:new-task", open)
+    return () => window.removeEventListener("fab:new-task", open)
+  }, [])
+
+  const handleFabSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!fabText.trim()) return
+    addTask(fabText.trim(), null)
+    setFabText("")
+    setFabOpen(false)
+  }
 
   const handleToggleTask = useCallback((id: string) => {
     const currentTasks = useTaskStore.getState().tasks
@@ -137,23 +162,17 @@ export default function TareasPage() {
   return (
     <div className="flex flex-col h-full">
       {/* View toggles + format menu */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.04] shrink-0">
-        <div className="flex gap-1">
-          {viewConfig.map(({ key, label, icon: Icon }) => (
-            <button
-              key={key}
-              onClick={() => setView(key)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
-                view === key
-                  ? "text-shell-text bg-white/[0.08]"
-                  : "text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.03]"
-              }`}
-            >
-              <Icon size={15} strokeWidth={1.8} />
-              {label}
-            </button>
-          ))}
-        </div>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle shrink-0">
+        <Tabs value={view} onValueChange={(v) => setView(v as View)}>
+          <TabsList className="bg-surface-2">
+            {viewConfig.map(({ key, label, icon: Icon }) => (
+              <TabsTrigger key={key} value={key} className="gap-1.5 data-[state=active]:bg-surface-1">
+                <Icon size={14} strokeWidth={1.8} />
+                {label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
 
         {/* Format menu */}
         <div className="relative" ref={formatMenuRef}>
@@ -278,6 +297,33 @@ export default function TareasPage() {
           }}
         />
       )}
+
+      {/* Quick-add Sheet (triggered by mobile FAB fab:new-task) */}
+      <Sheet open={fabOpen} onOpenChange={setFabOpen}>
+        <SheetContent side="bottom" className="rounded-t-2xl">
+          <SheetHeader>
+            <SheetTitle>Nueva tarea</SheetTitle>
+            <SheetDescription>Se agrega a la bandeja sin sección.</SheetDescription>
+          </SheetHeader>
+          <form onSubmit={handleFabSubmit} className="px-6 pb-6 flex flex-col gap-3">
+            <Input
+              autoFocus
+              value={fabText}
+              onChange={(e) => setFabText(e.target.value)}
+              placeholder="¿Qué hay que hacer?"
+              className="text-base"
+            />
+            <div className="flex gap-2 justify-end">
+              <Button type="button" variant="ghost" onClick={() => setFabOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={!fabText.trim()}>
+                Crear
+              </Button>
+            </div>
+          </form>
+        </SheetContent>
+      </Sheet>
 
       {/* Completion toast */}
       {toast && (
