@@ -13,6 +13,7 @@ import { useContactStore } from "@/lib/stores/contactStore"
 import { PortalDropdown } from "@/components/ui/PortalDropdown"
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
+import { useIsMobile } from "@/lib/hooks/useIsMobile"
 
 const priorityLabels: Record<number, { label: string; color: string }> = {
   1: { label: "P1", color: "text-red-400" },
@@ -45,6 +46,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
   const { updateTask, deleteTask, addSubtask, toggleTask, tasks, sections } = useTaskStore()
   const doToggle = (id: string) => onToggleTask ? onToggleTask(id) : toggleTask(id)
   const { contacts } = useContactStore()
+  const isMobile = useIsMobile()
   // Always read live from store so sidebar reflects updates immediately
   const task = tasks.find((t) => t.id === initialTask.id) ?? initialTask
   const subtasks = tasks.filter((t) => t.parent_id === task.id)
@@ -141,15 +143,13 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
     setTimeout(onClose, 280)
   }
 
-  return (
-    <>
-      {/* Mobile: bottom Sheet (Radix Dialog under the hood — focus trap +
-          scroll lock + Escape + click-outside handled by primitive) */}
+  if (isMobile) {
+    return (
       <Sheet open={open} onOpenChange={handleOpenChange}>
         <SheetContent
           side="bottom"
           showClose={false}
-          className="lg:hidden rounded-t-2xl max-h-[90vh] overflow-y-auto p-0 bg-surface-1"
+          className="rounded-t-2xl max-h-[90vh] overflow-y-auto p-0 bg-surface-1"
         >
           <SheetTitle className="sr-only">{task.title || "Detalle de tarea"}</SheetTitle>
           <div className="flex justify-center pt-2 pb-1">
@@ -170,11 +170,12 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
           />
         </SheetContent>
       </Sheet>
+    )
+  }
 
-      {/* Desktop: centered Dialog — content tree mirrored from previous
-          hand-rolled modal. Hidden on mobile so the Sheet above takes over. */}
-      <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="hidden lg:flex w-full max-w-[760px] max-h-[90vh] p-0 sm:rounded-2xl bg-[#13131a] flex-col overflow-hidden">
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="w-full max-w-[760px] max-h-[90vh] p-0 sm:rounded-2xl bg-surface-1 flex-col overflow-hidden border-border-default shadow-2xl" showClose={false}>
           <DialogTitle className="sr-only">{task.title || "Detalle de tarea"}</DialogTitle>
           {/* Header bar */}
           <div className="flex items-center justify-between px-5 h-12 border-b border-border-subtle shrink-0">
@@ -579,9 +580,8 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
               </div>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
-    </>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -647,10 +647,16 @@ function TaskBody({
       <div className="flex items-start gap-3">
         <button
           onClick={() => toggleTask(task.id)}
-          className={`mt-1 w-5 h-5 rounded-full border-2 shrink-0 ${
+          className={`mt-1 w-[22px] h-[22px] rounded-full border-[1.5px] shrink-0 task-checkbox flex items-center justify-center ${
             task.completed ? "bg-blue-500 border-transparent" : "border-zinc-600"
           }`}
-        />
+        >
+          {task.completed && (
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+              <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </button>
         <h2 className={`flex-1 text-lg font-semibold ${task.completed ? "line-through text-text-muted" : "text-text-primary"}`}>
           {task.title}
         </h2>

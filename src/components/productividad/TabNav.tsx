@@ -36,7 +36,7 @@ export function TabNav({ role }: TabNavProps) {
   const visibleTabs = tabs.filter(t => !t.adminOnly || role === 'admin')
 
   return (
-    <div className="sticky top-0 z-20 h-14 flex items-center gap-2 bg-shell-bg/90 backdrop-blur-xl border-b border-border-subtle px-4 lg:px-4">
+    <div className="sticky top-0 z-20 h-14 flex items-center gap-2 bg-shell-bg/90 backdrop-blur-xl border-b border-border-subtle px-2 lg:px-4">
       <button
         onClick={toggle}
         className="hidden lg:flex p-2 rounded-xl hover:bg-surface-overlay-hover text-text-muted hover:text-text-secondary transition-colors cursor-pointer shrink-0"
@@ -44,7 +44,7 @@ export function TabNav({ role }: TabNavProps) {
       >
         {collapsed ? <PanelLeftOpen size={18} strokeWidth={1.8} /> : <PanelLeftClose size={18} strokeWidth={1.8} />}
       </button>
-      <nav className="flex gap-1 overflow-x-auto scroll-x-affordance flex-1">
+      <nav className="flex flex-1 gap-1">
         {visibleTabs.map(({ href, label, icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/")
           return (
@@ -52,13 +52,15 @@ export function TabNav({ role }: TabNavProps) {
               key={href}
               href={href}
               scroll={false}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 cursor-pointer ${
+              className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200 cursor-pointer ${
                 active
                   ? "text-blue-400 bg-blue-500/10"
                   : "text-text-muted hover:text-text-secondary hover:bg-surface-overlay"
               }`}
             >
-              {icon}
+              <span className="[&>svg]:w-[15px] [&>svg]:h-[15px] sm:[&>svg]:w-[18px] sm:[&>svg]:h-[18px]">
+                {icon}
+              </span>
               {label}
             </Link>
           )

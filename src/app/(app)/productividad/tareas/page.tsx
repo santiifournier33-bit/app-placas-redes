@@ -389,9 +389,10 @@ function BandejaView({
       {/* Unsectioned tasks */}
       {unsectioned.length > 0 && (
         <div>
-          <div className="px-4 py-3 border-b border-border-subtle">
-            <span className="text-sm font-bold text-text-primary">(Sin seccion)</span>
-            <span className="text-xs text-text-muted font-medium ml-2">{unsectioned.length}</span>
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-border-subtle">
+            <div className="w-4 shrink-0" /> {/* Spacer matching chevron width */}
+            <span className="text-sm font-bold text-text-primary">(Sin sección)</span>
+            <span className="text-xs text-text-muted font-medium">{unsectioned.length}</span>
           </div>
           {unsectioned.map((task) => {
             const subs = getSubtasks(task.id)
@@ -484,10 +485,10 @@ function BandejaView({
       ) : (
         <button
           onClick={() => { setNewTaskSection("__none__"); setNewTaskText("") }}
-          className="flex items-center gap-2 px-4 py-3 text-sm text-text-muted hover:text-text-secondary w-full cursor-pointer"
+          className="flex items-center gap-2 px-4 py-2.5 text-sm text-text-muted hover:text-text-secondary w-full cursor-pointer"
         >
-          <Plus size={16} />
-          Anadir tarea
+          <Plus size={14} />
+          Añadir tarea
         </button>
       )}
 

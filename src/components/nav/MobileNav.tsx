@@ -31,19 +31,18 @@ interface NavItem {
   Icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>
 }
 
-// Primary 4 + "Más" per role. Order = thumb-zone priority (leftmost = most-used).
 const NAV_ASESOR: NavItem[] = [
+  { href: "/dashboard",                label: "Home",      Icon: LayoutDashboard },
   { href: "/productividad/tareas",     label: "Tareas",    Icon: ListChecks },
-  { href: "/productividad/contactos",  label: "Contactos", Icon: Users },
-  { href: "/consultas",                label: "Consultas", Icon: Search },
   { href: "/diseno",                   label: "Diseño",    Icon: Palette },
+  { href: "/correo",                   label: "Correo",    Icon: Mail },
 ]
 
 const NAV_ADMIN: NavItem[] = [
+  { href: "/dashboard",                label: "Home",      Icon: LayoutDashboard },
   { href: "/productividad/tareas",     label: "Tareas",    Icon: ListChecks },
-  { href: "/documentacion",            label: "Docs",      Icon: FileText },
-  { href: "/ventas",                   label: "Ventas",    Icon: DollarSign },
-  { href: "/servicios",                label: "Servicios", Icon: Wallet },
+  { href: "/diseno",                   label: "Diseño",    Icon: Palette },
+  { href: "/correo",                   label: "Correo",    Icon: Mail },
 ]
 
 // "Más" sheet: rest of modules grouped by category. Disabled items kept visible
@@ -56,7 +55,7 @@ const MORE_ITEMS: { section: string; items: MoreItem[] }[] = [
   {
     section: "Atajos",
     items: [
-      { href: "/dashboard",               label: "Dashboard",       Icon: LayoutDashboard },
+      { href: "/productividad/contactos", label: "Contactos",       Icon: Users },
       { href: "/productividad/negocios",  label: "Negocios",        Icon: BarChart3 },
       { href: "/productividad/calendario",label: "Calendario",      Icon: BookOpen },
     ],
@@ -65,7 +64,6 @@ const MORE_ITEMS: { section: string; items: MoreItem[] }[] = [
     section: "Operación",
     items: [
       { href: "/consultas",               label: "Consultas",       Icon: Search },
-      { href: "/correo",                  label: "Correo",          Icon: Mail },
       { href: "/firmas",                  label: "Firmas",          Icon: PenLine },
       { href: "/procedimientos",          label: "Procedimientos",  Icon: BookOpen },
     ],

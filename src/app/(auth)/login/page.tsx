@@ -58,22 +58,22 @@ export default function LoginPage() {
           initial={{ opacity: 0, y: 30, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full max-w-[420px] bg-surface-1/60 backdrop-blur-2xl rounded-[32px] shadow-modal border border-border-subtle overflow-hidden relative z-10 my-auto"
+          className="w-[calc(100vw-2rem)] max-w-[420px] bg-surface-1/60 backdrop-blur-2xl rounded-2xl sm:rounded-[32px] shadow-modal border border-border-subtle overflow-hidden relative z-10 my-auto"
         >
           {/* Header with brand gradient strip + logo */}
-          <div className="pt-10 pb-8 px-8 text-center bg-shell-bg/40 border-b border-border-subtle relative overflow-hidden">
+          <div className="pt-6 pb-5 sm:pt-10 sm:pb-8 px-5 sm:px-8 text-center bg-shell-bg/40 border-b border-border-subtle relative overflow-hidden">
             <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-brand-navy via-brand-navy-600 to-brand-gold" />
-            <div className="mx-auto flex justify-center mb-6">
+            <div className="mx-auto flex justify-center mb-4 sm:mb-6">
               <Image
                 src="/logo-blanco-oficial.png"
                 alt="Freire Propiedades"
-                width={160}
-                height={50}
+                width={120}
+                height={38}
                 className="object-contain"
                 priority
               />
             </div>
-            <h1 className="text-xl font-heading font-bold text-text-primary tracking-tight">
+            <h1 className="text-lg sm:text-xl font-heading font-bold text-text-primary tracking-tight">
               Acceso Plataforma Freire
             </h1>
             <p className="text-xs text-text-muted mt-2 font-medium">
@@ -81,7 +81,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-8 space-y-5">
+          <form onSubmit={handleSubmit} className="p-5 sm:p-8 space-y-5">
             <AnimatePresence mode="wait">
               {error && (
                 <motion.div
@@ -155,7 +155,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="px-8 pb-8 text-center">
+          <div className="px-5 sm:px-8 pb-5 sm:pb-8 text-center">
             <p className="text-[10px] font-semibold text-text-muted/70 leading-normal">
               Tus credenciales se validan directamente con Tokko Broker de forma segura y nunca son almacenadas.
             </p>

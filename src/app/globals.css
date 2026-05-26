@@ -211,6 +211,23 @@ body {
   min-width: 44px;
 }
 
+/* Task checkboxes: explicit override so the touch-target rule doesn't balloon them to 44×44. */
+.task-checkbox {
+  min-height: auto !important;
+  min-width: auto !important;
+}
+
+/* ── iOS Safari auto-zoom prevention ──────────────────────────────────────────
+ * Safari on iOS zooms into any <input>/<textarea>/<select> whose computed
+ * font-size is below 16px. This breaks layout on the entire page because the
+ * zoom "sticks" after the keyboard closes. Forcing a 16px floor on mobile
+ * prevents this behavior. Desktop is unaffected. */
+@media screen and (max-width: 767px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+
 /* ── Keyboard focus ring (WCAG 2.1 SC 2.4.7 Focus Visible) ──────────────────
  * Many inputs/buttons use `focus:outline-none` paired with `focus:border-X`
  * which loses the standard outline. That's OK for mouse users but kills

@@ -79,7 +79,7 @@ export function TaskItem({ task, subtaskCount = 0, subtaskDone = 0, onTap, inden
             e.stopPropagation()
             doToggle(task.id)
           }}
-          className={`mt-0.5 w-5 h-5 rounded-full border-2 shrink-0 transition-all duration-200 flex items-center justify-center no-tap-target ${
+          className={`mt-0.5 w-[22px] h-[22px] rounded-full border-[1.5px] shrink-0 transition-all duration-200 flex items-center justify-center no-tap-target task-checkbox ${
             task.completed ? `${priorityBg[task.priority]} border-transparent` : priorityColors[task.priority]
           }`}
         >
