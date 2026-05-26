@@ -225,6 +225,12 @@ export function MailApp() {
     setShowComposer(true)
   }
 
+  // Mobile FAB fab:new-email → open composer for fresh email.
+  useEffect(() => {
+    window.addEventListener("fab:new-email", handleCompose)
+    return () => window.removeEventListener("fab:new-email", handleCompose)
+  }, [])
+
   return (
     <div className="flex h-full min-h-0 overflow-hidden">
       {/* ── Sidebar ── */}
