@@ -8,12 +8,12 @@ import type { UserRole } from "@/lib/auth/session"
 import {
   LayoutDashboard, Paintbrush, ListTodo, MessageCircleQuestion, BookOpen,
   FolderOpen, BarChart3, DollarSign, Receipt, Mail,
-  LogOut, Lock, PenLine, Sun, Moon
+  LogOut, Lock, PenLine
 } from "lucide-react"
 import { ReactNode, useState, useEffect } from "react"
 import { resetAllStores } from "@/lib/stores/resetAllStores"
 import { useConsultasBadge } from "@/lib/stores/useConsultasBadge"
-import { getTheme, toggleTheme } from "@/lib/theme"
+import { getTheme } from "@/lib/theme"
 
 const EASE = "cubic-bezier(0.22, 1, 0.36, 1)"
 
@@ -149,25 +149,9 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
             {role}
           </span>
         </div>
-        <button
-          onClick={toggleTheme}
-          title="Cambiar tema"
-          className={`group flex items-center rounded-xl text-sm font-medium text-shell-text-muted hover:text-shell-accent hover:bg-shell-accent-muted transition-[background-color,color,padding] duration-200 cursor-pointer ${
-            collapsed ? "w-10 h-10 justify-center mx-auto gap-0 px-0" : "w-full h-10 px-3 gap-3"
-          }`}
-        >
-          {theme === "light" ? (
-            <Moon size={20} strokeWidth={1.8} className="group-hover:rotate-12 transition-transform duration-300 shrink-0" />
-          ) : (
-            <Sun size={20} strokeWidth={1.8} className="group-hover:rotate-45 transition-transform duration-300 shrink-0" />
-          )}
-          <span
-            style={{ transitionTimingFunction: EASE }}
-            className={fadeClass}
-          >
-            Tema {theme === "light" ? "Oscuro" : "Claro"}
-          </span>
-        </button>
+        {/* Theme toggle removed from sidebar — centralized in PageHeader
+            (desktop) and in the 'Más' sheet (mobile). One source of truth
+            avoids two redundant controls in the same shell. */}
         <button
           onClick={handleLogout}
           title="Cerrar sesión"
