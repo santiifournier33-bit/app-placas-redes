@@ -10,6 +10,40 @@
   --shell-text-muted: #9ca3af;
   --shell-accent: #C8A45A;
   --shell-accent-muted: rgba(200, 164, 90, 0.15);
+
+  /* ── v2 surface scale (co-designed light/dark). Replaces ad-hoc bg-white/[0.04] etc.
+   * Numbered tiers go from base canvas (0) to elevated overlay (3). Each module
+   * picks the tier appropriate to its depth in the stack. */
+  --surface-base: #060b13;
+  --surface-1: #0a111c;
+  --surface-2: #121b2a;
+  --surface-3: #1a2536;
+  --surface-overlay: rgba(255, 255, 255, 0.04);
+  --surface-overlay-hover: rgba(255, 255, 255, 0.08);
+
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.22);
+
+  --text-primary: #f3f4f6;
+  --text-secondary: #c0c3cb;
+  --text-muted: #8a8e98;
+  --text-disabled: #5a5e68;
+
+  /* ── v2 brand scale (extended) */
+  --brand-navy: #002548;
+  --brand-navy-700: #003a6e;
+  --brand-navy-600: #006689;
+  --brand-navy-500: #0088b4;
+  --brand-gold: #C8A45A;
+  --brand-gold-light: #e0c682;
+  --brand-gold-soft: rgba(200, 164, 90, 0.15);
+
+  /* ── v2 motion */
+  --motion-fast: 150ms;
+  --motion-default: 250ms;
+  --motion-slow: 400ms;
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 :root.light, body.light {
@@ -22,6 +56,23 @@
   --shell-text-muted: #4b627a;
   --shell-accent: #002548;
   --shell-accent-muted: rgba(0, 37, 72, 0.1);
+
+  /* ── v2 surface scale (light) co-designed: each dark tier has a light counterpart. */
+  --surface-base: #f5f8fc;
+  --surface-1: #ffffff;
+  --surface-2: #eef3f9;
+  --surface-3: #e3eaf2;
+  --surface-overlay: rgba(0, 37, 72, 0.04);
+  --surface-overlay-hover: rgba(0, 37, 72, 0.08);
+
+  --border-subtle: rgba(0, 37, 72, 0.08);
+  --border-default: rgba(0, 37, 72, 0.16);
+  --border-strong: rgba(0, 37, 72, 0.28);
+
+  --text-primary: #002548;
+  --text-secondary: #4b627a;
+  --text-muted: #8090a4;
+  --text-disabled: #b3bfcc;
 }
 
 @theme {
@@ -67,6 +118,63 @@
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.15);
   --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.3);
   --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.5);
+
+  /* ── v2 spacing scale (Tailwind already has 4/8 grid via .p-1..p-12). These
+   * are exposed as CSS vars so CSS-in-JS / inline styles can pin to the grid
+   * instead of arbitrary px values. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-8: 48px;
+  --space-10: 64px;
+
+  /* ── v2 radius scale */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-full: 9999px;
+
+  /* ── v2 font size scale. Tailwind text-xs is 12px (mobile floor). text-micro
+   * is opt-in 11px for desktop-dense surfaces only (PostgresT not in mobile). */
+  --text-micro: 11px;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-md: 15px;
+  --text-lg: 17px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+  --text-4xl: 36px;
+
+  /* ── v2 brand exposed to Tailwind under bg-brand-*, text-brand-*, etc */
+  --color-brand-navy: var(--brand-navy);
+  --color-brand-navy-700: var(--brand-navy-700);
+  --color-brand-navy-600: var(--brand-navy-600);
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-gold-light: var(--brand-gold-light);
+
+  /* ── v2 surface tokens exposed to Tailwind */
+  --color-surface-base: var(--surface-base);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-surface-overlay: var(--surface-overlay);
+  --color-surface-overlay-hover: var(--surface-overlay-hover);
+
+  --color-border-subtle: var(--border-subtle);
+  --color-border-default: var(--border-default);
+  --color-border-strong: var(--border-strong);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-disabled: var(--text-disabled);
 }
 
 * { box-sizing: border-box; }
