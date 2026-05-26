@@ -124,6 +124,24 @@ export default function ConsultaPropertyDetailPage() {
       .finally(() => setLoadingMatches(false))
   }, [propertyId])
 
+  // Mobile FAB fab:whatsapp action — opens the drawer of the top-scoring
+  // visible match the asesor can actually contact (own contact OR admin
+  // viewing other-asesor contacts where PII is exposed). Best UX on phone:
+  // surface the most-actionable lead with one tap instead of forcing them
+  // to scroll-and-pick.
+  useEffect(() => {
+    const onFabWhatsapp = () => {
+      const candidate = matches
+        .filter(m => m.can_see_pii && m.phone)
+        .sort((a, b) => b.score - a.score)[0]
+      if (candidate) {
+        setDrawerMatch(candidate)
+      }
+    }
+    window.addEventListener("fab:whatsapp", onFabWhatsapp)
+    return () => window.removeEventListener("fab:whatsapp", onFabWhatsapp)
+  }, [matches])
+
   const visible = useMemo(() => {
     let arr = [...matches]
     if (onlyOwn) arr = arr.filter(m => m.is_own)
