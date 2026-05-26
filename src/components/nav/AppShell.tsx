@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { SideNav } from "./SideNav"
-import { BottomTabs } from "./BottomTabs"
+import { MobileNav } from "./MobileNav"
+import { ContextualFAB } from "./ContextualFAB"
 import { PushBanner } from "@/components/push/PushBanner"
 import { SidebarProvider } from "./SidebarContext"
 import type { UserRole } from "@/lib/auth/session"
@@ -70,15 +71,16 @@ export function AppShell({ role, email, children }: AppShellProps) {
           <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/[0.03] via-transparent to-violet-500/[0.02] pointer-events-none" />
           <div className="relative z-10">{children}</div>
         </main>
-        {/* Bottom nav slides off-screen when the on-screen keyboard is open
-            so it doesn't cover the focused input. transform on this wrapper
-            translates the fixed-position BottomTabs (it becomes a containing
-            block for the fixed child). */}
+        {/* Bottom nav + FAB slide off-screen when the on-screen keyboard is
+            open so they don't cover the focused input. transform on this
+            wrapper translates the fixed-position children (it becomes a
+            containing block for the fixed descendants). */}
         <div
           className={`transition-transform duration-200 ${keyboardOpen ? "translate-y-full" : ""}`}
           style={{ transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)" }}
         >
-          <BottomTabs role={role} />
+          <ContextualFAB />
+          <MobileNav role={role} email={email} />
         </div>
         <PushBanner />
       </div>
