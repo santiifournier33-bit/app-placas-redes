@@ -1,27 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  /* ── Dark Mode by default (Shell / Global) ── */
-  --shell-bg: #0A0A0F;
-  --shell-surface: #111118;
-  --shell-surface-hover: #1a1a24;
-  --shell-border: rgba(255, 255, 255, 0.06);
-  --shell-text: #f4f4f5;
-  --shell-text-muted: #71717a;
-  --shell-accent: #3b82f6;
-  --shell-accent-muted: rgba(59, 130, 246, 0.15);
+  /* ── Dark Mode by default (Cobalto / Navy Premium & Dorado) ── */
+  --shell-bg: #060b13;
+  --shell-surface: #0a111c;
+  --shell-surface-hover: #121b2a;
+  --shell-border: rgba(200, 164, 90, 0.08);
+  --shell-text: #f3f4f6;
+  --shell-text-muted: #9ca3af;
+  --shell-accent: #C8A45A;
+  --shell-accent-muted: rgba(200, 164, 90, 0.15);
 }
 
 :root.light, body.light {
-  /* ── Light Mode override ── */
-  --shell-bg: #f4f6fb;
+  /* ── Light Mode override (Azul Corporativo) ── */
+  --shell-bg: #f5f8fc;
   --shell-surface: #ffffff;
-  --shell-surface-hover: #eef1f9;
+  --shell-surface-hover: #eef3f9;
   --shell-border: rgba(0, 37, 72, 0.08);
-  --shell-text: #0f172a;
-  --shell-text-muted: #475569;
-  --shell-accent: #006689;
-  --shell-accent-muted: rgba(0, 102, 137, 0.1);
+  --shell-text: #002548;
+  --shell-text-muted: #4b627a;
+  --shell-accent: #002548;
+  --shell-accent-muted: rgba(0, 37, 72, 0.1);
 }
 
 @theme {
