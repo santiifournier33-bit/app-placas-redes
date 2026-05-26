@@ -45,7 +45,7 @@ export function ReminderToast() {
   }
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 bg-[#1e1e2c] border border-white/[0.1] rounded-2xl px-4 py-3 shadow-2xl animate-in slide-in-from-bottom-4 duration-300 max-w-md">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 bg-[#1e1e2c] border border-border-default rounded-2xl px-4 py-3 shadow-2xl animate-in slide-in-from-bottom-4 duration-300 max-w-md">
       <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
         isUrgent ? "bg-red-500/20" : "bg-amber-500/20"
       }`}>
@@ -56,7 +56,7 @@ export function ReminderToast() {
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-zinc-200 font-medium">
+        <p className="text-sm text-text-primary font-medium">
           {overdue > 0
             ? `${overdue} ${overdue === 1 ? "pago vencido" : "pagos vencidos"}`
             : `${upcoming.length} ${upcoming.length === 1 ? "vencimiento próximo" : "vencimientos próximos"}`}
@@ -70,7 +70,7 @@ export function ReminderToast() {
       </div>
       <button
         onClick={dismiss}
-        className="text-zinc-600 hover:text-zinc-400 cursor-pointer shrink-0"
+        className="text-text-muted hover:text-text-secondary cursor-pointer shrink-0"
       >
         <X size={16} />
       </button>

@@ -8,7 +8,7 @@ export type ChipColor =
   | 'zinc' | 'violet' | 'blue' | 'cyan' | 'emerald' | 'amber' | 'red' | 'pink'
 
 const COLOR_CLASS: Record<ChipColor, string> = {
-  zinc:    'bg-zinc-500/15 text-zinc-300',
+  zinc:    'bg-zinc-500/15 text-text-secondary',
   violet:  'bg-violet-500/15 text-violet-300',
   blue:    'bg-blue-500/15 text-blue-300',
   cyan:    'bg-cyan-500/15 text-cyan-300',
@@ -55,7 +55,7 @@ export function InlineSelectChip({
   const selectedColor: ChipColor = selected?.color ?? 'zinc'
   const triggerClass = selected
     ? `${COLOR_CLASS[selectedColor]} ${COLOR_HOVER[selectedColor]}`
-    : 'bg-white/[0.04] text-zinc-500 hover:bg-white/[0.08]'
+    : 'bg-surface-overlay text-text-muted hover:bg-surface-overlay-hover'
 
   return (
     <>
@@ -72,15 +72,15 @@ export function InlineSelectChip({
         anchorRef={buttonRef}
         open={open}
         onClose={() => setOpen(false)}
-        className="bg-[#1e1e2c] border border-white/[0.08] rounded-xl shadow-2xl p-1.5 max-h-72 overflow-y-auto"
+        className="bg-[#1e1e2c] border border-border-default rounded-xl shadow-2xl p-1.5 max-h-72 overflow-y-auto"
         minWidth={180}
       >
         {value && (
           <button
             onClick={(e) => { e.stopPropagation(); onChange(null); setOpen(false) }}
-            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs md:text-[11px] text-zinc-500 hover:bg-white/[0.04] cursor-pointer"
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs md:text-[11px] text-text-muted hover:bg-surface-overlay cursor-pointer"
           >
-            <span className="px-2 py-0.5 rounded-md bg-white/[0.04] text-zinc-500">Sin valor</span>
+            <span className="px-2 py-0.5 rounded-md bg-surface-overlay text-text-muted">Sin valor</span>
           </button>
         )}
         {options.map(opt => {
@@ -91,13 +91,13 @@ export function InlineSelectChip({
               key={opt.value}
               onClick={(e) => { e.stopPropagation(); onChange(opt.value); setOpen(false) }}
               className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors ${
-                isSelected ? 'bg-white/[0.06]' : 'hover:bg-white/[0.04]'
+                isSelected ? 'bg-surface-overlay-hover' : 'hover:bg-surface-overlay'
               }`}
             >
               <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs md:text-[11px] font-medium ${COLOR_CLASS[color]}`}>
                 {opt.label}
               </span>
-              {isSelected && <Check size={12} className="ml-auto text-zinc-400 shrink-0" />}
+              {isSelected && <Check size={12} className="ml-auto text-text-secondary shrink-0" />}
             </button>
           )
         })}

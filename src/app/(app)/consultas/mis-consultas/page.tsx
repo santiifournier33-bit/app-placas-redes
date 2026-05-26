@@ -123,9 +123,9 @@ export default function MisConsultasPage() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="h-14 flex items-center gap-3 px-4 border-b border-white/[0.06] shrink-0">
+      <div className="h-14 flex items-center gap-3 px-4 border-b border-border-subtle shrink-0">
         <Inbox size={18} className="text-blue-400" />
-        <h1 className="text-sm font-bold text-shell-text">Mis consultas</h1>
+        <h1 className="text-sm font-bold text-text-primary">Mis consultas</h1>
         <Link
           href="/consultas"
           className="ml-auto text-xs md:text-[11px] text-blue-400 hover:underline"
@@ -134,20 +134,20 @@ export default function MisConsultasPage() {
         </Link>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 px-4 py-3 border-b border-white/[0.06] shrink-0">
-        <div className="flex items-center gap-2 bg-white/[0.04] rounded-xl px-3 py-1.5 border border-white/[0.06] flex-1 max-w-xs">
-          <Search size={14} className="text-zinc-600 shrink-0" />
+      <div className="flex flex-wrap items-center gap-2 px-4 py-3 border-b border-border-subtle shrink-0">
+        <div className="flex items-center gap-2 bg-surface-overlay rounded-xl px-3 py-1.5 border border-border-subtle flex-1 max-w-xs">
+          <Search size={14} className="text-text-muted shrink-0" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar..."
-            className="flex-1 bg-transparent text-sm text-shell-text placeholder:text-zinc-700 outline-none"
+            className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-zinc-700 outline-none"
           />
         </div>
         <select
           value={sourceFilter}
           onChange={(e) => setSourceFilter(e.target.value)}
-          className="text-xs font-medium px-3 py-1.5 rounded-lg border border-white/[0.06] bg-white/[0.04] text-zinc-400 cursor-pointer outline-none [color-scheme:dark]"
+          className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border-subtle bg-surface-overlay text-text-secondary cursor-pointer outline-none [color-scheme:dark]"
         >
           <option value="all">Origen: Todos</option>
           <option value="web">Web</option>
@@ -157,14 +157,14 @@ export default function MisConsultasPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-xs font-medium px-3 py-1.5 rounded-lg border border-white/[0.06] bg-white/[0.04] text-zinc-400 cursor-pointer outline-none [color-scheme:dark]"
+          className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border-subtle bg-surface-overlay text-text-secondary cursor-pointer outline-none [color-scheme:dark]"
         >
           <option value="all">Estado: Todos</option>
           <option value="pending">Pendiente</option>
           <option value="responded">Respondida</option>
           <option value="archived">Archivada</option>
         </select>
-        <span className="text-xs text-zinc-600 ml-auto">
+        <span className="text-xs text-text-muted ml-auto">
           {filtered.length} consulta{filtered.length !== 1 ? 's' : ''}
         </span>
       </div>
@@ -173,11 +173,11 @@ export default function MisConsultasPage() {
         {loading ? (
           <div className="space-y-2">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="animate-pulse h-16 bg-white/[0.04] rounded-xl" />
+              <div key={i} className="animate-pulse h-16 bg-surface-overlay rounded-xl" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <p className="text-center text-zinc-600 text-sm py-12">Sin consultas</p>
+          <p className="text-center text-text-muted text-sm py-12">Sin consultas</p>
         ) : (
           filtered.map((r) => <InquiryRow key={r.id} row={r} onMarkResponded={markResponded} />)
         )}
@@ -195,23 +195,23 @@ function InquiryRow({ row, onMarkResponded }: { row: Row; onMarkResponded: (id: 
     : null
 
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 flex flex-wrap items-center gap-3">
+    <div className="rounded-xl border border-border-subtle bg-surface-overlay p-3 flex flex-wrap items-center gap-3">
       <div className="w-9 h-9 rounded-full bg-blue-500/15 flex items-center justify-center text-sm font-bold text-blue-400 shrink-0">
         {(row.contact_first_name || '?')[0].toUpperCase()}
       </div>
       <div className="flex-1 min-w-[200px]">
-        <p className="text-sm font-bold text-shell-text truncate">{fullName}</p>
-        <p className="text-xs md:text-[11px] text-zinc-500 truncate">
+        <p className="text-sm font-bold text-text-primary truncate">{fullName}</p>
+        <p className="text-xs md:text-[11px] text-text-muted truncate">
           {row.property_snapshot.address ?? row.tokko_property_reference ?? 'Propiedad'}
         </p>
-        <p className="text-xs md:text-[10px] text-zinc-600 mt-0.5">
+        <p className="text-xs md:text-[10px] text-text-muted mt-0.5">
           {format(new Date(row.last_inquired_at), "d MMM yyyy", { locale: es })} ·{' '}
           {formatDistanceToNow(new Date(row.last_inquired_at), { addSuffix: true, locale: es })}
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
         {row.source && (
-          <span className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500 uppercase">
+          <span className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-text-muted uppercase">
             {row.source}
           </span>
         )}
@@ -236,7 +236,7 @@ function InquiryRow({ row, onMarkResponded }: { row: Row; onMarkResponded: (id: 
           <button
             onClick={() => onMarkResponded(row.id)}
             title="Marcar respondida"
-            className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08] cursor-pointer"
+            className="flex items-center justify-center w-8 h-8 rounded-lg bg-surface-overlay text-text-secondary hover:bg-surface-overlay-hover cursor-pointer"
           >
             <Check size={14} />
           </button>
@@ -244,7 +244,7 @@ function InquiryRow({ row, onMarkResponded }: { row: Row; onMarkResponded: (id: 
         <Link
           href={`/productividad/contactos/${row.contact_id}`}
           title="Ver contacto"
-          className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08] cursor-pointer"
+          className="flex items-center justify-center w-8 h-8 rounded-lg bg-surface-overlay text-text-secondary hover:bg-surface-overlay-hover cursor-pointer"
         >
           <ExternalLink size={14} />
         </Link>

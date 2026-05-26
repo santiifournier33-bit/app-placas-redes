@@ -14,7 +14,7 @@ export default function VentasModule() {
   return (
     <div className="space-y-6">
       {/* Tabs Navigation */}
-      <div className="flex space-x-1 bg-shell-surface border border-shell-border p-1 rounded-xl overflow-x-auto scroll-x-affordance">
+      <div className="flex space-x-1 bg-surface-1 border border-border-subtle p-1 rounded-xl overflow-x-auto scroll-x-affordance">
         <TabButton 
           id="produccion" 
           label="Producción" 
@@ -52,8 +52,8 @@ export default function VentasModule() {
         {activeTab === "actividad" && <ActivityTab />}
         {activeTab === "balance" && <BalanceTab />}
         {activeTab === "analiticas" && (
-          <div className="flex items-center justify-center h-64 border border-shell-border border-dashed rounded-2xl bg-shell-surface/50">
-            <p className="text-shell-text-muted">Próximamente: Analíticas IA</p>
+          <div className="flex items-center justify-center h-64 border border-border-subtle border-dashed rounded-2xl bg-surface-1/50">
+            <p className="text-text-muted">Próximamente: Analíticas IA</p>
           </div>
         )}
       </div>
@@ -75,7 +75,7 @@ function TabButton({
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         ${active 
           ? 'bg-shell-accent/10 text-shell-accent' 
-          : 'text-shell-text-muted hover:bg-shell-border hover:text-shell-text'
+          : 'text-text-muted hover:bg-shell-border hover:text-text-primary'
         }
       `}
     >

@@ -123,7 +123,7 @@ export default function TareasPage() {
   }, [toast, toggleTask])
 
   if (!mounted) {
-    return <div className="p-6"><div className="animate-pulse h-8 w-48 bg-white/[0.04] rounded-xl" /></div>
+    return <div className="p-6"><div className="animate-pulse h-8 w-48 bg-surface-overlay rounded-xl" /></div>
   }
 
   const rootTasks = tasks.filter((t) => !t.parent_id)
@@ -179,22 +179,22 @@ export default function TareasPage() {
           <button
             onClick={() => setShowFormatMenu(!showFormatMenu)}
             className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-              showFormatMenu ? "bg-white/[0.08] text-zinc-300" : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
+              showFormatMenu ? "bg-surface-overlay-hover text-text-secondary" : "text-text-muted hover:bg-surface-overlay-hover hover:text-text-secondary"
             }`}
           >
             <LayoutDashboard size={15} />
             Formato
           </button>
           {showFormatMenu && (
-            <div className="absolute right-0 top-full mt-1 bg-[#1e1e2c] rounded-xl border border-white/[0.08] py-2 z-30 shadow-xl w-52">
+            <div className="absolute right-0 top-full mt-1 bg-[#1e1e2c] rounded-xl border border-border-default py-2 z-30 shadow-xl w-52">
               {/* Vista section */}
               <div className="px-3 pb-1">
-                <p className="text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider mb-1.5">Vista</p>
+                <p className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1.5">Vista</p>
                 <div className="flex gap-1">
                   <button
                     onClick={() => setDisplayMode("lista")}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium flex-1 justify-center cursor-pointer transition-all ${
-                      displayMode === "lista" ? "bg-white/[0.1] text-shell-text" : "text-zinc-500 hover:bg-white/[0.04]"
+                      displayMode === "lista" ? "bg-surface-overlay-hover text-text-primary" : "text-text-muted hover:bg-surface-overlay"
                     }`}
                   >
                     <List size={13} /> Lista
@@ -202,7 +202,7 @@ export default function TareasPage() {
                   <button
                     onClick={() => setDisplayMode("panel")}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium flex-1 justify-center cursor-pointer transition-all ${
-                      displayMode === "panel" ? "bg-white/[0.1] text-shell-text" : "text-zinc-500 hover:bg-white/[0.04]"
+                      displayMode === "panel" ? "bg-surface-overlay-hover text-text-primary" : "text-text-muted hover:bg-surface-overlay"
                     }`}
                   >
                     <Columns size={13} /> Panel
@@ -210,14 +210,14 @@ export default function TareasPage() {
                 </div>
               </div>
 
-              <div className="border-t border-white/[0.06] mt-2 pt-2 px-3">
-                <p className="text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider mb-1.5">Filtro</p>
+              <div className="border-t border-border-subtle mt-2 pt-2 px-3">
+                <p className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1.5">Filtro</p>
                 <button
                   onClick={() => setShowCompleted(!showCompleted)}
                   className="flex items-center justify-between w-full cursor-pointer py-1"
                 >
-                  <div className="flex items-center gap-2 text-xs text-zinc-300">
-                    <CheckSquare2 size={13} className="text-zinc-500" />
+                  <div className="flex items-center gap-2 text-xs text-text-secondary">
+                    <CheckSquare2 size={13} className="text-text-muted" />
                     Tareas completadas
                   </div>
                   <div className={`w-8 h-4 rounded-full transition-colors relative ${showCompleted ? "bg-blue-500" : "bg-zinc-700"}`}>
@@ -327,13 +327,13 @@ export default function TareasPage() {
 
       {/* Completion toast */}
       {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 bg-[#1e1e2c] border border-white/[0.1] rounded-2xl px-4 py-3 shadow-2xl animate-in slide-in-from-bottom-4 duration-300 whitespace-nowrap">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 bg-[#1e1e2c] border border-border-default rounded-2xl px-4 py-3 shadow-2xl animate-in slide-in-from-bottom-4 duration-300 whitespace-nowrap">
           <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
             <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
               <path d="M1 5L4 8L11 1" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <span className="text-sm text-zinc-300">
+          <span className="text-sm text-text-secondary">
             {toast.count === 1 ? "1 tarea completada" : `${toast.count} tareas completadas`}
           </span>
           <button
@@ -344,7 +344,7 @@ export default function TareasPage() {
           </button>
           <button
             onClick={() => { if (toastTimerRef.current) clearTimeout(toastTimerRef.current); setToast(null) }}
-            className="text-zinc-600 hover:text-zinc-400 cursor-pointer ml-1"
+            className="text-text-muted hover:text-text-secondary cursor-pointer ml-1"
           >
             <X size={14} />
           </button>
@@ -389,9 +389,9 @@ function BandejaView({
       {/* Unsectioned tasks */}
       {unsectioned.length > 0 && (
         <div>
-          <div className="px-4 py-3 border-b border-white/[0.04]">
-            <span className="text-sm font-bold text-shell-text">(Sin seccion)</span>
-            <span className="text-xs text-zinc-600 font-medium ml-2">{unsectioned.length}</span>
+          <div className="px-4 py-3 border-b border-border-subtle">
+            <span className="text-sm font-bold text-text-primary">(Sin seccion)</span>
+            <span className="text-xs text-text-muted font-medium ml-2">{unsectioned.length}</span>
           </div>
           {unsectioned.map((task) => {
             const subs = getSubtasks(task.id)
@@ -437,7 +437,7 @@ function BandejaView({
                 )
               })}
             {!collapsed && newTaskSection === sec.id && (
-              <div className="px-4 py-2 border-b border-white/[0.04]">
+              <div className="px-4 py-2 border-b border-border-subtle">
                 <input
                   autoFocus
                   value={newTaskText}
@@ -448,14 +448,14 @@ function BandejaView({
                   }}
                   onBlur={() => { handleAddTask(sec.id); setNewTaskSection(null) }}
                   placeholder="Nombre de la tarea"
-                  className="w-full bg-transparent text-sm text-shell-text placeholder:text-zinc-700 outline-none"
+                  className="w-full bg-transparent text-sm text-text-primary placeholder:text-zinc-700 outline-none"
                 />
               </div>
             )}
             {!collapsed && newTaskSection !== sec.id && (
               <button
                 onClick={() => { setNewTaskSection(sec.id); setNewTaskText("") }}
-                className="flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-600 hover:text-zinc-400 w-full border-b border-white/[0.04] cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2.5 text-sm text-text-muted hover:text-text-secondary w-full border-b border-border-subtle cursor-pointer"
               >
                 <Plus size={14} />
                 Anadir tarea
@@ -467,7 +467,7 @@ function BandejaView({
 
       {/* Add task (no section) */}
       {newTaskSection === "__none__" ? (
-        <div className="px-4 py-2 border-b border-white/[0.04]">
+        <div className="px-4 py-2 border-b border-border-subtle">
           <input
             autoFocus
             value={newTaskText}
@@ -478,13 +478,13 @@ function BandejaView({
             }}
             onBlur={() => { handleAddTask(null); setNewTaskSection(null) }}
             placeholder="Nombre de la tarea"
-            className="w-full bg-transparent text-sm text-shell-text placeholder:text-zinc-700 outline-none"
+            className="w-full bg-transparent text-sm text-text-primary placeholder:text-zinc-700 outline-none"
           />
         </div>
       ) : (
         <button
           onClick={() => { setNewTaskSection("__none__"); setNewTaskText("") }}
-          className="flex items-center gap-2 px-4 py-3 text-sm text-zinc-500 hover:text-zinc-300 w-full cursor-pointer"
+          className="flex items-center gap-2 px-4 py-3 text-sm text-text-muted hover:text-text-secondary w-full cursor-pointer"
         >
           <Plus size={16} />
           Anadir tarea
@@ -493,7 +493,7 @@ function BandejaView({
 
       {/* Add section */}
       {showNewSection ? (
-        <div className="px-4 py-2 border-t border-white/[0.06]">
+        <div className="px-4 py-2 border-t border-border-subtle">
           <input
             autoFocus
             value={newSectionName}
@@ -504,13 +504,13 @@ function BandejaView({
             }}
             onBlur={handleAddSection}
             placeholder="Nombre de la seccion"
-            className="w-full bg-transparent text-sm font-bold text-shell-text placeholder:text-zinc-700 outline-none"
+            className="w-full bg-transparent text-sm font-bold text-text-primary placeholder:text-zinc-700 outline-none"
           />
         </div>
       ) : (
         <button
           onClick={() => setShowNewSection(true)}
-          className="flex items-center gap-2 px-4 py-3 text-sm text-zinc-600 hover:text-zinc-400 w-full border-t border-white/[0.06] cursor-pointer"
+          className="flex items-center gap-2 px-4 py-3 text-sm text-text-muted hover:text-text-secondary w-full border-t border-border-subtle cursor-pointer"
         >
           <FolderPlus size={16} />
           Anadir seccion
@@ -519,9 +519,9 @@ function BandejaView({
 
       {/* Completed */}
       {completed.length > 0 && (
-        <div className="mt-4 border-t border-white/[0.06]">
+        <div className="mt-4 border-t border-border-subtle">
           <div className="px-4 py-3">
-            <span className="text-xs font-bold text-zinc-600 uppercase tracking-wider">
+            <span className="text-xs font-bold text-text-muted uppercase tracking-wider">
               Completadas ({completed.length})
             </span>
           </div>
@@ -559,8 +559,8 @@ function HoyView({
   return (
     <div>
       <div className="px-4 pt-6 pb-2">
-        <h2 className="text-2xl font-bold text-shell-text">Hoy</h2>
-        <p className="text-sm text-zinc-500 mt-1">
+        <h2 className="text-2xl font-bold text-text-primary">Hoy</h2>
+        <p className="text-sm text-text-muted mt-1">
           {format(today, "EEEE d 'de' MMMM", { locale: es })}
         </p>
       </div>
@@ -609,14 +609,14 @@ function HoyView({
 
       {overdue.length === 0 && todayTasks.length === 0 && (
         <div className="px-4 py-12 text-center">
-          <p className="text-zinc-600 text-sm">Sin tareas para hoy</p>
+          <p className="text-text-muted text-sm">Sin tareas para hoy</p>
         </div>
       )}
 
       {noDate.length > 0 && (
-        <div className="mt-4 border-t border-white/[0.06]">
+        <div className="mt-4 border-t border-border-subtle">
           <div className="px-4 py-2">
-            <span className="text-xs font-bold text-zinc-600 uppercase tracking-wider">Sin fecha</span>
+            <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Sin fecha</span>
           </div>
           {noDate.map((task) => (
             <TaskItem key={task.id} task={task} onTap={() => onSelectTask(task)} onToggle={onToggleTask} />

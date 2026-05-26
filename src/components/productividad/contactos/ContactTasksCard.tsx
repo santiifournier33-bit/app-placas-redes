@@ -25,7 +25,7 @@ export function ContactTasksCard({ contactId }: { contactId: string }) {
 
   return (
     <div className="px-5 pb-5 space-y-3">
-      <h3 className="text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Tareas</h3>
+      <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-wider">Tareas</h3>
       {!adding && (
         <button
           onClick={() => setAdding(true)}
@@ -47,11 +47,11 @@ export function ContactTasksCard({ contactId }: { contactId: string }) {
 
       <div className="space-y-1">
         {contactTasks.length === 0 && !adding ? (
-          <p className="text-xs text-zinc-600 py-3 text-center">Sin tareas asignadas</p>
+          <p className="text-xs text-text-muted py-3 text-center">Sin tareas asignadas</p>
         ) : contactTasks.map(t => (
           <div
             key={t.id}
-            className="flex items-center gap-2 px-2 py-1.5 hover:bg-white/[0.03] rounded-lg"
+            className="flex items-center gap-2 px-2 py-1.5 hover:bg-surface-overlay rounded-lg"
           >
             <button
               onClick={() => toggleTask(t.id)}
@@ -59,14 +59,14 @@ export function ContactTasksCard({ contactId }: { contactId: string }) {
             >
               {t.completed
                 ? <Check size={14} className="text-emerald-400" />
-                : <Circle size={14} className="text-zinc-600" />}
+                : <Circle size={14} className="text-text-muted" />}
             </button>
             <div className="flex-1 min-w-0">
-              <p className={`text-xs truncate ${t.completed ? 'text-zinc-600 line-through' : 'text-zinc-300'}`}>
+              <p className={`text-xs truncate ${t.completed ? 'text-text-muted line-through' : 'text-text-secondary'}`}>
                 {t.title}
               </p>
               {t.due_date && (
-                <p className="text-xs md:text-[10px] text-zinc-600 flex items-center gap-1 mt-0.5">
+                <p className="text-xs md:text-[10px] text-text-muted flex items-center gap-1 mt-0.5">
                   <Calendar size={9} />
                   {format(new Date(t.due_date), "d 'de' MMM", { locale: es })}
                 </p>

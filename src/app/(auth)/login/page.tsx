@@ -54,9 +54,9 @@ export default function LoginPage() {
           initial={{ opacity: 0, y: 30, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full max-w-[420px] bg-shell-surface/60 backdrop-blur-2xl rounded-[32px] shadow-modal border border-shell-border overflow-hidden relative z-10 my-auto"
+          className="w-full max-w-[420px] bg-surface-1/60 backdrop-blur-2xl rounded-[32px] shadow-modal border border-border-subtle overflow-hidden relative z-10 my-auto"
         >
-          <div className="pt-10 pb-8 px-8 text-center bg-shell-bg/40 border-b border-shell-border relative overflow-hidden">
+          <div className="pt-10 pb-8 px-8 text-center bg-shell-bg/40 border-b border-border-subtle relative overflow-hidden">
             <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent" />
             <div className="mx-auto flex justify-center mb-6">
               <Image
@@ -67,10 +67,10 @@ export default function LoginPage() {
                 className="object-contain"
               />
             </div>
-            <h1 className="text-xl font-heading font-bold text-shell-text tracking-tight">
+            <h1 className="text-xl font-heading font-bold text-text-primary tracking-tight">
               Acceso Plataforma Freire
             </h1>
-            <p className="text-xs text-shell-text-muted mt-2 font-medium">
+            <p className="text-xs text-text-muted mt-2 font-medium">
               Ingresá con tu cuenta de Tokko Broker
             </p>
           </div>
@@ -94,9 +94,9 @@ export default function LoginPage() {
 
             <div className="space-y-5">
               <div className="space-y-1.5">
-                <label className="text-xs md:text-[11px] font-bold text-shell-text-muted uppercase tracking-wider pl-1">Email Tokko Broker</label>
+                <label className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-wider pl-1">Email Tokko Broker</label>
                 <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-shell-text-muted group-focus-within:text-brand-accent transition-colors duration-200">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-brand-accent transition-colors duration-200">
                     <Sms size={18} />
                   </div>
                   <input
@@ -104,16 +104,16 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => { setEmail(e.target.value); setError(null); }}
                     placeholder="tu@email.com"
-                    className="w-full h-12 bg-shell-bg/40 border border-shell-border rounded-xl pl-11 pr-4 text-sm font-medium text-shell-text placeholder:text-shell-text-muted/50 focus:outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/15 transition-all"
+                    className="w-full h-12 bg-shell-bg/40 border border-border-subtle rounded-xl pl-11 pr-4 text-sm font-medium text-text-primary placeholder:text-text-muted/50 focus:outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/15 transition-all"
                     required
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs md:text-[11px] font-bold text-shell-text-muted uppercase tracking-wider pl-1">Contraseña</label>
+                <label className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-wider pl-1">Contraseña</label>
                 <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-shell-text-muted group-focus-within:text-brand-accent transition-colors duration-200">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-brand-accent transition-colors duration-200">
                     <Lock size={18} />
                   </div>
                   <input
@@ -121,7 +121,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => { setPassword(e.target.value); setError(null); }}
                     placeholder="Tu contraseña de Tokko"
-                    className="w-full h-12 bg-shell-bg/40 border border-shell-border rounded-xl pl-11 pr-4 text-sm font-medium text-shell-text placeholder:text-shell-text-muted/50 focus:outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/15 transition-all"
+                    className="w-full h-12 bg-shell-bg/40 border border-border-subtle rounded-xl pl-11 pr-4 text-sm font-medium text-text-primary placeholder:text-text-muted/50 focus:outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/15 transition-all"
                     required
                   />
                 </div>
@@ -142,7 +142,7 @@ export default function LoginPage() {
           </form>
 
           <div className="px-8 pb-8 text-center">
-            <p className="text-xs md:text-[10px] font-semibold text-shell-text-muted/70 leading-normal">
+            <p className="text-xs md:text-[10px] font-semibold text-text-muted/70 leading-normal">
               Tus credenciales se validan directamente con Tokko Broker de forma segura y nunca son almacenadas.
             </p>
           </div>

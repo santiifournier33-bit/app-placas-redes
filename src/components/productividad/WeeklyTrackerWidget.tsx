@@ -17,8 +17,8 @@ export function WeeklyTrackerWidget({ weekDate = new Date() }: WeeklyTrackerWidg
   )
 
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-3">
-      <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
+    <div className="rounded-xl border border-border-subtle bg-surface-overlay p-4 space-y-3">
+      <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider">
         Plan semanal 40-5-5-1
       </h3>
       <div className="space-y-2.5">
@@ -28,12 +28,12 @@ export function WeeklyTrackerWidget({ weekDate = new Date() }: WeeklyTrackerWidg
           return (
             <div key={m.label}>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs md:text-[11px] text-zinc-400">{m.label}</span>
-                <span className={`text-xs md:text-[11px] font-bold ${done ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                <span className="text-xs md:text-[11px] text-text-secondary">{m.label}</span>
+                <span className={`text-xs md:text-[11px] font-bold ${done ? 'text-emerald-400' : 'text-text-muted'}`}>
                   {m.current}/{m.target}
                 </span>
               </div>
-              <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+              <div className="h-1.5 rounded-full bg-surface-overlay-hover overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500"
                   style={{

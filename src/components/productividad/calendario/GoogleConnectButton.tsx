@@ -66,7 +66,7 @@ export function GoogleConnectButton() {
     return (
       <a
         href="/api/google/oauth/authorize"
-        className="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/[0.08] hover:bg-white/[0.04] text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-all"
+        className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border-default hover:bg-surface-overlay text-xs font-medium text-text-secondary hover:text-text-primary transition-all"
       >
         <GoogleIcon />
         Conectar Google Calendar
@@ -83,20 +83,20 @@ export function GoogleConnectButton() {
       <button
         onClick={handleSync}
         disabled={syncing}
-        className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer text-zinc-500 hover:text-zinc-300 transition-colors disabled:opacity-50"
+        className="p-1.5 hover:bg-surface-overlay-hover rounded-lg cursor-pointer text-text-muted hover:text-text-secondary transition-colors disabled:opacity-50"
         title="Sincronizar"
       >
         <RefreshCw size={14} className={syncing ? "animate-spin" : ""} />
       </button>
       <button
         onClick={handleDisconnect}
-        className="p-1.5 hover:bg-red-500/10 rounded-lg cursor-pointer text-zinc-600 hover:text-red-400 transition-colors"
+        className="p-1.5 hover:bg-red-500/10 rounded-lg cursor-pointer text-text-muted hover:text-red-400 transition-colors"
         title="Desconectar"
       >
         <Unlink size={14} />
       </button>
       {lastSync && (
-        <span className="text-xs md:text-[10px] text-zinc-600">{lastSync}</span>
+        <span className="text-xs md:text-[10px] text-text-muted">{lastSync}</span>
       )}
     </div>
   )

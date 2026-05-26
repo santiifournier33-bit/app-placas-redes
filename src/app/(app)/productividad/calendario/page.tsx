@@ -73,7 +73,7 @@ export default function CalendarioPage() {
   }, [events, tasks])
 
   if (!mounted) {
-    return <div className="p-6"><div className="animate-pulse h-64 bg-white/[0.04] rounded-2xl" /></div>
+    return <div className="p-6"><div className="animate-pulse h-64 bg-surface-overlay rounded-2xl" /></div>
   }
 
   const monthStart = startOfMonth(currentMonth)
@@ -90,20 +90,20 @@ export default function CalendarioPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="flex items-center justify-between px-4 h-12 border-b border-white/[0.04]">
-        <span className="text-xs text-zinc-500 uppercase tracking-wider">Sync</span>
+      <div className="flex items-center justify-between px-4 h-12 border-b border-border-subtle">
+        <span className="text-xs text-text-muted uppercase tracking-wider">Sync</span>
         <GoogleConnectButton />
       </div>
 
       {/* Month header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.04]">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle">
         <button
           onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-          className="p-2 hover:bg-white/[0.06] rounded-lg cursor-pointer"
+          className="p-2 hover:bg-surface-overlay-hover rounded-lg cursor-pointer"
         >
-          <ChevronLeft size={18} className="text-zinc-400" />
+          <ChevronLeft size={18} className="text-text-secondary" />
         </button>
-        <h2 className="text-sm font-bold text-shell-text capitalize">
+        <h2 className="text-sm font-bold text-text-primary capitalize">
           {format(currentMonth, "MMMM yyyy", { locale: es })}
         </h2>
         <div className="flex items-center gap-1">
@@ -115,9 +115,9 @@ export default function CalendarioPage() {
           </button>
           <button
             onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-            className="p-2 hover:bg-white/[0.06] rounded-lg cursor-pointer"
+            className="p-2 hover:bg-surface-overlay-hover rounded-lg cursor-pointer"
           >
-            <ChevronRight size={18} className="text-zinc-400" />
+            <ChevronRight size={18} className="text-text-secondary" />
           </button>
         </div>
       </div>
@@ -125,7 +125,7 @@ export default function CalendarioPage() {
       {/* Day headers */}
       <div className="grid grid-cols-7 px-4 pt-3">
         {["Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom"].map(day => (
-          <div key={day} className="text-center text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider py-1">
+          <div key={day} className="text-center text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-wider py-1">
             {day}
           </div>
         ))}
@@ -145,14 +145,14 @@ export default function CalendarioPage() {
               onClick={() => setSelectedDate(selected ? null : day)}
               className={`aspect-square flex flex-col items-center justify-start pt-1.5 gap-0.5 rounded-xl transition-all cursor-pointer ${
                 selected ? "bg-blue-500/15 border border-blue-500/30" :
-                today ? "bg-white/[0.04] border border-white/[0.06]" :
-                "border border-transparent hover:bg-white/[0.03]"
+                today ? "bg-surface-overlay border border-border-subtle" :
+                "border border-transparent hover:bg-surface-overlay"
               } ${inMonth ? "" : "opacity-30"}`}
             >
               <span className={`text-xs tabular-nums ${
                 today ? "font-bold text-blue-400" :
-                selected ? "font-bold text-shell-text" :
-                "text-zinc-400"
+                selected ? "font-bold text-text-primary" :
+                "text-text-secondary"
               }`}>
                 {format(day, "d")}
               </span>
@@ -171,7 +171,7 @@ export default function CalendarioPage() {
                     />
                   ))}
                   {dayItems.length > 3 && (
-                    <span className="text-[8px] text-zinc-600">+{dayItems.length - 3}</span>
+                    <span className="text-[8px] text-text-muted">+{dayItems.length - 3}</span>
                   )}
                 </div>
               )}
@@ -182,9 +182,9 @@ export default function CalendarioPage() {
 
       {/* Selected day detail */}
       {selectedDate && (
-        <div className="border-t border-white/[0.04]">
+        <div className="border-t border-border-subtle">
           <div className="flex items-center justify-between px-4 py-3">
-            <h3 className="text-sm font-bold text-shell-text capitalize">
+            <h3 className="text-sm font-bold text-text-primary capitalize">
               {format(selectedDate, "EEEE d 'de' MMMM", { locale: es })}
             </h3>
             <button
@@ -198,14 +198,14 @@ export default function CalendarioPage() {
 
           {selectedItems.length === 0 ? (
             <div className="px-4 pb-4">
-              <p className="text-sm text-zinc-600">Sin eventos ni tareas</p>
+              <p className="text-sm text-text-muted">Sin eventos ni tareas</p>
             </div>
           ) : (
             <div className="pb-2">
               {selectedItems.map(item => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.02] transition-colors"
+                  className="flex items-center gap-3 px-4 py-2.5 hover:bg-surface-overlay transition-colors"
                 >
                   <span className={`w-2 h-2 rounded-full shrink-0 ${
                     item.type === "task"
@@ -215,10 +215,10 @@ export default function CalendarioPage() {
                         : "bg-zinc-500"
                   }`} />
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm ${item.completed ? "text-zinc-600 line-through" : "text-shell-text"}`}>
+                    <p className={`text-sm ${item.completed ? "text-text-muted line-through" : "text-text-primary"}`}>
                       {item.title}
                     </p>
-                    <p className="text-xs md:text-[10px] text-zinc-600 uppercase tracking-wider mt-0.5">
+                    <p className="text-xs md:text-[10px] text-text-muted uppercase tracking-wider mt-0.5">
                       {item.type === "task" ? "Tarea" : item.eventType ? EVENT_COLORS[item.eventType].label : "Evento"}
                     </p>
                   </div>
@@ -234,7 +234,7 @@ export default function CalendarioPage() {
         <div className="px-4 pb-4">
           <button
             onClick={() => { setSelectedDate(new Date()); setShowForm(true) }}
-            className="flex items-center gap-2 w-full justify-center py-2.5 rounded-xl border border-dashed border-white/[0.1] text-sm text-zinc-500 hover:text-zinc-300 hover:border-white/[0.2] transition-all cursor-pointer"
+            className="flex items-center gap-2 w-full justify-center py-2.5 rounded-xl border border-dashed border-border-default text-sm text-text-muted hover:text-text-secondary hover:border-white/[0.2] transition-all cursor-pointer"
           >
             <Plus size={16} />
             Nuevo evento
@@ -244,7 +244,7 @@ export default function CalendarioPage() {
 
       {/* Legend */}
       <div className="px-4 pb-4">
-        <div className="flex flex-wrap gap-3 text-xs md:text-[10px] text-zinc-500">
+        <div className="flex flex-wrap gap-3 text-xs md:text-[10px] text-text-muted">
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-400" /> Tarea</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-400" /> Completada</span>
           {Object.entries(EVENT_COLORS).map(([key, val]) => (
@@ -310,24 +310,24 @@ function EventFormModal({
         className="relative bg-[#1a1a24] rounded-t-2xl lg:rounded-2xl w-full max-w-md"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
-          <h3 className="text-sm font-bold text-shell-text">Nuevo evento</h3>
-          <button onClick={onClose} className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer">
-            <X size={20} className="text-zinc-400" />
+        <div className="flex items-center justify-between p-4 border-b border-border-subtle">
+          <h3 className="text-sm font-bold text-text-primary">Nuevo evento</h3>
+          <button onClick={onClose} className="p-1.5 hover:bg-surface-overlay-hover rounded-lg cursor-pointer">
+            <X size={20} className="text-text-secondary" />
           </button>
         </div>
 
         <div className="p-4 space-y-3">
           {isAdmin && (
             <div>
-              <label className="text-xs md:text-[11px] text-zinc-500 font-medium block mb-1">Alcance</label>
+              <label className="text-xs md:text-[11px] text-text-muted font-medium block mb-1">Alcance</label>
               <div className="flex gap-2">
                 <button
                   onClick={() => set("scope", "personal")}
                   className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium cursor-pointer transition-all ${
                     form.scope === "personal"
                       ? "bg-blue-500/15 text-blue-400 border border-blue-500/30"
-                      : "bg-white/[0.04] text-zinc-500 hover:bg-white/[0.06] border border-transparent"
+                      : "bg-surface-overlay text-text-muted hover:bg-surface-overlay-hover border border-transparent"
                   }`}
                 >
                   Personal
@@ -337,7 +337,7 @@ function EventFormModal({
                   className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium cursor-pointer transition-all ${
                     form.scope === "organization"
                       ? "bg-amber-500/15 text-amber-400 border border-amber-500/30"
-                      : "bg-white/[0.04] text-zinc-500 hover:bg-white/[0.06] border border-transparent"
+                      : "bg-surface-overlay text-text-muted hover:bg-surface-overlay-hover border border-transparent"
                   }`}
                 >
                   De oficina (todos)
@@ -347,17 +347,17 @@ function EventFormModal({
           )}
 
           <div>
-            <label className="text-xs md:text-[11px] text-zinc-500 font-medium block mb-1">Titulo *</label>
+            <label className="text-xs md:text-[11px] text-text-muted font-medium block mb-1">Titulo *</label>
             <input
               value={form.title}
               onChange={(e) => set("title", e.target.value)}
-              className="w-full bg-white/[0.04] rounded-xl px-3 py-2 text-sm text-shell-text outline-none border border-white/[0.06] focus:border-blue-500/30"
+              className="w-full bg-surface-overlay rounded-xl px-3 py-2 text-sm text-text-primary outline-none border border-border-subtle focus:border-blue-500/30"
               autoFocus
             />
           </div>
 
           <div>
-            <label className="text-xs md:text-[11px] text-zinc-500 font-medium block mb-1">Tipo</label>
+            <label className="text-xs md:text-[11px] text-text-muted font-medium block mb-1">Tipo</label>
             <div className="flex flex-wrap gap-2">
               {(Object.entries(EVENT_COLORS) as [EventType, typeof EVENT_COLORS[EventType]][]).map(([key, val]) => (
                 <button
@@ -366,7 +366,7 @@ function EventFormModal({
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
                     form.event_type === key
                       ? `${val.bg} ${val.text}`
-                      : "bg-white/[0.04] text-zinc-500 hover:bg-white/[0.06]"
+                      : "bg-surface-overlay text-text-muted hover:bg-surface-overlay-hover"
                   }`}
                 >
                   {val.label}
@@ -376,30 +376,30 @@ function EventFormModal({
           </div>
 
           <div>
-            <label className="text-xs md:text-[11px] text-zinc-500 font-medium block mb-1">Fecha y hora</label>
+            <label className="text-xs md:text-[11px] text-text-muted font-medium block mb-1">Fecha y hora</label>
             <input
               type="datetime-local"
               value={form.event_date}
               onChange={(e) => set("event_date", e.target.value)}
-              className="w-full bg-white/[0.04] rounded-xl px-3 py-2 text-sm text-shell-text outline-none border border-white/[0.06] [color-scheme:dark]"
+              className="w-full bg-surface-overlay rounded-xl px-3 py-2 text-sm text-text-primary outline-none border border-border-subtle [color-scheme:dark]"
             />
           </div>
 
           <div>
-            <label className="text-xs md:text-[11px] text-zinc-500 font-medium block mb-1">Descripcion</label>
+            <label className="text-xs md:text-[11px] text-text-muted font-medium block mb-1">Descripcion</label>
             <textarea
               value={form.description}
               onChange={(e) => set("description", e.target.value)}
               rows={2}
-              className="w-full bg-white/[0.04] rounded-xl px-3 py-2 text-sm text-shell-text outline-none resize-none border border-white/[0.06] focus:border-blue-500/30"
+              className="w-full bg-surface-overlay rounded-xl px-3 py-2 text-sm text-text-primary outline-none resize-none border border-border-subtle focus:border-blue-500/30"
             />
           </div>
         </div>
 
-        <div className="p-4 border-t border-white/[0.06] flex justify-end gap-2">
+        <div className="p-4 border-t border-border-subtle flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="px-4 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:bg-white/[0.06] cursor-pointer"
+            className="px-4 py-2.5 rounded-xl text-sm font-medium text-text-secondary hover:bg-surface-overlay-hover cursor-pointer"
           >
             Cancelar
           </button>

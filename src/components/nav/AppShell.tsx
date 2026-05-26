@@ -60,7 +60,7 @@ export function AppShell({ role, email, children }: AppShellProps) {
 
   return (
     <SidebarProvider value={{ collapsed, toggle }}>
-      <div className="min-h-screen bg-shell-bg text-shell-text flex flex-col font-sans selection:bg-shell-accent/30">
+      <div className="min-h-screen bg-shell-bg text-text-primary flex flex-col font-sans selection:bg-shell-accent/30">
         <SideNav role={role} email={email} collapsed={collapsed} />
         <main
           style={{ transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)", willChange: "margin" }}

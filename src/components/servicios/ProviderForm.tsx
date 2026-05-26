@@ -74,12 +74,12 @@ export function ProviderForm({ provider, onClose, onSaved }: ProviderFormProps) 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full sm:max-w-md bg-[#16161e] border border-white/[0.08] rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+      <div className="relative w-full sm:max-w-md bg-[#16161e] border border-border-default rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0">
-          <h2 className="text-base font-semibold text-zinc-100">
+          <h2 className="text-base font-semibold text-text-primary">
             {provider ? "Editar proveedor" : "Nuevo proveedor"}
           </h2>
-          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer">
+          <button onClick={onClose} className="text-text-muted hover:text-text-secondary transition-colors cursor-pointer">
             <X size={18} />
           </button>
         </div>
@@ -87,35 +87,35 @@ export function ProviderForm({ provider, onClose, onSaved }: ProviderFormProps) 
         <div className="flex-1 overflow-y-auto px-5 pb-2 space-y-4">
           {/* Nombre */}
           <div className="space-y-1">
-            <label className="text-xs text-zinc-500 font-medium">Nombre *</label>
+            <label className="text-xs text-text-muted font-medium">Nombre *</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ej: Argenprop, Fibertel..."
-              className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-blue-500/40"
+              className="w-full px-3 py-2 bg-surface-overlay border border-border-default rounded-xl text-sm text-text-primary placeholder-zinc-600 focus:outline-none focus:border-blue-500/40"
             />
             {errors.name && <p className="text-xs text-red-400">{errors.name}</p>}
           </div>
 
           {/* Categoría */}
           <div className="space-y-1">
-            <label className="text-xs text-zinc-500 font-medium">Categoría *</label>
+            <label className="text-xs text-text-muted font-medium">Categoría *</label>
             <CategoryPicker value={categoryId} onChange={setCategoryId} />
             {errors.categoryId && <p className="text-xs text-red-400">{errors.categoryId}</p>}
           </div>
 
           {/* Moneda default */}
           <div className="space-y-1">
-            <label className="text-xs text-zinc-500 font-medium">Moneda default</label>
-            <div className="flex rounded-xl border border-white/[0.08] overflow-hidden w-fit">
+            <label className="text-xs text-text-muted font-medium">Moneda default</label>
+            <div className="flex rounded-xl border border-border-default overflow-hidden w-fit">
               {(["ARS", "USD"] as Currency[]).map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setCurrency(c)}
                   className={`px-4 py-2 text-xs font-medium transition-colors ${
-                    currency === c ? "bg-blue-500/20 text-blue-400" : "text-zinc-500 hover:text-zinc-300"
+                    currency === c ? "bg-blue-500/20 text-blue-400" : "text-text-muted hover:text-text-secondary"
                   }`}
                 >
                   {c}
@@ -126,13 +126,13 @@ export function ProviderForm({ provider, onClose, onSaved }: ProviderFormProps) 
 
           {/* Recurrencia */}
           <div className="space-y-1">
-            <label className="text-xs text-zinc-500 font-medium">Recurrencia</label>
+            <label className="text-xs text-text-muted font-medium">Recurrencia</label>
             <RecurrencePicker value={recurrence} onChange={setRecurrence} />
           </div>
 
           {/* Recordatorios */}
           <div className="space-y-2">
-            <label className="text-xs text-zinc-500 font-medium">Recordar antes del vencimiento</label>
+            <label className="text-xs text-text-muted font-medium">Recordar antes del vencimiento</label>
             <div className="flex flex-wrap gap-2">
               {REMINDER_OPTIONS.map((d) => {
                 const label = d === 0 ? "El mismo día" : `${d} días antes`
@@ -144,7 +144,7 @@ export function ProviderForm({ provider, onClose, onSaved }: ProviderFormProps) 
                     className={`px-2.5 py-1 rounded-lg text-xs border transition-colors ${
                       reminderDays.includes(d)
                         ? "bg-blue-500/20 border-blue-500/40 text-blue-400"
-                        : "border-white/[0.08] text-zinc-500 hover:border-white/[0.15] hover:text-zinc-400"
+                        : "border-border-default text-text-muted hover:border-white/[0.15] hover:text-text-secondary"
                     }`}
                   >
                     {label}
@@ -156,31 +156,31 @@ export function ProviderForm({ provider, onClose, onSaved }: ProviderFormProps) 
 
           {/* Notas */}
           <div className="space-y-1">
-            <label className="text-xs text-zinc-500 font-medium">Notas</label>
+            <label className="text-xs text-text-muted font-medium">Notas</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Notas opcionales..."
               rows={2}
-              className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-blue-500/40 resize-none"
+              className="w-full px-3 py-2 bg-surface-overlay border border-border-default rounded-xl text-sm text-text-primary placeholder-zinc-600 focus:outline-none focus:border-blue-500/40 resize-none"
             />
           </div>
 
           {/* Tags */}
           <div className="space-y-1">
-            <label className="text-xs text-zinc-500 font-medium">Tags</label>
+            <label className="text-xs text-text-muted font-medium">Tags</label>
             <input
               type="text"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
               placeholder="Ej: recurrente, trimestral"
-              className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-blue-500/40"
+              className="w-full px-3 py-2 bg-surface-overlay border border-border-default rounded-xl text-sm text-text-primary placeholder-zinc-600 focus:outline-none focus:border-blue-500/40"
             />
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-white/[0.06] shrink-0">
-          <button onClick={onClose} className="px-4 py-2 text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
+        <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-border-subtle shrink-0">
+          <button onClick={onClose} className="px-4 py-2 text-sm text-text-muted hover:text-text-secondary transition-colors">
             Cancelar
           </button>
           <button

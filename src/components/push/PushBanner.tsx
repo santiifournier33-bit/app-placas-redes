@@ -41,14 +41,14 @@ export function PushBanner() {
 
   return (
     <div className="fixed bottom-4 left-4 right-4 lg:left-auto lg:right-6 lg:bottom-6 lg:max-w-sm z-50">
-      <div className="bg-[#1a1a24] border border-white/[0.08] rounded-2xl p-4 shadow-2xl">
+      <div className="bg-[#1a1a24] border border-border-default rounded-2xl p-4 shadow-2xl">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
             <Bell size={20} className="text-blue-400" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-shell-text">Activar notificaciones</p>
-            <p className="text-xs text-zinc-500 mt-0.5">
+            <p className="text-sm font-medium text-text-primary">Activar notificaciones</p>
+            <p className="text-xs text-text-muted mt-0.5">
               Recibe recordatorios de tareas y vencimientos en tu celular
             </p>
             <div className="flex gap-2 mt-3">
@@ -61,7 +61,7 @@ export function PushBanner() {
               </button>
               <button
                 onClick={handleDismiss}
-                className="px-3 py-1.5 rounded-lg text-xs text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.04] transition-colors cursor-pointer"
+                className="px-3 py-1.5 rounded-lg text-xs text-text-muted hover:text-text-secondary hover:bg-surface-overlay transition-colors cursor-pointer"
               >
                 Ahora no
               </button>
@@ -69,9 +69,9 @@ export function PushBanner() {
           </div>
           <button
             onClick={handleDismiss}
-            className="p-1 hover:bg-white/[0.06] rounded-lg cursor-pointer shrink-0"
+            className="p-1 hover:bg-surface-overlay-hover rounded-lg cursor-pointer shrink-0"
           >
-            <X size={14} className="text-zinc-600" />
+            <X size={14} className="text-text-muted" />
           </button>
         </div>
       </div>

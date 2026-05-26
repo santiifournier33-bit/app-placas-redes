@@ -13,7 +13,7 @@ export function DolarRateSync() {
 
   if (loading) {
     return (
-      <div className="mx-4 mt-2 px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.05] flex items-center gap-2 text-xs text-zinc-600">
+      <div className="mx-4 mt-2 px-3 py-2 rounded-xl bg-surface-overlay border border-border-subtle flex items-center gap-2 text-xs text-text-muted">
         <Loader2 size={12} className="animate-spin" />
         Actualizando cotización dólar...
       </div>
@@ -35,9 +35,9 @@ export function DolarRateSync() {
       <DollarSign size={14} className="text-amber-400 shrink-0" />
       <div className="flex-1">
         <p className="text-amber-200 font-medium">No se pudo obtener cotización del dólar</p>
-        {error && <p className="text-zinc-500 mt-0.5">{error}</p>}
+        {error && <p className="text-text-muted mt-0.5">{error}</p>}
         <div className="flex items-center gap-2 mt-1.5">
-          <span className="text-zinc-400">Blue compra:</span>
+          <span className="text-text-secondary">Blue compra:</span>
           <input
             type="number" inputMode="decimal"
             min="1"
@@ -45,7 +45,7 @@ export function DolarRateSync() {
             onChange={(e) => setManualValue(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleManualSave()}
             placeholder="Ej: 1200"
-            className="w-24 px-2 py-1 bg-white/[0.06] border border-white/[0.1] rounded-lg text-zinc-200 placeholder-zinc-600"
+            className="w-24 px-2 py-1 bg-surface-overlay-hover border border-border-default rounded-lg text-text-primary placeholder-zinc-600"
           />
           <button
             onClick={handleManualSave}
@@ -55,7 +55,7 @@ export function DolarRateSync() {
           </button>
         </div>
       </div>
-      <button onClick={() => setDismissed(true)} className="text-zinc-500 hover:text-zinc-300 shrink-0 cursor-pointer">
+      <button onClick={() => setDismissed(true)} className="text-text-muted hover:text-text-secondary shrink-0 cursor-pointer">
         <X size={14} />
       </button>
     </div>

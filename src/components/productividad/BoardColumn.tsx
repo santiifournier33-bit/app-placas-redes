@@ -86,7 +86,7 @@ export function BoardColumn({
       className={`flex flex-col self-start shrink-0 w-72 rounded-2xl border transition-colors ${
         isDragOver
           ? "bg-blue-500/[0.04] border-blue-500/30"
-          : "bg-white/[0.02] border-white/[0.06]"
+          : "bg-surface-overlay border-border-subtle"
       }`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -105,26 +105,26 @@ export function BoardColumn({
                 if (e.key === "Enter") handleRename()
                 if (e.key === "Escape") { setRenaming(false); setRenameName(title) }
               }}
-              className="bg-transparent text-sm font-bold text-shell-text outline-none w-36"
+              className="bg-transparent text-sm font-bold text-text-primary outline-none w-36"
             />
           ) : (
-            <span className="text-xs font-bold text-shell-text uppercase tracking-widest">{title}</span>
+            <span className="text-xs font-bold text-text-primary uppercase tracking-widest">{title}</span>
           )}
-          <span className="text-xs text-zinc-600 font-medium">{incomplete.length}</span>
+          <span className="text-xs text-text-muted font-medium">{incomplete.length}</span>
         </div>
         {sectionId && (
           <div className="relative">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="p-1 hover:bg-white/[0.06] rounded-lg cursor-pointer text-zinc-600 hover:text-zinc-400"
+              className="p-1 hover:bg-surface-overlay-hover rounded-lg cursor-pointer text-text-muted hover:text-text-secondary"
             >
               <MoreHorizontal size={15} />
             </button>
             {showMenu && (
-              <div className="absolute right-0 top-full mt-1 bg-[#1e1e2c] rounded-xl border border-white/[0.08] py-1 z-20 shadow-xl min-w-[140px]">
+              <div className="absolute right-0 top-full mt-1 bg-[#1e1e2c] rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[140px]">
                 <button
                   onClick={() => { setRenaming(true); setShowMenu(false) }}
-                  className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-300 cursor-pointer"
+                  className="flex items-center gap-2 px-3 py-2 w-full hover:bg-surface-overlay text-xs text-text-secondary cursor-pointer"
                 >
                   <Pencil size={13} /> Renombrar
                 </button>
@@ -193,7 +193,7 @@ export function BoardColumn({
       {!showQuickAdd && (
         <button
           onClick={() => setShowQuickAdd(true)}
-          className="flex items-center gap-1.5 px-3 py-2.5 text-xs text-zinc-600 hover:text-zinc-400 hover:bg-white/[0.02] rounded-b-2xl transition-colors cursor-pointer border-t border-white/[0.04]"
+          className="flex items-center gap-1.5 px-3 py-2.5 text-xs text-text-muted hover:text-text-secondary hover:bg-surface-overlay rounded-b-2xl transition-colors cursor-pointer border-t border-border-subtle"
         >
           <Plus size={14} />
           Añadir tarea
@@ -229,8 +229,8 @@ function TaskCard({ task, subtaskCount, subtaskDone, onTap, onToggle, onDragStar
         isDragging
           ? "opacity-40 scale-[0.97]"
           : task.completed
-            ? "bg-white/[0.01] border-white/[0.04] opacity-60 cursor-pointer"
-            : "bg-white/[0.04] border-white/[0.06] hover:border-white/[0.1] hover:bg-white/[0.06]"
+            ? "bg-white/[0.01] border-border-subtle opacity-60 cursor-pointer"
+            : "bg-surface-overlay border-border-subtle hover:border-border-default hover:bg-surface-overlay-hover"
       }`}
     >
       <div className="flex items-start gap-2">
@@ -252,7 +252,7 @@ function TaskCard({ task, subtaskCount, subtaskDone, onTap, onToggle, onDragStar
         </button>
 
         <div className="flex-1 min-w-0">
-          <p className={`text-sm leading-snug ${task.completed ? "line-through text-zinc-600" : "text-shell-text"}`}>
+          <p className={`text-sm leading-snug ${task.completed ? "line-through text-text-muted" : "text-text-primary"}`}>
             {task.title}
           </p>
 
@@ -260,12 +260,12 @@ function TaskCard({ task, subtaskCount, subtaskDone, onTap, onToggle, onDragStar
           {(task.due_date || subtaskCount > 0 || effectiveType !== "tarea") && (
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
               {task.due_date && (
-                <span className={`text-xs md:text-[10px] ${overdue ? "text-red-400" : "text-zinc-600"}`}>
+                <span className={`text-xs md:text-[10px] ${overdue ? "text-red-400" : "text-text-muted"}`}>
                   {format(new Date(task.due_date), "d MMM", { locale: es })}
                 </span>
               )}
               {subtaskCount > 0 && (
-                <span className="text-xs md:text-[10px] text-zinc-600 flex items-center gap-0.5">
+                <span className="text-xs md:text-[10px] text-text-muted flex items-center gap-0.5">
                   <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
                     <path d="M3 8h10M8 3v10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
                   </svg>
@@ -273,7 +273,7 @@ function TaskCard({ task, subtaskCount, subtaskDone, onTap, onToggle, onDragStar
                 </span>
               )}
               {effectiveType !== "tarea" && TASK_TYPES[effectiveType] && (
-                <span className="text-xs md:text-[10px] text-zinc-600 flex items-center gap-0.5">
+                <span className="text-xs md:text-[10px] text-text-muted flex items-center gap-0.5">
                   {TYPE_ICONS[effectiveType]}
                   {TASK_TYPES[effectiveType].label}
                 </span>

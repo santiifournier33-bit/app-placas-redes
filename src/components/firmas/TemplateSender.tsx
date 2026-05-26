@@ -172,7 +172,7 @@ export default function TemplateSender({ onSent }: { onSent: () => void }) {
                 {tpl.documents[0]?.preview ? (
                   <img src={tpl.documents[0].preview} alt="" className="w-full h-full object-cover opacity-80" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-zinc-600">PDF</div>
+                  <div className="w-full h-full flex items-center justify-center text-text-muted">PDF</div>
                 )}
               </div>
               <div className="flex-1 min-w-0 pt-1">

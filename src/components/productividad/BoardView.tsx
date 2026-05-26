@@ -76,7 +76,7 @@ export function BoardView({ tasks, sections, showCompleted, onSelectTask, onTogg
       {/* Add section button / form */}
       <div className="shrink-0 flex items-start" style={{ scrollSnapAlign: "start" }}>
         {showAddSection ? (
-          <div className="w-64 rounded-2xl border border-white/[0.1] bg-white/[0.02] p-3 space-y-3">
+          <div className="w-64 rounded-2xl border border-border-default bg-surface-overlay p-3 space-y-3">
             <input
               autoFocus
               value={newSectionName}
@@ -86,7 +86,7 @@ export function BoardView({ tasks, sections, showCompleted, onSelectTask, onTogg
                 if (e.key === "Escape") { setShowAddSection(false); setNewSectionName("") }
               }}
               placeholder="Dale un nombre a esta sección"
-              className="w-full bg-transparent text-sm text-shell-text placeholder:text-zinc-600 outline-none border-b border-white/[0.08] pb-2"
+              className="w-full bg-transparent text-sm text-text-primary placeholder:text-text-muted outline-none border-b border-border-default pb-2"
             />
             <div className="flex items-center gap-2">
               <button
@@ -95,14 +95,14 @@ export function BoardView({ tasks, sections, showCompleted, onSelectTask, onTogg
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   newSectionName.trim()
                     ? "bg-red-500 hover:bg-red-600 text-white cursor-pointer"
-                    : "bg-zinc-800 text-zinc-600 cursor-not-allowed"
+                    : "bg-zinc-800 text-text-muted cursor-not-allowed"
                 }`}
               >
                 Añadir sección
               </button>
               <button
                 onClick={() => { setShowAddSection(false); setNewSectionName("") }}
-                className="text-xs text-zinc-500 hover:text-zinc-300 cursor-pointer px-2 py-1.5"
+                className="text-xs text-text-muted hover:text-text-secondary cursor-pointer px-2 py-1.5"
               >
                 Cancelar
               </button>
@@ -111,7 +111,7 @@ export function BoardView({ tasks, sections, showCompleted, onSelectTask, onTogg
         ) : (
           <button
             onClick={() => setShowAddSection(true)}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-600 hover:text-zinc-400 border border-dashed border-white/[0.08] hover:border-white/[0.15] rounded-2xl transition-colors cursor-pointer whitespace-nowrap"
+            className="flex items-center gap-2 px-3 py-2 text-sm text-text-muted hover:text-text-secondary border border-dashed border-border-default hover:border-white/[0.15] rounded-2xl transition-colors cursor-pointer whitespace-nowrap"
           >
             <Plus size={15} />
             Añadir sección

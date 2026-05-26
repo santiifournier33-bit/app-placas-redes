@@ -74,8 +74,8 @@ export function EditableCell({
     return (
       <div
         onClick={() => { setDraft(String(value ?? '')); setEditing(true) }}
-        className={`cursor-pointer truncate px-2 py-1 rounded hover:bg-white/[0.06] transition-colors min-h-[28px] flex items-center ${
-          display === placeholder ? 'text-zinc-700' : 'text-zinc-300'
+        className={`cursor-pointer truncate px-2 py-1 rounded hover:bg-surface-overlay-hover transition-colors min-h-[28px] flex items-center ${
+          display === placeholder ? 'text-zinc-700' : 'text-text-secondary'
         } ${className}`}
       >
         {display}
@@ -90,7 +90,7 @@ export function EditableCell({
         value={draft}
         onChange={(e) => { setDraft(e.target.value); commit(e.target.value) }}
         onBlur={() => setEditing(false)}
-        className={`w-full bg-white/[0.06] rounded px-2 py-1 text-xs text-zinc-300 outline-none border border-blue-500/40 [color-scheme:dark] ${className}`}
+        className={`w-full bg-surface-overlay-hover rounded px-2 py-1 text-xs text-text-secondary outline-none border border-blue-500/40 [color-scheme:dark] ${className}`}
       >
         <option value="">—</option>
         {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -109,7 +109,7 @@ export function EditableCell({
         if (e.key === 'Enter') commit()
         if (e.key === 'Escape') setEditing(false)
       }}
-      className={`w-full bg-white/[0.06] rounded px-2 py-1 text-xs text-zinc-300 outline-none border border-blue-500/40 [color-scheme:dark] ${className}`}
+      className={`w-full bg-surface-overlay-hover rounded px-2 py-1 text-xs text-text-secondary outline-none border border-blue-500/40 [color-scheme:dark] ${className}`}
     />
   )
 }

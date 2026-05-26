@@ -31,7 +31,7 @@ export function LeadCard({ contact, stage, onTap }: LeadCardProps) {
         e.dataTransfer.effectAllowed = 'move'
       }}
       onClick={onTap}
-      className="relative flex items-start gap-2.5 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.05] transition-all cursor-grab active:cursor-grabbing group"
+      className="relative flex items-start gap-2.5 p-3 rounded-xl bg-surface-overlay border border-border-subtle hover:border-border-default hover:bg-surface-overlay transition-all cursor-grab active:cursor-grabbing group"
     >
       <div className={`absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full ${HEALTH_COLORS[health]}`} />
 
@@ -45,20 +45,20 @@ export function LeadCard({ contact, stage, onTap }: LeadCardProps) {
           health === 'red' ? 'text-red-400' :
           health === 'orange' ? 'text-amber-400' :
           health === 'green' ? 'text-emerald-400' :
-          'text-zinc-500'
+          'text-text-muted'
         } />
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-shell-text truncate">
+        <p className="text-sm font-medium text-text-primary truncate">
           {contact.first_name} {contact.last_name}
         </p>
         {contact.primary_phone && (
-          <p className="text-xs md:text-[11px] text-zinc-500 mt-0.5 truncate">{contact.primary_phone}</p>
+          <p className="text-xs md:text-[11px] text-text-muted mt-0.5 truncate">{contact.primary_phone}</p>
         )}
         <div className="flex items-center gap-1.5 mt-1">
           {sourceLabel && (
-            <span className="text-xs md:text-[10px] font-medium px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">
+            <span className="text-xs md:text-[10px] font-medium px-1.5 py-0.5 rounded bg-zinc-800 text-text-muted">
               {sourceLabel}
             </span>
           )}

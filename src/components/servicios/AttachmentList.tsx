@@ -13,7 +13,7 @@ interface AttachmentListProps {
 function fileIcon(type: Attachment["type"]) {
   if (type === "image") return <Image size={14} className="text-blue-400" />
   if (type === "pdf") return <FileText size={14} className="text-red-400" />
-  return <File size={14} className="text-zinc-400" />
+  return <File size={14} className="text-text-secondary" />
 }
 
 function formatSize(bytes: number) {
@@ -53,23 +53,23 @@ export function AttachmentList({ attachments, onChange, readonly = false }: Atta
   return (
     <div className="space-y-2">
       {attachments.map((att) => (
-        <div key={att.id} className="flex items-center gap-2 p-2 rounded-xl bg-white/[0.03] border border-white/[0.06] group">
+        <div key={att.id} className="flex items-center gap-2 p-2 rounded-xl bg-surface-overlay border border-border-subtle group">
           <div className="shrink-0">{fileIcon(att.type)}</div>
           {att.type === "image" ? (
             <a href={att.dataUrl} target="_blank" rel="noreferrer" className="flex-1 min-w-0">
               <img src={att.dataUrl} alt={att.name} className="h-8 w-auto rounded object-cover max-w-[80px]" />
             </a>
           ) : (
-            <a href={att.dataUrl} target="_blank" rel="noreferrer" className="flex-1 min-w-0 text-xs text-zinc-300 hover:text-zinc-100 truncate">
+            <a href={att.dataUrl} target="_blank" rel="noreferrer" className="flex-1 min-w-0 text-xs text-text-secondary hover:text-text-primary truncate">
               {att.name}
             </a>
           )}
-          <span className="text-xs text-zinc-600 shrink-0">{formatSize(att.size)}</span>
+          <span className="text-xs text-text-muted shrink-0">{formatSize(att.size)}</span>
           {!readonly && (
             <button
               type="button"
               onClick={() => remove(att.id)}
-              className="text-zinc-600 hover:text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="text-text-muted hover:text-text-secondary opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <X size={12} />
             </button>
@@ -82,7 +82,7 @@ export function AttachmentList({ attachments, onChange, readonly = false }: Atta
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
-            className="flex items-center gap-2 text-xs text-zinc-500 hover:text-zinc-300 transition-colors py-1"
+            className="flex items-center gap-2 text-xs text-text-muted hover:text-text-secondary transition-colors py-1"
           >
             <Paperclip size={12} />
             Adjuntar archivo

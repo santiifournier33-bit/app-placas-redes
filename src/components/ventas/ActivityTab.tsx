@@ -112,21 +112,21 @@ export default function ActivityTab() {
     <div className="space-y-6 relative">
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-shell-surface border border-shell-border rounded-2xl p-4">
-          <p className="text-xs md:text-[11px] font-medium text-shell-text-muted mb-1">Reservas</p>
-          <p className="text-2xl font-bold text-shell-text">{reservas.length}</p>
+        <div className="bg-surface-1 border border-border-subtle rounded-2xl p-4">
+          <p className="text-xs md:text-[11px] font-medium text-text-muted mb-1">Reservas</p>
+          <p className="text-2xl font-bold text-text-primary">{reservas.length}</p>
         </div>
-        <div className="bg-shell-surface border border-shell-border rounded-2xl p-4">
-          <p className="text-xs md:text-[11px] font-medium text-shell-text-muted mb-1">Autorizaciones</p>
-          <p className="text-2xl font-bold text-shell-text">{autorizaciones.length}</p>
+        <div className="bg-surface-1 border border-border-subtle rounded-2xl p-4">
+          <p className="text-xs md:text-[11px] font-medium text-text-muted mb-1">Autorizaciones</p>
+          <p className="text-2xl font-bold text-text-primary">{autorizaciones.length}</p>
         </div>
-        <div className="bg-shell-surface border border-shell-border rounded-2xl p-4">
-          <p className="text-xs md:text-[11px] font-medium text-shell-text-muted mb-1">Potencial (USD)</p>
+        <div className="bg-surface-1 border border-border-subtle rounded-2xl p-4">
+          <p className="text-xs md:text-[11px] font-medium text-text-muted mb-1">Potencial (USD)</p>
           <p className="text-2xl font-bold text-amber-400">USD {potencial.toLocaleString()}</p>
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="bg-shell-surface border border-shell-border rounded-2xl p-4 flex items-center justify-center cursor-pointer hover:border-shell-accent/50 transition-colors group"
+          className="bg-surface-1 border border-border-subtle rounded-2xl p-4 flex items-center justify-center cursor-pointer hover:border-shell-accent/50 transition-colors group"
         >
           <div className="text-center flex flex-col items-center">
             <div className="w-8 h-8 rounded-full bg-shell-accent/10 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
@@ -140,13 +140,13 @@ export default function ActivityTab() {
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-shell-text-muted" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input
             type="text"
             placeholder="Buscar propiedad o asesor..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full bg-shell-surface border border-shell-border rounded-xl pl-9 pr-4 py-2 text-sm text-shell-text focus:outline-none focus:border-shell-accent"
+            className="w-full bg-surface-1 border border-border-subtle rounded-xl pl-9 pr-4 py-2 text-sm text-text-primary focus:outline-none focus:border-shell-accent"
           />
         </div>
         
@@ -154,7 +154,7 @@ export default function ActivityTab() {
         <select
           value={filterYear}
           onChange={e => setFilterYear(e.target.value)}
-          className="bg-shell-surface border border-shell-border rounded-xl px-3 py-2 text-sm text-shell-text focus:outline-none cursor-pointer"
+          className="bg-surface-1 border border-border-subtle rounded-xl px-3 py-2 text-sm text-text-primary focus:outline-none cursor-pointer"
         >
           {[0, 1, 2].map(i => {
             const y = new Date().getFullYear() - i
@@ -165,7 +165,7 @@ export default function ActivityTab() {
         <select
           value={filterMonth}
           onChange={e => setFilterMonth(e.target.value)}
-          className="bg-shell-surface border border-shell-border rounded-xl px-3 py-2 text-sm text-shell-text focus:outline-none cursor-pointer"
+          className="bg-surface-1 border border-border-subtle rounded-xl px-3 py-2 text-sm text-text-primary focus:outline-none cursor-pointer"
         >
           <option value="all">Todo el año</option>
           {MONTHS.map((m, i) => (
@@ -176,14 +176,14 @@ export default function ActivityTab() {
         <select
           value={filterType}
           onChange={e => setFilterType(e.target.value)}
-          className="bg-shell-surface border border-shell-border rounded-xl px-3 py-2 text-sm text-shell-text focus:outline-none cursor-pointer"
+          className="bg-surface-1 border border-border-subtle rounded-xl px-3 py-2 text-sm text-text-primary focus:outline-none cursor-pointer"
         >
           <option value="all">Todas</option>
           <option value="reserva">Reservas</option>
           <option value="autorizacion">Autorizaciones</option>
         </select>
 
-        <button onClick={fetchActivities} className="p-2 rounded-xl bg-shell-surface border border-shell-border text-shell-text-muted hover:text-shell-text transition-colors cursor-pointer">
+        <button onClick={fetchActivities} className="p-2 rounded-xl bg-surface-1 border border-border-subtle text-text-muted hover:text-text-primary transition-colors cursor-pointer">
           <RefreshCw size={16} className={isLoading ? "animate-spin" : ""} />
         </button>
       </div>
@@ -194,19 +194,19 @@ export default function ActivityTab() {
       )}
 
       {/* List */}
-      <div className="bg-shell-surface border border-shell-border rounded-2xl overflow-hidden">
+      <div className="bg-surface-1 border border-border-subtle rounded-2xl overflow-hidden">
         {isLoading ? (
-          <div className="p-8 flex flex-col items-center justify-center text-shell-text-muted">
+          <div className="p-8 flex flex-col items-center justify-center text-text-muted">
             <div className="w-6 h-6 border-2 border-shell-accent border-t-transparent rounded-full animate-spin mb-2" />
             <p className="text-sm">Cargando actividad...</p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-12 flex flex-col items-center justify-center text-center">
             <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
-              <CalendarClock size={24} className="text-shell-text-muted" />
+              <CalendarClock size={24} className="text-text-muted" />
             </div>
-            <h3 className="text-shell-text font-medium mb-1">Sin movimiento comercial</h3>
-            <p className="text-sm text-shell-text-muted mb-4 max-w-sm">
+            <h3 className="text-text-primary font-medium mb-1">Sin movimiento comercial</h3>
+            <p className="text-sm text-text-muted mb-4 max-w-sm">
               No hay reservas ni autorizaciones registradas para este filtro. Las autorizaciones cuentan como captaciones para subir de banda.
             </p>
             <button
@@ -221,7 +221,7 @@ export default function ActivityTab() {
             {filtered.map(act => (
               <div 
                 key={act.id} 
-                className="p-4 hover:bg-white/[0.04] transition-colors cursor-pointer group"
+                className="p-4 hover:bg-surface-overlay transition-colors cursor-pointer group"
                 onClick={() => setSelectedActivity(act)}
               >
                 <div className="flex items-start justify-between gap-4">
@@ -231,22 +231,22 @@ export default function ActivityTab() {
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                        <span className="text-xs md:text-[10px] font-bold uppercase tracking-wider text-shell-text-muted">
+                        <span className="text-xs md:text-[10px] font-bold uppercase tracking-wider text-text-muted">
                           {act.type === 'reserva' ? 'Reserva' : 'Autorización'}
                         </span>
                         <span className={`text-xs md:text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${STATUS_COLORS[act.status] || ''}`}>
                           {act.status}
                         </span>
                       </div>
-                      <p className="text-sm font-semibold text-shell-text truncate">{act.property_address}</p>
-                      <p className="text-xs text-shell-text-muted mt-0.5">
+                      <p className="text-sm font-semibold text-text-primary truncate">{act.property_address}</p>
+                      <p className="text-xs text-text-muted mt-0.5">
                         {act.agent_history?.name || act.agent_email.split('@')[0]} · {act.operation_type} · {new Date(act.activity_date).toLocaleDateString('es-AR')}
                       </p>
                     </div>
                   </div>
                   <div className="text-right shrink-0 flex flex-col items-end">
-                    <p className="text-xs text-shell-text-muted">{act.currency}</p>
-                    <p className="text-sm font-bold text-shell-text">{act.value.toLocaleString()}</p>
+                    <p className="text-xs text-text-muted">{act.currency}</p>
+                    <p className="text-sm font-bold text-text-primary">{act.value.toLocaleString()}</p>
                     {act.estimated_fees && <p className="text-xs md:text-[10px] text-emerald-400">Hon: {act.estimated_fees.toLocaleString()}</p>}
                     
                     <div className="flex items-center gap-2 mt-2">
@@ -256,7 +256,7 @@ export default function ActivityTab() {
                       >
                         <Eye size={12} /> <span className="text-xs md:text-[10px] font-bold uppercase">Detalles</span>
                       </button>
-                      <button onClick={(e) => handleDelete(act.id, e)} className="p-1.5 rounded-lg hover:bg-red-500/10 text-zinc-600 hover:text-red-400 transition-colors cursor-pointer">
+                      <button onClick={(e) => handleDelete(act.id, e)} className="p-1.5 rounded-lg hover:bg-red-500/10 text-text-muted hover:text-red-400 transition-colors cursor-pointer">
                         <Trash2 size={13} />
                       </button>
                     </div>
@@ -272,14 +272,14 @@ export default function ActivityTab() {
       {selectedActivity && (
         <div className="fixed inset-0 z-50 flex justify-end">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSelectedActivity(null)} />
-          <div className="relative w-full max-w-md bg-[#0c0c14] border-l border-shell-border h-full flex flex-col shadow-2xl animate-in slide-in-from-right-full duration-300">
+          <div className="relative w-full max-w-md bg-[#0c0c14] border-l border-border-subtle h-full flex flex-col shadow-2xl animate-in slide-in-from-right-full duration-300">
             
-            <div className="flex items-center justify-between p-5 border-b border-shell-border bg-white/[0.02]">
-              <h3 className="text-sm font-bold text-shell-text uppercase tracking-widest flex items-center gap-2">
+            <div className="flex items-center justify-between p-5 border-b border-border-subtle bg-surface-overlay">
+              <h3 className="text-sm font-bold text-text-primary uppercase tracking-widest flex items-center gap-2">
                 {selectedActivity.type === 'autorizacion' ? <FileCheck size={16} className="text-violet-400" /> : <FileText size={16} className="text-blue-400" />}
                 Detalles {selectedActivity.type === 'autorizacion' ? 'Autorización' : 'Reserva'}
               </h3>
-              <button onClick={() => setSelectedActivity(null)} className="p-2 rounded-xl hover:bg-white/[0.06] text-shell-text-muted cursor-pointer"><X size={16} /></button>
+              <button onClick={() => setSelectedActivity(null)} className="p-2 rounded-xl hover:bg-surface-overlay-hover text-text-muted cursor-pointer"><X size={16} /></button>
             </div>
 
             <div className="p-5 flex-1 overflow-y-auto space-y-6">
@@ -289,15 +289,15 @@ export default function ActivityTab() {
                   <span className={`text-xs md:text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${STATUS_COLORS[selectedActivity.status] || ''}`}>
                     {selectedActivity.status}
                   </span>
-                  <span className="text-xs md:text-[10px] font-medium text-shell-text-muted bg-white/5 px-2 py-0.5 rounded-full capitalize">
+                  <span className="text-xs md:text-[10px] font-medium text-text-muted bg-white/5 px-2 py-0.5 rounded-full capitalize">
                     {selectedActivity.operation_type}
                   </span>
                 </div>
-                <h2 className="text-lg font-bold text-shell-text leading-tight">{selectedActivity.property_address}</h2>
+                <h2 className="text-lg font-bold text-text-primary leading-tight">{selectedActivity.property_address}</h2>
                 <div className="grid grid-cols-2 gap-4 mt-4">
-                  <div className="bg-white/[0.02] border border-white/[0.05] p-3 rounded-xl">
-                    <p className="text-xs md:text-[10px] text-shell-text-muted font-medium mb-1 uppercase tracking-wider">Valor Operación</p>
-                    <p className="text-sm font-bold text-shell-text">{selectedActivity.currency} {selectedActivity.value.toLocaleString()}</p>
+                  <div className="bg-surface-overlay border border-border-subtle p-3 rounded-xl">
+                    <p className="text-xs md:text-[10px] text-text-muted font-medium mb-1 uppercase tracking-wider">Valor Operación</p>
+                    <p className="text-sm font-bold text-text-primary">{selectedActivity.currency} {selectedActivity.value.toLocaleString()}</p>
                   </div>
                   {selectedActivity.estimated_fees && (
                     <div className="bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl">
@@ -306,13 +306,13 @@ export default function ActivityTab() {
                     </div>
                   )}
                 </div>
-                <div className="flex items-center gap-4 text-xs md:text-[11px] text-shell-text-muted mt-3">
+                <div className="flex items-center gap-4 text-xs md:text-[11px] text-text-muted mt-3">
                   <span>Fecha de registro: {new Date(selectedActivity.activity_date).toLocaleDateString('es-AR')}</span>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <h4 className="text-xs font-bold text-shell-text uppercase tracking-wider border-b border-white/10 pb-2">Asesor Asignado</h4>
+                <h4 className="text-xs font-bold text-text-primary uppercase tracking-wider border-b border-white/10 pb-2">Asesor Asignado</h4>
                 <div className="flex justify-between items-center text-sm">
                   <span className="font-medium text-blue-400">{selectedActivity.agent_history?.name || selectedActivity.agent_email}</span>
                 </div>
@@ -320,8 +320,8 @@ export default function ActivityTab() {
 
               {selectedActivity.observations && (
                 <div className="space-y-2">
-                  <h4 className="text-xs font-bold text-shell-text uppercase tracking-wider border-b border-white/10 pb-2">Observaciones</h4>
-                  <p className="text-xs text-shell-text-muted whitespace-pre-wrap">{selectedActivity.observations}</p>
+                  <h4 className="text-xs font-bold text-text-primary uppercase tracking-wider border-b border-white/10 pb-2">Observaciones</h4>
+                  <p className="text-xs text-text-muted whitespace-pre-wrap">{selectedActivity.observations}</p>
                 </div>
               )}
 
@@ -448,10 +448,10 @@ function ActivityForm({ agents, onClose, onSuccess }: { agents: Agent[], onClose
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-[#0c0c14] border border-shell-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b border-shell-border sticky top-0 bg-[#0c0c14] z-10">
-          <h2 className="text-lg font-bold text-shell-text">Nueva Actividad</h2>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/[0.06] text-shell-text-muted cursor-pointer"><X size={18} /></button>
+      <div className="bg-[#0c0c14] border border-border-subtle rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b border-border-subtle sticky top-0 bg-[#0c0c14] z-10">
+          <h2 className="text-lg font-bold text-text-primary">Nueva Actividad</h2>
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-surface-overlay-hover text-text-muted cursor-pointer"><X size={18} /></button>
         </div>
 
         <div className="p-5 space-y-5">
@@ -459,13 +459,13 @@ function ActivityForm({ agents, onClose, onSuccess }: { agents: Agent[], onClose
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Tipo">
-              <select value={type} onChange={e => setType(e.target.value)} className="w-full bg-shell-surface border border-shell-border rounded-xl px-3 py-2 text-sm text-shell-text focus:outline-none focus:border-shell-accent">
+              <select value={type} onChange={e => setType(e.target.value)} className="w-full bg-surface-1 border border-border-subtle rounded-xl px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-shell-accent">
                 <option value="reserva">Reserva</option>
                 <option value="autorizacion">Autorización (Captación)</option>
               </select>
             </Field>
             <Field label="Op. Tipo">
-              <select value={operationType} onChange={e => setOperationType(e.target.value)} className="w-full bg-shell-surface border border-shell-border rounded-xl px-3 py-2 text-sm text-shell-text focus:outline-none focus:border-shell-accent">
+              <select value={operationType} onChange={e => setOperationType(e.target.value)} className="w-full bg-surface-1 border border-border-subtle rounded-xl px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-shell-accent">
                 <option value="Venta">Venta</option>
                 <option value="Alquiler">Alquiler Permanente</option>
                 <option value="Alquiler Temporal">Alquiler Temporal</option>
@@ -474,17 +474,17 @@ function ActivityForm({ agents, onClose, onSuccess }: { agents: Agent[], onClose
           </div>
 
           <Field label="Dirección de la propiedad *">
-            <input type="text" value={propertyAddress} onChange={e => setPropertyAddress(e.target.value)} placeholder="Ej: Las Camelias 200, Pilar" className="w-full bg-shell-surface border border-shell-border rounded-xl px-3 py-2 text-sm text-shell-text focus:outline-none focus:border-shell-accent" />
+            <input type="text" value={propertyAddress} onChange={e => setPropertyAddress(e.target.value)} placeholder="Ej: Las Camelias 200, Pilar" className="w-full bg-surface-1 border border-border-subtle rounded-xl px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-shell-accent" />
           </Field>
 
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
               <Field label={isAlquiler ? "Valor Mensual *" : "Valor *"}>
-                <input type="number" inputMode="decimal" value={value} onChange={e => setValue(e.target.value)} placeholder="250000" className="w-full bg-shell-surface border border-shell-border rounded-xl px-3 py-2 text-sm text-shell-text focus:outline-none focus:border-shell-accent" />
+                <input type="number" inputMode="decimal" value={value} onChange={e => setValue(e.target.value)} placeholder="250000" className="w-full bg-surface-1 border border-border-subtle rounded-xl px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-shell-accent" />
               </Field>
             </div>
             <Field label="Moneda">
-              <select value={currency} onChange={e => setCurrency(e.target.value)} className="w-full bg-shell-surface border border-shell-border rounded-xl px-3 py-2 text-sm text-shell-text focus:outline-none focus:border-shell-accent">
+              <select value={currency} onChange={e => setCurrency(e.target.value)} className="w-full bg-surface-1 border border-border-subtle rounded-xl px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-shell-accent">
                 <option value="USD">USD</option>
                 <option value="ARS">ARS</option>
               </select>
@@ -492,14 +492,14 @@ function ActivityForm({ agents, onClose, onSuccess }: { agents: Agent[], onClose
           </div>
 
           {/* Honorarios Block */}
-          <div className="bg-white/[0.02] border border-white/[0.05] p-3 rounded-xl grid grid-cols-3 gap-3">
+          <div className="bg-surface-overlay border border-border-subtle p-3 rounded-xl grid grid-cols-3 gap-3">
             {isAlquiler && (
               <Field label="Meses Contrato">
-                <input type="number" inputMode="decimal" value={contractMonths} onChange={e => { setContractMonths(e.target.value); setIsManualFee(false); }} className="w-full bg-black/20 border border-white/10 rounded-lg px-2 py-1.5 text-sm text-shell-text focus:outline-none focus:border-shell-accent" />
+                <input type="number" inputMode="decimal" value={contractMonths} onChange={e => { setContractMonths(e.target.value); setIsManualFee(false); }} className="w-full bg-black/20 border border-white/10 rounded-lg px-2 py-1.5 text-sm text-text-primary focus:outline-none focus:border-shell-accent" />
               </Field>
             )}
             <Field label="% Honorarios">
-              <input type="number" inputMode="decimal" step="0.1" value={feePercentage} onChange={e => { setFeePercentage(e.target.value); setIsManualFee(false); }} className="w-full bg-black/20 border border-white/10 rounded-lg px-2 py-1.5 text-sm text-shell-text focus:outline-none focus:border-shell-accent" />
+              <input type="number" inputMode="decimal" step="0.1" value={feePercentage} onChange={e => { setFeePercentage(e.target.value); setIsManualFee(false); }} className="w-full bg-black/20 border border-white/10 rounded-lg px-2 py-1.5 text-sm text-text-primary focus:outline-none focus:border-shell-accent" />
             </Field>
             <div className={isAlquiler ? "col-span-1" : "col-span-2"}>
               <Field label="Honorarios est.">
@@ -511,34 +511,34 @@ function ActivityForm({ agents, onClose, onSuccess }: { agents: Agent[], onClose
           {/* Fechas Block */}
           <div className={`grid gap-3 ${type === 'autorizacion' ? 'grid-cols-3' : 'grid-cols-1'}`}>
             <Field label={type === 'autorizacion' ? "Fecha de Inicio *" : "Fecha *"}>
-              <input type="date" value={activityDate} onChange={e => setActivityDate(e.target.value)} className="w-full bg-shell-surface border border-shell-border rounded-xl px-3 py-2 text-sm text-shell-text focus:outline-none focus:border-shell-accent" />
+              <input type="date" value={activityDate} onChange={e => setActivityDate(e.target.value)} className="w-full bg-surface-1 border border-border-subtle rounded-xl px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-shell-accent" />
             </Field>
             {type === 'autorizacion' && (
               <>
                 <Field label="Días Autorizados">
-                  <input type="number" inputMode="decimal" value={authDays} onChange={e => setAuthDays(e.target.value)} className="w-full bg-shell-surface border border-shell-border rounded-xl px-3 py-2 text-sm text-shell-text focus:outline-none focus:border-shell-accent" />
+                  <input type="number" inputMode="decimal" value={authDays} onChange={e => setAuthDays(e.target.value)} className="w-full bg-surface-1 border border-border-subtle rounded-xl px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-shell-accent" />
                 </Field>
                 <Field label="Fecha Fin (Auto)">
-                  <input type="date" value={endDate} disabled className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-sm text-shell-text-muted cursor-not-allowed" />
+                  <input type="date" value={endDate} disabled className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-sm text-text-muted cursor-not-allowed" />
                 </Field>
               </>
             )}
           </div>
 
           <Field label="Asesor *">
-            <select value={agentEmail} onChange={e => setAgentEmail(e.target.value)} className="w-full bg-shell-surface border border-shell-border rounded-xl px-3 py-2 text-sm text-shell-text focus:outline-none focus:border-shell-accent">
+            <select value={agentEmail} onChange={e => setAgentEmail(e.target.value)} className="w-full bg-surface-1 border border-border-subtle rounded-xl px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-shell-accent">
               <option value="">Seleccionar asesor</option>
               {agents.map(a => <option key={a.email} value={a.email}>{a.name}</option>)}
             </select>
           </Field>
 
           <Field label="Observaciones">
-            <textarea value={observations} onChange={e => setObservations(e.target.value)} rows={2} placeholder="Notas..." className="w-full bg-shell-surface border border-shell-border rounded-xl px-3 py-2 text-sm text-shell-text focus:outline-none focus:border-shell-accent resize-none" />
+            <textarea value={observations} onChange={e => setObservations(e.target.value)} rows={2} placeholder="Notas..." className="w-full bg-surface-1 border border-border-subtle rounded-xl px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-shell-accent resize-none" />
           </Field>
         </div>
 
-        <div className="flex items-center justify-end gap-3 p-5 border-t border-shell-border sticky bottom-0 bg-[#0c0c14]">
-          <button onClick={onClose} className="px-4 py-2 rounded-xl text-sm text-shell-text-muted hover:bg-white/5 transition-colors cursor-pointer">Cancelar</button>
+        <div className="flex items-center justify-end gap-3 p-5 border-t border-border-subtle sticky bottom-0 bg-[#0c0c14]">
+          <button onClick={onClose} className="px-4 py-2 rounded-xl text-sm text-text-muted hover:bg-white/5 transition-colors cursor-pointer">Cancelar</button>
           <button onClick={handleSubmit} disabled={saving} className="px-5 py-2 rounded-xl text-sm font-semibold bg-shell-accent text-black hover:bg-shell-accent/90 transition-colors disabled:opacity-50 cursor-pointer">
             {saving ? "Guardando..." : "Guardar"}
           </button>
@@ -551,7 +551,7 @@ function ActivityForm({ agents, onClose, onSuccess }: { agents: Agent[], onClose
 function Field({ label, children }: { label: string, children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="text-xs md:text-[11px] font-medium text-shell-text-muted mb-1 block">{label}</span>
+      <span className="text-xs md:text-[11px] font-medium text-text-muted mb-1 block">{label}</span>
       {children}
     </label>
   )

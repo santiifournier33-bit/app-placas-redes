@@ -74,14 +74,14 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
   return (
     <aside
       style={{ transitionTimingFunction: EASE, willChange: "width" }}
-      className={`hidden lg:flex flex-col h-screen fixed left-0 top-0 bg-shell-surface/95 backdrop-blur-xl border-r border-shell-border z-50 transition-[width] duration-300 overflow-hidden ${
+      className={`hidden lg:flex flex-col h-screen fixed left-0 top-0 bg-surface-1/95 backdrop-blur-xl border-r border-border-subtle z-50 transition-[width] duration-300 overflow-hidden ${
         collapsed ? "w-16" : "w-64"
       }`}
     >
       {/* Logo block — fixed height (matches PageHeader + TabNav) */}
       <Link
         href="/diseno"
-        className="h-14 border-b border-shell-border flex items-center shrink-0 cursor-pointer hover:bg-shell-surface-hover transition-colors px-4 gap-2.5"
+        className="h-14 border-b border-border-subtle flex items-center shrink-0 cursor-pointer hover:bg-surface-2 transition-colors px-4 gap-2.5"
       >
         <Image
           src={
@@ -99,7 +99,7 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
         {theme === "light" && (
           <span
             style={{ transitionTimingFunction: EASE }}
-            className={`text-[13px] font-bold tracking-wide text-shell-text ${fadeClass}`}
+            className={`text-[13px] font-bold tracking-wide text-text-primary ${fadeClass}`}
           >
             FREIRE
           </span>
@@ -119,13 +119,13 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
                 expanded and collapsed states so icons don't shift. */}
             <div className="relative h-7 mt-3 mb-1 mx-2 flex items-end">
               <span
-                className={`text-xs md:text-[10px] font-bold text-shell-text-muted uppercase tracking-[0.15em] whitespace-nowrap px-1 transition-opacity duration-200 ${
+                className={`text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.15em] whitespace-nowrap px-1 transition-opacity duration-200 ${
                   collapsed ? "opacity-0" : "opacity-100 delay-150"
                 }`}
               >
                 Administración
               </span>
-              <span className="absolute left-0 right-0 bottom-0 border-t border-shell-border" />
+              <span className="absolute left-0 right-0 bottom-0 border-t border-border-subtle" />
             </div>
             {adminModules.map((mod) => (
               <NavItem key={mod.id} mod={mod} pathname={pathname} collapsed={collapsed} />
@@ -135,14 +135,14 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
       </nav>
 
       {/* Footer */}
-      <div className="p-2 border-t border-shell-border space-y-1 bg-gradient-to-t from-black/[0.03] to-transparent shrink-0">
+      <div className="p-2 border-t border-border-subtle space-y-1 bg-gradient-to-t from-black/[0.03] to-transparent shrink-0">
         <div
           className={`flex items-center gap-2 px-3 overflow-hidden transition-opacity duration-200 ${
             collapsed ? "h-0 opacity-0 py-0" : "opacity-100 py-2"
           }`}
         >
           <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_6px_rgba(52,211,153,0.5)]" />
-          <span className="text-xs md:text-[11px] font-medium text-shell-text-muted truncate">
+          <span className="text-xs md:text-[11px] font-medium text-text-muted truncate">
             {email}
           </span>
           <span className="ml-auto text-xs md:text-[9px] font-bold uppercase tracking-wider text-shell-accent bg-shell-accent-muted px-1.5 py-0.5 rounded">
@@ -155,7 +155,7 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
         <button
           onClick={handleLogout}
           title="Cerrar sesión"
-          className={`group flex items-center rounded-xl text-sm font-medium text-shell-text-muted hover:text-red-400 hover:bg-red-500/10 transition-[background-color,color,padding] duration-200 cursor-pointer ${
+          className={`group flex items-center rounded-xl text-sm font-medium text-text-muted hover:text-red-400 hover:bg-red-500/10 transition-[background-color,color,padding] duration-200 cursor-pointer ${
             collapsed ? "w-10 h-10 justify-center mx-auto gap-0 px-0" : "w-full h-10 px-3 gap-3"
           }`}
         >
@@ -217,7 +217,7 @@ function NavItem({ mod, pathname, collapsed }: { mod: ModuleDefinition; pathname
       className={`group ${baseClass} ${
         active
           ? "text-shell-accent bg-shell-accent-muted shadow-[inset_0_1px_0_0_var(--color-shell-accent-muted)] font-semibold"
-          : "text-shell-text-muted hover:text-shell-text hover:bg-shell-surface-hover"
+          : "text-text-muted hover:text-text-primary hover:bg-surface-2"
       }`}
     >
       {active && !collapsed && (

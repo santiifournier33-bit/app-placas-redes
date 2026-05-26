@@ -19,7 +19,7 @@ export function TabNav() {
   const pathname = usePathname()
 
   return (
-    <div className="sticky top-0 z-20 bg-shell-bg/90 backdrop-blur-xl border-b border-white/[0.06]">
+    <div className="sticky top-0 z-20 bg-shell-bg/90 backdrop-blur-xl border-b border-border-subtle">
       <nav className="flex gap-1 px-4 lg:px-6 overflow-x-auto scroll-x-affordance py-2">
         {tabs.map(({ href, label, icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/")
@@ -31,7 +31,7 @@ export function TabNav() {
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 cursor-pointer ${
                 active
                   ? "text-blue-400 bg-blue-500/10"
-                  : "text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.04]"
+                  : "text-text-muted hover:text-text-secondary hover:bg-surface-overlay"
               }`}
             >
               {icon}

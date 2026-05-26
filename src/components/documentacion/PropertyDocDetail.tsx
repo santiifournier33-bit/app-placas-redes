@@ -48,20 +48,20 @@ export function PropertyDocDetail({ property: p, onClose }: PropertyDocDetailPro
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" onClick={onClose} />
 
       {/* Modal */}
-      <div className="fixed inset-y-0 right-0 w-full max-w-lg bg-shell-bg border-l border-white/[0.06] z-50 overflow-y-auto">
+      <div className="fixed inset-y-0 right-0 w-full max-w-lg bg-shell-bg border-l border-border-subtle z-50 overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-shell-bg/95 backdrop-blur-xl border-b border-white/[0.06] px-5 py-4 z-10">
+        <div className="sticky top-0 bg-shell-bg/95 backdrop-blur-xl border-b border-border-subtle px-5 py-4 z-10">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-zinc-500 font-mono">ID {p.id}</p>
-              <h2 className="text-lg font-bold text-shell-text mt-0.5 truncate">
+              <p className="text-xs text-text-muted font-mono">ID {p.id}</p>
+              <h2 className="text-lg font-bold text-text-primary mt-0.5 truncate">
                 {p.operation} {p.type} {p.location}
               </h2>
-              <p className="text-sm text-zinc-400 mt-1">{p.agent}</p>
+              <p className="text-sm text-text-secondary mt-1">{p.agent}</p>
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl hover:bg-white/[0.06] text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer shrink-0"
+              className="p-2 rounded-xl hover:bg-surface-overlay-hover text-text-muted hover:text-text-secondary transition-colors cursor-pointer shrink-0"
             >
               <X size={18} />
             </button>
@@ -94,7 +94,7 @@ export function PropertyDocDetail({ property: p, onClose }: PropertyDocDetailPro
 
           {/* Obligatorios */}
           <section>
-            <p className="text-xs md:text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em] mb-3">
+            <p className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-[0.12em] mb-3">
               🔴 Documentos obligatorios
             </p>
             <div className="space-y-2">
@@ -112,7 +112,7 @@ export function PropertyDocDetail({ property: p, onClose }: PropertyDocDetailPro
           {/* Recomendados */}
           {(recomendadosMissing.length > 0 || otherPresent.some(d => d.category === "identidad_conyuge" || d.category.includes("conyuge"))) && (
             <section>
-              <p className="text-xs md:text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em] mb-3">
+              <p className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-[0.12em] mb-3">
                 🟡 Documentos recomendados
               </p>
               <div className="space-y-2">
@@ -131,7 +131,7 @@ export function PropertyDocDetail({ property: p, onClose }: PropertyDocDetailPro
           {/* Other docs */}
           {otherPresent.filter(d => d.category !== "identidad_conyuge" && !d.category.includes("conyuge")).length > 0 && (
             <section>
-              <p className="text-xs md:text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em] mb-3">
+              <p className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-[0.12em] mb-3">
                 📄 Otros documentos
               </p>
               <div className="space-y-2">
@@ -147,7 +147,7 @@ export function PropertyDocDetail({ property: p, onClose }: PropertyDocDetailPro
           {/* Unclassified */}
           {p.unclassifiedFiles.length > 0 && (
             <section>
-              <p className="text-xs md:text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em] mb-3">
+              <p className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-[0.12em] mb-3">
                 ⚠️ Sin clasificar ({p.unclassifiedFiles.length})
               </p>
               <div className="space-y-1">
@@ -162,8 +162,8 @@ export function PropertyDocDetail({ property: p, onClose }: PropertyDocDetailPro
           )}
 
           {/* Summary */}
-          <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-3">
-            <p className="text-xs md:text-[11px] text-zinc-500">
+          <div className="rounded-xl bg-surface-overlay border border-border-subtle p-3">
+            <p className="text-xs md:text-[11px] text-text-muted">
               Total: {p.fileCount} archivo{p.fileCount !== 1 ? "s" : ""} en Drive
             </p>
           </div>
@@ -178,23 +178,23 @@ export function PropertyDocDetail({ property: p, onClose }: PropertyDocDetailPro
             <div className="flex items-center gap-3 shrink-0">
               <button
                 onClick={() => handleDownload(previewFile)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.1] hover:bg-white/[0.15] text-white transition-colors cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-overlay-hover hover:bg-white/[0.15] text-white transition-colors cursor-pointer"
               >
                 <Download size={16} />
                 Descargar
               </button>
               <button
                 onClick={() => setPreviewFile(null)}
-                className="p-2 rounded-xl hover:bg-white/[0.1] text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                className="p-2 rounded-xl hover:bg-surface-overlay-hover text-text-secondary hover:text-white transition-colors cursor-pointer"
               >
                 <X size={20} />
               </button>
             </div>
           </div>
           
-          <div className="w-full max-w-5xl h-[80vh] rounded-2xl overflow-hidden bg-black/50 border border-white/[0.1] flex items-center justify-center relative">
+          <div className="w-full max-w-5xl h-[80vh] rounded-2xl overflow-hidden bg-black/50 border border-border-default flex items-center justify-center relative">
             <div className="absolute inset-0 flex items-center justify-center -z-10">
-              <Loader2 size={24} className="animate-spin text-zinc-600" />
+              <Loader2 size={24} className="animate-spin text-text-muted" />
             </div>
             {previewFile.mimeType.startsWith("image/") ? (
               <img 
@@ -224,8 +224,8 @@ function DocGroup({ label, files, status, onPreview, onDownload }: {
   onDownload: (f: DriveFile) => void
 }) {
   return (
-    <div className="rounded-xl border border-white/[0.04] bg-white/[0.01] overflow-hidden">
-      <div className="flex items-center gap-2 px-3 py-2 bg-emerald-500/5 border-b border-white/[0.04]">
+    <div className="rounded-xl border border-border-subtle bg-white/[0.01] overflow-hidden">
+      <div className="flex items-center gap-2 px-3 py-2 bg-emerald-500/5 border-b border-border-subtle">
         <CheckCircle2 size={13} strokeWidth={2} className="text-emerald-400 shrink-0" />
         <span className="text-xs font-medium text-emerald-400">{label}</span>
       </div>
@@ -268,14 +268,14 @@ function FileRow({ file, onPreview, onDownload }: {
   const canPreview = isImage || isPdf || isDocx
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2 group hover:bg-white/[0.02] transition-colors">
-      <FileText size={13} className="text-zinc-500 shrink-0" />
-      <span className="text-xs md:text-[11px] text-zinc-300 truncate flex-1 font-mono">{file.name}</span>
+    <div className="flex items-center gap-2 px-3 py-2 group hover:bg-surface-overlay transition-colors">
+      <FileText size={13} className="text-text-muted shrink-0" />
+      <span className="text-xs md:text-[11px] text-text-secondary truncate flex-1 font-mono">{file.name}</span>
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
         {canPreview && (
           <button
             onClick={() => onPreview(file)}
-            className="p-1.5 rounded-lg hover:bg-white/[0.06] text-zinc-500 hover:text-blue-400 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg hover:bg-surface-overlay-hover text-text-muted hover:text-blue-400 transition-colors cursor-pointer"
             title="Vista previa"
           >
             <Eye size={13} />
@@ -283,7 +283,7 @@ function FileRow({ file, onPreview, onDownload }: {
         )}
         <button
           onClick={() => onDownload(file)}
-          className="p-1.5 rounded-lg hover:bg-white/[0.06] text-zinc-500 hover:text-emerald-400 transition-colors cursor-pointer"
+          className="p-1.5 rounded-lg hover:bg-surface-overlay-hover text-text-muted hover:text-emerald-400 transition-colors cursor-pointer"
           title="Descargar"
         >
           <Download size={13} />

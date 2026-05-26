@@ -19,7 +19,7 @@ export function PipelineSelector() {
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
               active
                 ? 'bg-blue-500/15 text-blue-400 border border-blue-500/20'
-                : 'bg-white/[0.04] text-zinc-500 border border-white/[0.06] hover:text-zinc-300 hover:bg-white/[0.06]'
+                : 'bg-surface-overlay text-text-muted border border-border-subtle hover:text-text-secondary hover:bg-surface-overlay-hover'
             }`}
           >
             {p.emoji && <span className="text-sm">{p.emoji}</span>}
@@ -37,7 +37,7 @@ export function PipelineSelector() {
           }
         }}
         title="Restablecer pipelines por defecto"
-        className="p-1.5 rounded-lg text-zinc-600 hover:text-zinc-400 hover:bg-white/[0.06] transition-colors cursor-pointer shrink-0"
+        className="p-1.5 rounded-lg text-text-muted hover:text-text-secondary hover:bg-surface-overlay-hover transition-colors cursor-pointer shrink-0"
       >
         <RotateCcw size={14} />
       </button>

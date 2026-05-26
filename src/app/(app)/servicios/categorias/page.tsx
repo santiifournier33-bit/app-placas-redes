@@ -24,7 +24,7 @@ function IconPicker({ value, onChange, color }: { value: string; onChange: (v: s
             onClick={() => onChange(name)}
             title={name}
             className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-              value === name ? "ring-1 bg-white/[0.08]" : "hover:bg-white/[0.04]"
+              value === name ? "ring-1 bg-surface-overlay-hover" : "hover:bg-surface-overlay"
             }`}
             style={value === name ? { outline: `1.5px solid ${color}` } : {}}
           >
@@ -48,8 +48,8 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (v: string)
           style={{ backgroundColor: c, ...(value === c ? { ringColor: c } : {}) }}
         />
       ))}
-      <label className="w-6 h-6 rounded-full border border-white/[0.15] flex items-center justify-center cursor-pointer hover:bg-white/[0.04] transition-colors overflow-hidden" title="Color personalizado">
-        <span className="text-xs md:text-[9px] text-zinc-400">+</span>
+      <label className="w-6 h-6 rounded-full border border-white/[0.15] flex items-center justify-center cursor-pointer hover:bg-surface-overlay transition-colors overflow-hidden" title="Color personalizado">
+        <span className="text-xs md:text-[9px] text-text-secondary">+</span>
         <input
           type="color"
           value={value}
@@ -81,32 +81,32 @@ function MacroForm({ initial, onSave, onCancel }: MacroFormProps) {
   }
 
   return (
-    <div className="p-4 rounded-2xl border border-white/[0.08] bg-white/[0.02] space-y-4">
+    <div className="p-4 rounded-2xl border border-border-default bg-surface-overlay space-y-4">
       <div className="space-y-1">
-        <label className="text-xs text-zinc-500 font-medium">Nombre *</label>
+        <label className="text-xs text-text-muted font-medium">Nombre *</label>
         <input
           type="text"
           value={name}
           onChange={(e) => { setName(e.target.value); setError("") }}
           placeholder="Ej: Oficina, Operaciones..."
           autoFocus
-          className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-blue-500/40"
+          className="w-full px-3 py-2 bg-surface-overlay border border-border-default rounded-xl text-sm text-text-primary placeholder-zinc-600 focus:outline-none focus:border-blue-500/40"
         />
         {error && <p className="text-xs text-red-400">{error}</p>}
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs text-zinc-500 font-medium">Color</label>
+        <label className="text-xs text-text-muted font-medium">Color</label>
         <ColorPicker value={color} onChange={setColor} />
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs text-zinc-500 font-medium">Ícono</label>
+        <label className="text-xs text-text-muted font-medium">Ícono</label>
         <IconPicker value={iconName} onChange={setIconName} color={color} />
       </div>
 
       <div className="flex items-center justify-end gap-2 pt-1">
-        <button type="button" onClick={onCancel} className="px-3 py-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
+        <button type="button" onClick={onCancel} className="px-3 py-1.5 text-xs text-text-muted hover:text-text-secondary transition-colors">
           Cancelar
         </button>
         <button
@@ -144,27 +144,27 @@ function SubForm({ initial, macroCategoryId, macroCategories, onSave, onCancel }
   }
 
   return (
-    <div className="ml-8 p-3 rounded-xl border border-white/[0.06] bg-white/[0.01] space-y-3">
+    <div className="ml-8 p-3 rounded-xl border border-border-subtle bg-white/[0.01] space-y-3">
       <div className="space-y-1">
-        <label className="text-xs text-zinc-500 font-medium">Nombre *</label>
+        <label className="text-xs text-text-muted font-medium">Nombre *</label>
         <input
           type="text"
           value={name}
           onChange={(e) => { setName(e.target.value); setError("") }}
           placeholder="Ej: Publicidad paga, CRM..."
           autoFocus
-          className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-blue-500/40"
+          className="w-full px-3 py-2 bg-surface-overlay border border-border-default rounded-xl text-sm text-text-primary placeholder-zinc-600 focus:outline-none focus:border-blue-500/40"
         />
         {error && <p className="text-xs text-red-400">{error}</p>}
       </div>
 
       {initial && (
         <div className="space-y-1">
-          <label className="text-xs text-zinc-500 font-medium">Categoría macro</label>
+          <label className="text-xs text-text-muted font-medium">Categoría macro</label>
           <select
             value={macroId}
             onChange={(e) => setMacroId(e.target.value)}
-            className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-zinc-300 focus:outline-none [color-scheme:dark]"
+            className="w-full px-3 py-2 bg-surface-overlay border border-border-default rounded-xl text-sm text-text-secondary focus:outline-none [color-scheme:dark]"
           >
             {macroCategories.map((m) => (
               <option key={m.id} value={m.id}>{m.name}</option>
@@ -175,11 +175,11 @@ function SubForm({ initial, macroCategoryId, macroCategories, onSave, onCancel }
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <label className="text-xs text-zinc-500 font-medium">Color</label>
+          <label className="text-xs text-text-muted font-medium">Color</label>
           <ColorPicker value={color} onChange={setColor} />
         </div>
         <div className="space-y-1.5">
-          <label className="text-xs text-zinc-500 font-medium">Ícono</label>
+          <label className="text-xs text-text-muted font-medium">Ícono</label>
           <div className="grid grid-cols-5 gap-1">
             {ICON_SET.slice(0, 20).map(({ name: n }) => {
               const Icon = (LucideIcons as unknown as Record<string, React.ComponentType<{ size?: number; color?: string }>>)[n]
@@ -190,7 +190,7 @@ function SubForm({ initial, macroCategoryId, macroCategories, onSave, onCancel }
                   type="button"
                   onClick={() => setIconName(n)}
                   className={`w-7 h-7 rounded-md flex items-center justify-center transition-all ${
-                    iconName === n ? "bg-white/[0.08]" : "hover:bg-white/[0.04]"
+                    iconName === n ? "bg-surface-overlay-hover" : "hover:bg-surface-overlay"
                   }`}
                   style={iconName === n ? { outline: `1.5px solid ${color}`, borderRadius: 6 } : {}}
                 >
@@ -203,7 +203,7 @@ function SubForm({ initial, macroCategoryId, macroCategories, onSave, onCancel }
       </div>
 
       <div className="flex items-center justify-end gap-2">
-        <button type="button" onClick={onCancel} className="px-3 py-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
+        <button type="button" onClick={onCancel} className="px-3 py-1.5 text-xs text-text-muted hover:text-text-secondary transition-colors">
           Cancelar
         </button>
         <button
@@ -288,7 +288,7 @@ export default function CategoriasPage() {
   }
 
   if (!mounted) {
-    return <div className="p-6"><div className="animate-pulse h-8 w-48 bg-white/[0.04] rounded-xl" /></div>
+    return <div className="p-6"><div className="animate-pulse h-8 w-48 bg-surface-overlay rounded-xl" /></div>
   }
 
   return (
@@ -296,8 +296,8 @@ export default function CategoriasPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h1 className="text-2xl font-bold text-shell-text">Categorías</h1>
-          <p className="text-xs text-zinc-500 mt-0.5">{macroCategories.length} categorías · {categories.length} subcategorías</p>
+          <h1 className="text-2xl font-bold text-text-primary">Categorías</h1>
+          <p className="text-xs text-text-muted mt-0.5">{macroCategories.length} categorías · {categories.length} subcategorías</p>
         </div>
         <button
           onClick={() => { setAddingMacro(true); setEditingMacro(null) }}
@@ -334,7 +334,7 @@ export default function CategoriasPage() {
           const MacroIcon = (LucideIcons as unknown as Record<string, React.ComponentType<{ size?: number; color?: string }>>)[macro.iconName]
 
           return (
-            <div key={macro.id} className="rounded-2xl border border-white/[0.06] overflow-hidden">
+            <div key={macro.id} className="rounded-2xl border border-border-subtle overflow-hidden">
               {/* Macro row */}
               {isEditingThis ? (
                 <div className="p-3">
@@ -345,7 +345,7 @@ export default function CategoriasPage() {
                   />
                 </div>
               ) : (
-                <div className="flex items-center gap-3 px-4 py-3 bg-white/[0.02] hover:bg-white/[0.03] transition-colors">
+                <div className="flex items-center gap-3 px-4 py-3 bg-surface-overlay hover:bg-surface-overlay transition-colors">
                   <button
                     type="button"
                     onClick={() => toggleExpand(macro.id)}
@@ -358,18 +358,18 @@ export default function CategoriasPage() {
                       {MacroIcon && <MacroIcon size={16} color={macro.color} />}
                     </div>
                     <div className="flex-1 min-w-0 text-left">
-                      <span className="text-sm font-semibold text-zinc-200">{macro.name}</span>
-                      <span className="ml-2 text-xs text-zinc-600">{subs.length} subcategoría{subs.length !== 1 ? "s" : ""}</span>
+                      <span className="text-sm font-semibold text-text-primary">{macro.name}</span>
+                      <span className="ml-2 text-xs text-text-muted">{subs.length} subcategoría{subs.length !== 1 ? "s" : ""}</span>
                     </div>
                     <ChevronDown
                       size={14}
-                      className={`text-zinc-500 transition-transform ${isExpanded ? "" : "-rotate-90"}`}
+                      className={`text-text-muted transition-transform ${isExpanded ? "" : "-rotate-90"}`}
                     />
                   </button>
                   <div className="flex items-center gap-0.5 ml-2">
                     <button
                       onClick={() => { setEditingMacro(macro.id); setAddingMacro(false) }}
-                      className="p-1.5 text-zinc-600 hover:text-zinc-300 transition-colors cursor-pointer rounded-lg hover:bg-white/[0.04]"
+                      className="p-1.5 text-text-muted hover:text-text-secondary transition-colors cursor-pointer rounded-lg hover:bg-surface-overlay"
                       title="Editar"
                     >
                       <Edit2 size={13} />
@@ -377,7 +377,7 @@ export default function CategoriasPage() {
                     {macro.isCustom && (
                       <button
                         onClick={() => handleDeleteMacro(macro)}
-                        className="p-1.5 text-zinc-600 hover:text-red-400 transition-colors cursor-pointer rounded-lg hover:bg-red-500/10"
+                        className="p-1.5 text-text-muted hover:text-red-400 transition-colors cursor-pointer rounded-lg hover:bg-red-500/10"
                         title="Eliminar"
                       >
                         <Trash2 size={13} />
@@ -389,7 +389,7 @@ export default function CategoriasPage() {
 
               {/* Subcategories */}
               {isExpanded && !isEditingThis && (
-                <div className="border-t border-white/[0.04]">
+                <div className="border-t border-border-subtle">
                   {subs.map((cat) => {
                     const SubIcon = (LucideIcons as unknown as Record<string, React.ComponentType<{ size?: number; color?: string }>>)[cat.iconName]
                     const count = paymentCounts.get(cat.id) ?? 0
@@ -412,7 +412,7 @@ export default function CategoriasPage() {
                     return (
                       <div
                         key={cat.id}
-                        className="flex items-center gap-3 pl-14 pr-4 py-2.5 hover:bg-white/[0.02] transition-colors group border-b border-white/[0.03] last:border-0"
+                        className="flex items-center gap-3 pl-14 pr-4 py-2.5 hover:bg-surface-overlay transition-colors group border-b border-white/[0.03] last:border-0"
                       >
                         <div
                           className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
@@ -420,20 +420,20 @@ export default function CategoriasPage() {
                         >
                           {SubIcon && <SubIcon size={12} color={cat.color} />}
                         </div>
-                        <span className="text-sm text-zinc-300 flex-1">{cat.name}</span>
+                        <span className="text-sm text-text-secondary flex-1">{cat.name}</span>
                         {count > 0 && (
-                          <span className="text-xs text-zinc-600">{count} gasto{count !== 1 ? "s" : ""}</span>
+                          <span className="text-xs text-text-muted">{count} gasto{count !== 1 ? "s" : ""}</span>
                         )}
                         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => { setEditingSub(cat.id); setAddingSub(null) }}
-                            className="p-1 text-zinc-600 hover:text-zinc-300 transition-colors cursor-pointer rounded-md hover:bg-white/[0.04]"
+                            className="p-1 text-text-muted hover:text-text-secondary transition-colors cursor-pointer rounded-md hover:bg-surface-overlay"
                           >
                             <Edit2 size={11} />
                           </button>
                           <button
                             onClick={() => handleDeleteSub(cat)}
-                            className="p-1 text-zinc-600 hover:text-red-400 transition-colors cursor-pointer rounded-md hover:bg-red-500/10"
+                            className="p-1 text-text-muted hover:text-red-400 transition-colors cursor-pointer rounded-md hover:bg-red-500/10"
                           >
                             <Trash2 size={11} />
                           </button>
@@ -456,7 +456,7 @@ export default function CategoriasPage() {
                     <button
                       type="button"
                       onClick={() => { setAddingSub(macro.id); setEditingSub(null) }}
-                      className="flex items-center gap-2 pl-14 pr-4 py-2.5 text-xs text-zinc-600 hover:text-zinc-400 transition-colors w-full text-left"
+                      className="flex items-center gap-2 pl-14 pr-4 py-2.5 text-xs text-text-muted hover:text-text-secondary transition-colors w-full text-left"
                     >
                       <Plus size={11} />
                       Agregar subcategoría
@@ -470,30 +470,30 @@ export default function CategoriasPage() {
 
         {/* Orphaned subcategories */}
         {orphans.length > 0 && (
-          <div className="rounded-2xl border border-white/[0.06] overflow-hidden">
-            <div className="flex items-center gap-3 px-4 py-3 bg-white/[0.02]">
+          <div className="rounded-2xl border border-border-subtle overflow-hidden">
+            <div className="flex items-center gap-3 px-4 py-3 bg-surface-overlay">
               <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-zinc-500/10">
-                <GripVertical size={16} className="text-zinc-500" />
+                <GripVertical size={16} className="text-text-muted" />
               </div>
-              <span className="text-sm font-semibold text-zinc-400">Sin categoría macro</span>
-              <span className="text-xs text-zinc-600">{orphans.length} subcategoría{orphans.length !== 1 ? "s" : ""}</span>
+              <span className="text-sm font-semibold text-text-secondary">Sin categoría macro</span>
+              <span className="text-xs text-text-muted">{orphans.length} subcategoría{orphans.length !== 1 ? "s" : ""}</span>
             </div>
-            <div className="border-t border-white/[0.04]">
+            <div className="border-t border-border-subtle">
               {orphans.map((cat) => {
                 const SubIcon = (LucideIcons as unknown as Record<string, React.ComponentType<{ size?: number; color?: string }>>)[cat.iconName]
                 const count = paymentCounts.get(cat.id) ?? 0
                 return (
-                  <div key={cat.id} className="flex items-center gap-3 pl-14 pr-4 py-2.5 hover:bg-white/[0.02] transition-colors group">
+                  <div key={cat.id} className="flex items-center gap-3 pl-14 pr-4 py-2.5 hover:bg-surface-overlay transition-colors group">
                     <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: cat.color + "22" }}>
                       {SubIcon && <SubIcon size={12} color={cat.color} />}
                     </div>
-                    <span className="text-sm text-zinc-300 flex-1">{cat.name}</span>
-                    {count > 0 && <span className="text-xs text-zinc-600">{count} gastos</span>}
+                    <span className="text-sm text-text-secondary flex-1">{cat.name}</span>
+                    {count > 0 && <span className="text-xs text-text-muted">{count} gastos</span>}
                     <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => { setEditingSub(cat.id); setAddingSub(null) }} className="p-1 text-zinc-600 hover:text-zinc-300 rounded-md hover:bg-white/[0.04]">
+                      <button onClick={() => { setEditingSub(cat.id); setAddingSub(null) }} className="p-1 text-text-muted hover:text-text-secondary rounded-md hover:bg-surface-overlay">
                         <Edit2 size={11} />
                       </button>
-                      <button onClick={() => handleDeleteSub(cat)} className="p-1 text-zinc-600 hover:text-red-400 rounded-md hover:bg-red-500/10">
+                      <button onClick={() => handleDeleteSub(cat)} className="p-1 text-text-muted hover:text-red-400 rounded-md hover:bg-red-500/10">
                         <Trash2 size={11} />
                       </button>
                     </div>

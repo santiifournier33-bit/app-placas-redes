@@ -29,29 +29,29 @@ export function MailLogin() {
           </div>
         </div>
 
-        <h2 className="text-xl font-bold text-shell-text text-center mb-1">Activar correo</h2>
-        <p className="text-sm text-zinc-500 text-center mb-8">
+        <h2 className="text-xl font-bold text-text-primary text-center mb-1">Activar correo</h2>
+        <p className="text-sm text-text-muted text-center mb-8">
           Solo necesitás ingresar tu contraseña una vez
         </p>
 
         {/* Current mail email (read-only, derived from session) */}
-        <div className="mb-4 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-          <p className="text-xs md:text-[10px] font-medium text-zinc-600 uppercase tracking-wider mb-1">Tu correo corporativo</p>
+        <div className="mb-4 p-3 rounded-xl bg-surface-overlay border border-border-subtle">
+          <p className="text-xs md:text-[10px] font-medium text-text-muted uppercase tracking-wider mb-1">Tu correo corporativo</p>
           <div className="flex items-center gap-2">
             <ShieldCheck size={14} className="text-emerald-400" />
             <span className="text-sm text-emerald-300 font-medium">{mailEmail}</span>
           </div>
-          <p className="text-xs md:text-[10px] text-zinc-600 mt-1">Detectado automáticamente de tu sesión</p>
+          <p className="text-xs md:text-[10px] text-text-muted mt-1">Detectado automáticamente de tu sesión</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Password field */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+            <label className="text-xs font-medium text-text-secondary uppercase tracking-wider">
               Contraseña del correo
             </label>
             <div className="relative">
-              <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
+              <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
               <input
                 type="password"
                 value={pass}
@@ -59,7 +59,7 @@ export function MailLogin() {
                 placeholder="Contraseña de DonWeb / Ferozo"
                 required
                 autoFocus
-                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-10 pr-4 py-3 text-sm text-shell-text placeholder-zinc-600 focus:outline-none focus:border-blue-500/50 focus:bg-white/[0.06] transition-all"
+                className="w-full bg-surface-overlay border border-border-default rounded-xl pl-10 pr-4 py-3 text-sm text-text-primary placeholder-zinc-600 focus:outline-none focus:border-blue-500/50 focus:bg-surface-overlay-hover transition-all"
               />
             </div>
           </div>
@@ -86,7 +86,7 @@ export function MailLogin() {
           </button>
         </form>
 
-        <p className="text-xs md:text-[11px] text-zinc-600 text-center mt-6 leading-relaxed">
+        <p className="text-xs md:text-[11px] text-text-muted text-center mt-6 leading-relaxed">
           La contraseña se guarda solo en este dispositivo.<br />
           No se almacena en ningún servidor.
         </p>

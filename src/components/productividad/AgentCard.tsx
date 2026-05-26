@@ -16,36 +16,36 @@ export function AgentCard({ data, rank, onTap }: AgentCardProps) {
   return (
     <div
       onClick={onTap}
-      className={`flex items-center gap-3 px-4 py-3 border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors ${onTap ? "cursor-pointer" : ""}`}
+      className={`flex items-center gap-3 px-4 py-3 border-b border-border-subtle hover:bg-surface-overlay transition-colors ${onTap ? "cursor-pointer" : ""}`}
     >
       {/* Rank */}
       <span className={`w-6 text-center text-sm font-bold tabular-nums ${
         rank === 1 ? "text-amber-400" :
-        rank === 2 ? "text-zinc-300" :
+        rank === 2 ? "text-text-secondary" :
         rank === 3 ? "text-orange-400" :
-        "text-zinc-600"
+        "text-text-muted"
       }`}>
         {rank}
       </span>
 
       {/* Avatar */}
       <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
-        active ? "bg-blue-500/15 text-blue-400" : "bg-zinc-800 text-zinc-600"
+        active ? "bg-blue-500/15 text-blue-400" : "bg-zinc-800 text-text-muted"
       }`}>
         {agent.displayName.slice(0, 2).toUpperCase()}
       </div>
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-shell-text truncate">{agent.displayName}</p>
+        <p className="text-sm font-medium text-text-primary truncate">{agent.displayName}</p>
         <div className="flex items-center gap-3 mt-0.5">
-          <span className="flex items-center gap-1 text-xs md:text-[11px] text-zinc-500">
+          <span className="flex items-center gap-1 text-xs md:text-[11px] text-text-muted">
             <CheckSquare size={11} /> {metrics.tasksCompleted}
           </span>
-          <span className="flex items-center gap-1 text-xs md:text-[11px] text-zinc-500">
+          <span className="flex items-center gap-1 text-xs md:text-[11px] text-text-muted">
             <UserPlus size={11} /> {metrics.leadsCreated}
           </span>
-          <span className="flex items-center gap-1 text-xs md:text-[11px] text-zinc-500">
+          <span className="flex items-center gap-1 text-xs md:text-[11px] text-text-muted">
             <ArrowRightLeft size={11} /> {metrics.leadsMoved}
           </span>
         </div>
@@ -53,10 +53,10 @@ export function AgentCard({ data, rank, onTap }: AgentCardProps) {
 
       {/* Total */}
       <div className="text-right shrink-0">
-        <p className={`text-lg font-bold tabular-nums ${active ? "text-shell-text" : "text-zinc-700"}`}>
+        <p className={`text-lg font-bold tabular-nums ${active ? "text-text-primary" : "text-zinc-700"}`}>
           {metrics.totalActions}
         </p>
-        <p className="text-xs md:text-[10px] text-zinc-600">acciones</p>
+        <p className="text-xs md:text-[10px] text-text-muted">acciones</p>
       </div>
 
       {/* Status dot */}

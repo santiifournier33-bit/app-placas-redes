@@ -20,7 +20,7 @@ export function SectionHeader({ id, name, count, collapsed, onToggle }: SectionH
 
   if (editing) {
     return (
-      <div className="px-4 py-3 border-b border-white/[0.04]">
+      <div className="px-4 py-3 border-b border-border-subtle">
         <input
           autoFocus
           value={editName}
@@ -36,39 +36,39 @@ export function SectionHeader({ id, name, count, collapsed, onToggle }: SectionH
               setEditing(false)
             }
           }}
-          className="bg-transparent text-sm font-bold text-shell-text outline-none w-full"
+          className="bg-transparent text-sm font-bold text-text-primary outline-none w-full"
         />
       </div>
     )
   }
 
   return (
-    <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.04]">
+    <div className="flex items-center gap-2 px-4 py-3 border-b border-border-subtle">
       <button onClick={onToggle} className="cursor-pointer">
         {collapsed ? (
-          <ChevronRight size={16} className="text-zinc-500" />
+          <ChevronRight size={16} className="text-text-muted" />
         ) : (
-          <ChevronDown size={16} className="text-zinc-500" />
+          <ChevronDown size={16} className="text-text-muted" />
         )}
       </button>
-      <span className="text-sm font-bold text-shell-text">{name}</span>
-      <span className="text-xs text-zinc-600 font-medium">{count}</span>
+      <span className="text-sm font-bold text-text-primary">{name}</span>
+      <span className="text-xs text-text-muted font-medium">{count}</span>
 
       <div className="ml-auto relative">
         <button
           onClick={() => setShowMenu(!showMenu)}
-          className="p-1 hover:bg-white/[0.06] rounded cursor-pointer"
+          className="p-1 hover:bg-surface-overlay-hover rounded cursor-pointer"
         >
-          <MoreHorizontal size={16} className="text-zinc-600" />
+          <MoreHorizontal size={16} className="text-text-muted" />
         </button>
         {showMenu && (
-          <div className="absolute right-0 top-7 bg-[#222230] rounded-xl border border-white/[0.08] py-1 z-10 shadow-xl min-w-[140px]">
+          <div className="absolute right-0 top-7 bg-[#222230] rounded-xl border border-border-default py-1 z-10 shadow-xl min-w-[140px]">
             <button
               onClick={() => {
                 setEditing(true)
                 setShowMenu(false)
               }}
-              className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-sm text-zinc-300 cursor-pointer"
+              className="flex items-center gap-2 px-3 py-2 w-full hover:bg-surface-overlay text-sm text-text-secondary cursor-pointer"
             >
               <Pencil size={14} />
               Renombrar

@@ -234,7 +234,7 @@ export function MailApp() {
   return (
     <div className="flex h-full min-h-0 overflow-hidden">
       {/* ── Sidebar ── */}
-      <aside className="hidden lg:flex flex-col w-52 shrink-0 border-r border-white/[0.06] bg-white/[0.01] py-4">
+      <aside className="hidden lg:flex flex-col w-52 shrink-0 border-r border-border-subtle bg-white/[0.01] py-4">
         {/* Compose */}
         <div className="px-3 mb-4">
           <button
@@ -255,7 +255,7 @@ export function MailApp() {
               className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-all cursor-pointer ${
                 activeFolder === f.id
                   ? "bg-blue-500/10 text-blue-400"
-                  : "text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04]"
+                  : "text-text-secondary hover:text-text-primary hover:bg-surface-overlay"
               }`}
             >
               <f.icon size={15} strokeWidth={1.8} />
@@ -265,48 +265,48 @@ export function MailApp() {
         </nav>
 
         {/* Account + Profile Menu */}
-        <div className="mt-auto shrink-0 border-t border-white/[0.06] relative">
+        <div className="mt-auto shrink-0 border-t border-border-subtle relative">
           <button 
             onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="w-full flex items-center justify-between p-3 hover:bg-white/[0.03] transition-colors cursor-pointer group"
+            className="w-full flex items-center justify-between p-3 hover:bg-surface-overlay transition-colors cursor-pointer group"
           >
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-sm shrink-0">
                 {realName ? realName[0].toUpperCase() : <UserCircle size={18} />}
               </div>
               <div className="text-left min-w-0 flex-1">
-                <p className="text-sm font-semibold text-zinc-200 truncate leading-tight mb-0.5">{realName}</p>
-                <p className="text-xs md:text-[10px] text-zinc-500 truncate leading-tight">{credentials?.user}</p>
+                <p className="text-sm font-semibold text-text-primary truncate leading-tight mb-0.5">{realName}</p>
+                <p className="text-xs md:text-[10px] text-text-muted truncate leading-tight">{credentials?.user}</p>
               </div>
             </div>
-            {showProfileMenu ? <ChevronDown size={14} className="text-zinc-500" /> : <ChevronUp size={14} className="text-zinc-500" />}
+            {showProfileMenu ? <ChevronDown size={14} className="text-text-muted" /> : <ChevronUp size={14} className="text-text-muted" />}
           </button>
 
           {/* Profile Dropdown */}
           {showProfileMenu && (
-            <div className="absolute bottom-full left-2 right-2 mb-2 bg-[#1c1c26] border border-white/[0.1] rounded-xl shadow-2xl overflow-hidden z-50">
+            <div className="absolute bottom-full left-2 right-2 mb-2 bg-[#1c1c26] border border-border-default rounded-xl shadow-2xl overflow-hidden z-50">
               {isEditingName ? (
-                <form onSubmit={saveSenderName} className="p-3 border-b border-white/[0.06]">
-                  <label className="text-xs md:text-[10px] font-medium text-zinc-500 uppercase mb-1.5 block">Personalizar remitente</label>
+                <form onSubmit={saveSenderName} className="p-3 border-b border-border-subtle">
+                  <label className="text-xs md:text-[10px] font-medium text-text-muted uppercase mb-1.5 block">Personalizar remitente</label>
                   <input 
                     type="text" 
                     value={tempName}
                     onChange={e => setTempName(e.target.value)}
-                    className="w-full bg-black/20 border border-white/[0.08] rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-blue-500"
+                    className="w-full bg-black/20 border border-border-default rounded-lg px-2.5 py-1.5 text-xs text-text-primary focus:outline-none focus:border-blue-500"
                     placeholder="Tu nombre completo"
                     autoFocus
                   />
                   <div className="flex gap-2 mt-2">
                     <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-xs md:text-[10px] py-1 rounded cursor-pointer transition-colors">Guardar</button>
-                    <button type="button" onClick={() => { setIsEditingName(false); setTempName(realName) }} className="flex-1 bg-white/[0.06] hover:bg-white/[0.1] text-zinc-300 text-xs md:text-[10px] py-1 rounded cursor-pointer transition-colors">Cancelar</button>
+                    <button type="button" onClick={() => { setIsEditingName(false); setTempName(realName) }} className="flex-1 bg-surface-overlay-hover hover:bg-surface-overlay-hover text-text-secondary text-xs md:text-[10px] py-1 rounded cursor-pointer transition-colors">Cancelar</button>
                   </div>
                 </form>
               ) : (
                 <button 
                   onClick={() => setIsEditingName(true)}
-                  className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-zinc-300 hover:bg-white/[0.04] transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-text-secondary hover:bg-surface-overlay transition-colors cursor-pointer text-left"
                 >
-                  <Edit2 size={13} className="text-zinc-500" />
+                  <Edit2 size={13} className="text-text-muted" />
                   Personalizar remitente
                 </button>
               )}
@@ -314,7 +314,7 @@ export function MailApp() {
               {!isEditingName && (
                 <button
                   onClick={logoutMail}
-                  className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer text-left border-t border-white/[0.06]"
+                  className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer text-left border-t border-border-subtle"
                 >
                   <LogOut size={13} />
                   Cerrar sesión de correo
@@ -334,10 +334,10 @@ export function MailApp() {
       )}
 
       {/* ── Mobile Drawer ── */}
-      <div className={`fixed inset-y-0 left-0 w-72 bg-[#12121a] border-r border-white/[0.06] z-[110] transform transition-transform duration-300 lg:hidden flex flex-col ${isDrawerOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <div className="px-5 py-5 border-b border-white/[0.06] flex items-center justify-between shrink-0">
-          <h2 className="text-lg font-bold text-shell-text">Freire Correo</h2>
-          <button onClick={() => setIsDrawerOpen(false)} className="p-1 rounded-lg hover:bg-white/[0.06] text-zinc-400 cursor-pointer">
+      <div className={`fixed inset-y-0 left-0 w-72 bg-[#12121a] border-r border-border-subtle z-[110] transform transition-transform duration-300 lg:hidden flex flex-col ${isDrawerOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        <div className="px-5 py-5 border-b border-border-subtle flex items-center justify-between shrink-0">
+          <h2 className="text-lg font-bold text-text-primary">Freire Correo</h2>
+          <button onClick={() => setIsDrawerOpen(false)} className="p-1 rounded-lg hover:bg-surface-overlay-hover text-text-secondary cursor-pointer">
             <X size={18} />
           </button>
         </div>
@@ -349,7 +349,7 @@ export function MailApp() {
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
                 activeFolder === f.id
                   ? "bg-blue-500/10 text-blue-400"
-                  : "text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04]"
+                  : "text-text-secondary hover:text-text-primary hover:bg-surface-overlay"
               }`}
             >
               <f.icon size={18} strokeWidth={1.8} />
@@ -359,48 +359,48 @@ export function MailApp() {
         </nav>
         
         {/* Mobile Profile */}
-        <div className="mt-auto shrink-0 border-t border-white/[0.06] relative">
+        <div className="mt-auto shrink-0 border-t border-border-subtle relative">
           <button 
             onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="w-full flex items-center justify-between p-4 hover:bg-white/[0.03] transition-colors cursor-pointer group"
+            className="w-full flex items-center justify-between p-4 hover:bg-surface-overlay transition-colors cursor-pointer group"
           >
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-lg shrink-0">
                 {realName ? realName[0].toUpperCase() : <UserCircle size={20} />}
               </div>
               <div className="text-left min-w-0 flex-1">
-                <p className="text-base font-semibold text-zinc-200 truncate leading-tight mb-0.5">{realName}</p>
-                <p className="text-xs text-zinc-500 truncate leading-tight">{credentials?.user}</p>
+                <p className="text-base font-semibold text-text-primary truncate leading-tight mb-0.5">{realName}</p>
+                <p className="text-xs text-text-muted truncate leading-tight">{credentials?.user}</p>
               </div>
             </div>
-            {showProfileMenu ? <ChevronDown size={18} className="text-zinc-500" /> : <ChevronUp size={18} className="text-zinc-500" />}
+            {showProfileMenu ? <ChevronDown size={18} className="text-text-muted" /> : <ChevronUp size={18} className="text-text-muted" />}
           </button>
 
           {/* Mobile Profile Dropdown */}
           {showProfileMenu && (
-            <div className="absolute bottom-[calc(100%-10px)] left-3 right-3 mb-2 bg-[#1c1c26] border border-white/[0.1] rounded-2xl shadow-2xl overflow-hidden z-50">
+            <div className="absolute bottom-[calc(100%-10px)] left-3 right-3 mb-2 bg-[#1c1c26] border border-border-default rounded-2xl shadow-2xl overflow-hidden z-50">
               {isEditingName ? (
-                <form onSubmit={saveSenderName} className="p-4 border-b border-white/[0.06]">
-                  <label className="text-xs font-medium text-zinc-500 uppercase mb-2 block">Personalizar remitente</label>
+                <form onSubmit={saveSenderName} className="p-4 border-b border-border-subtle">
+                  <label className="text-xs font-medium text-text-muted uppercase mb-2 block">Personalizar remitente</label>
                   <input 
                     type="text" 
                     value={tempName}
                     onChange={e => setTempName(e.target.value)}
-                    className="w-full bg-black/20 border border-white/[0.08] rounded-xl px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-blue-500"
+                    className="w-full bg-black/20 border border-border-default rounded-xl px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-blue-500"
                     placeholder="Tu nombre completo"
                     autoFocus
                   />
                   <div className="flex gap-2 mt-3">
                     <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-xs py-2 rounded-lg cursor-pointer transition-colors font-medium">Guardar</button>
-                    <button type="button" onClick={() => { setIsEditingName(false); setTempName(realName) }} className="flex-1 bg-white/[0.06] hover:bg-white/[0.1] text-zinc-300 text-xs py-2 rounded-lg cursor-pointer transition-colors font-medium">Cancelar</button>
+                    <button type="button" onClick={() => { setIsEditingName(false); setTempName(realName) }} className="flex-1 bg-surface-overlay-hover hover:bg-surface-overlay-hover text-text-secondary text-xs py-2 rounded-lg cursor-pointer transition-colors font-medium">Cancelar</button>
                   </div>
                 </form>
               ) : (
                 <button 
                   onClick={() => setIsEditingName(true)}
-                  className="w-full flex items-center gap-3 px-4 py-4 text-sm text-zinc-300 hover:bg-white/[0.04] transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center gap-3 px-4 py-4 text-sm text-text-secondary hover:bg-surface-overlay transition-colors cursor-pointer text-left"
                 >
-                  <Edit2 size={16} className="text-zinc-500" />
+                  <Edit2 size={16} className="text-text-muted" />
                   Personalizar remitente
                 </button>
               )}
@@ -408,7 +408,7 @@ export function MailApp() {
               {!isEditingName && (
                 <button
                   onClick={logoutMail}
-                  className="w-full flex items-center gap-3 px-4 py-4 text-sm text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer text-left border-t border-white/[0.06]"
+                  className="w-full flex items-center gap-3 px-4 py-4 text-sm text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer text-left border-t border-border-subtle"
                 >
                   <LogOut size={16} />
                   Cerrar sesión de correo
@@ -425,12 +425,12 @@ export function MailApp() {
       }`}>
         
         {/* List header + bulk toolbar */}
-        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.06] shrink-0 min-h-[48px]">
-          <button onClick={() => setIsDrawerOpen(true)} className="lg:hidden p-1 -ml-1 mr-1 rounded-lg hover:bg-white/[0.06] text-zinc-400 cursor-pointer shrink-0">
+        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border-subtle shrink-0 min-h-[48px]">
+          <button onClick={() => setIsDrawerOpen(true)} className="lg:hidden p-1 -ml-1 mr-1 rounded-lg hover:bg-surface-overlay-hover text-text-secondary cursor-pointer shrink-0">
             <Menu size={20} />
           </button>
           {/* Select all checkbox */}
-          <button onClick={selectAll} className="p-1 rounded hover:bg-white/[0.06] text-zinc-500 hover:text-zinc-300 cursor-pointer shrink-0" title="Seleccionar todos">
+          <button onClick={selectAll} className="p-1 rounded hover:bg-surface-overlay-hover text-text-muted hover:text-text-secondary cursor-pointer shrink-0" title="Seleccionar todos">
             {selectedUids.size === messages.length && messages.length > 0
               ? <CheckSquare size={16} />
               : <Square size={16} />
@@ -440,21 +440,21 @@ export function MailApp() {
           {selectedUids.size > 0 ? (
             /* ── Bulk Action Bar ── */
             <div className="flex items-center gap-1 flex-1 min-w-0">
-              <span className="text-xs md:text-[11px] text-zinc-500 mr-1 shrink-0">{selectedUids.size} sel.</span>
-              <button onClick={() => runAction("archive")} disabled={actionLoading} className="p-1.5 rounded-lg hover:bg-white/[0.06] text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer" title="Archivar">
+              <span className="text-xs md:text-[11px] text-text-muted mr-1 shrink-0">{selectedUids.size} sel.</span>
+              <button onClick={() => runAction("archive")} disabled={actionLoading} className="p-1.5 rounded-lg hover:bg-surface-overlay-hover text-text-muted hover:text-text-secondary transition-colors cursor-pointer" title="Archivar">
                 <Archive size={15} />
               </button>
-              <button onClick={() => runAction("spam")} disabled={actionLoading} className="p-1.5 rounded-lg hover:bg-white/[0.06] text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer" title="Marcar como spam">
+              <button onClick={() => runAction("spam")} disabled={actionLoading} className="p-1.5 rounded-lg hover:bg-surface-overlay-hover text-text-muted hover:text-text-secondary transition-colors cursor-pointer" title="Marcar como spam">
                 <ShieldAlert size={15} />
               </button>
-              <button onClick={() => runAction("delete")} disabled={actionLoading} className="p-1.5 rounded-lg hover:bg-white/[0.06] text-zinc-500 hover:text-red-400 transition-colors cursor-pointer" title="Eliminar">
+              <button onClick={() => runAction("delete")} disabled={actionLoading} className="p-1.5 rounded-lg hover:bg-surface-overlay-hover text-text-muted hover:text-red-400 transition-colors cursor-pointer" title="Eliminar">
                 <Trash2 size={15} />
               </button>
-              <div className="w-px h-5 bg-white/[0.08] mx-1" />
+              <div className="w-px h-5 bg-surface-overlay-hover mx-1" />
               <button onClick={() => {
                 const anyUnread = messages.filter(m => selectedUids.has(m.uid)).some(m => isUnread(m.flags))
                 runAction(anyUnread ? "markRead" : "markUnread")
-              }} disabled={actionLoading} className="p-1.5 rounded-lg hover:bg-white/[0.06] text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer" title="Leído / No leído">
+              }} disabled={actionLoading} className="p-1.5 rounded-lg hover:bg-surface-overlay-hover text-text-muted hover:text-text-secondary transition-colors cursor-pointer" title="Leído / No leído">
                 {messages.filter(m => selectedUids.has(m.uid)).some(m => isUnread(m.flags))
                   ? <MailOpen size={15} />
                   : <MailCheck size={15} />
@@ -462,40 +462,40 @@ export function MailApp() {
               </button>
               {/* Move to folder */}
               <div className="relative">
-                <button onClick={() => setShowMoveMenu(!showMoveMenu)} disabled={actionLoading} className="p-1.5 rounded-lg hover:bg-white/[0.06] text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer" title="Mover a...">
+                <button onClick={() => setShowMoveMenu(!showMoveMenu)} disabled={actionLoading} className="p-1.5 rounded-lg hover:bg-surface-overlay-hover text-text-muted hover:text-text-secondary transition-colors cursor-pointer" title="Mover a...">
                   <FolderInput size={15} />
                 </button>
                 {showMoveMenu && (
-                  <div className="absolute top-full left-0 mt-1 w-40 bg-[#181820] border border-white/[0.08] rounded-xl shadow-xl z-50 py-1 overflow-hidden">
+                  <div className="absolute top-full left-0 mt-1 w-40 bg-[#181820] border border-border-default rounded-xl shadow-xl z-50 py-1 overflow-hidden">
                     {FOLDERS.filter(f => f.id !== activeFolder).map(f => (
-                      <button key={f.id} onClick={() => runAction("move", f.id)} className="w-full text-left px-3 py-2 text-xs text-zinc-400 hover:bg-white/[0.06] hover:text-zinc-200 transition-colors flex items-center gap-2 cursor-pointer">
+                      <button key={f.id} onClick={() => runAction("move", f.id)} className="w-full text-left px-3 py-2 text-xs text-text-secondary hover:bg-surface-overlay-hover hover:text-text-primary transition-colors flex items-center gap-2 cursor-pointer">
                         <f.icon size={13} /> {f.label}
                       </button>
                     ))}
                   </div>
                 )}
               </div>
-              {actionLoading && <Loader2 size={14} className="animate-spin text-zinc-500 ml-1" />}
+              {actionLoading && <Loader2 size={14} className="animate-spin text-text-muted ml-1" />}
             </div>
           ) : (
             /* ── Normal header ── */
             <div className="flex items-center justify-between flex-1 min-w-0">
-              <h2 className="text-sm font-bold text-shell-text truncate">
+              <h2 className="text-sm font-bold text-text-primary truncate">
                 {FOLDERS.find(f => f.id === activeFolder)?.label || activeFolder}
-                {total > 0 && <span className="ml-2 text-xs md:text-[11px] font-normal text-zinc-500">{total} mensajes</span>}
+                {total > 0 && <span className="ml-2 text-xs md:text-[11px] font-normal text-text-muted">{total} mensajes</span>}
               </h2>
               <div className="flex items-center gap-1 shrink-0">
                 <button
                   onClick={() => loadMessages(activeFolder, page)}
                   disabled={loadingMessages}
-                  className="p-1.5 rounded-lg hover:bg-white/[0.06] text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg hover:bg-surface-overlay-hover text-text-muted hover:text-text-secondary transition-colors cursor-pointer"
                   title="Actualizar"
                 >
                   <RefreshCw size={14} className={loadingMessages ? "animate-spin" : ""} />
                 </button>
                 <button
                   onClick={handleCompose}
-                  className="lg:hidden p-1.5 rounded-lg hover:bg-white/[0.06] text-zinc-500 hover:text-blue-400 transition-colors cursor-pointer"
+                  className="lg:hidden p-1.5 rounded-lg hover:bg-surface-overlay-hover text-text-muted hover:text-blue-400 transition-colors cursor-pointer"
                 >
                   <Pencil size={14} />
                 </button>
@@ -508,7 +508,7 @@ export function MailApp() {
         <div className="flex-1 overflow-y-auto">
           {loadingMessages ? (
             <div className="flex items-center justify-center py-16">
-              <Loader2 size={20} className="animate-spin text-zinc-500" />
+              <Loader2 size={20} className="animate-spin text-text-muted" />
             </div>
           ) : msgError ? (
             <div className="flex flex-col items-center gap-2 p-8 text-center">
@@ -518,21 +518,21 @@ export function MailApp() {
             </div>
           ) : messages.length === 0 ? (
             <div className="flex flex-col items-center gap-2 p-12 text-center">
-              <Mail size={28} className="text-zinc-600" strokeWidth={1.2} />
-              <p className="text-sm text-zinc-500">No hay mensajes</p>
+              <Mail size={28} className="text-text-muted" strokeWidth={1.2} />
+              <p className="text-sm text-text-muted">No hay mensajes</p>
             </div>
           ) : (
             messages.map(msg => (
               <div
                 key={msg.uid}
-                className={`flex items-center gap-3 px-4 py-3 border-b border-white/[0.04] hover:bg-white/[0.03] transition-colors cursor-pointer group ${
+                className={`flex items-center gap-3 px-4 py-3 border-b border-border-subtle hover:bg-surface-overlay transition-colors cursor-pointer group ${
                   selectedUids.has(msg.uid) ? "bg-blue-500/5" : ""
                 }`}
               >
                 {/* Checkbox */}
                 <button
                   onClick={(e) => { e.stopPropagation(); toggleSelect(msg.uid) }}
-                  className="p-0.5 text-zinc-600 hover:text-zinc-300 shrink-0 cursor-pointer"
+                  className="p-0.5 text-text-muted hover:text-text-secondary shrink-0 cursor-pointer"
                 >
                   {selectedUids.has(msg.uid)
                     ? <CheckSquare size={15} className="text-blue-400" />
@@ -548,14 +548,14 @@ export function MailApp() {
                 <button onClick={() => openMessage(msg)} className="flex-1 text-left min-w-0">
                   <div className="flex items-center justify-between gap-2 mb-0.5">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className={`text-[14px] truncate ${isUnread(msg.flags) ? "font-bold text-shell-text" : "font-normal text-zinc-400"}`}>
+                      <span className={`text-[14px] truncate ${isUnread(msg.flags) ? "font-bold text-text-primary" : "font-normal text-text-secondary"}`}>
                         {getSenderName(msg.from)}
                       </span>
                     </div>
-                    <span className={`text-xs md:text-[11px] shrink-0 ${isUnread(msg.flags) ? "font-semibold text-zinc-400" : "font-normal text-zinc-600"}`}>{formatDate(msg.date)}</span>
+                    <span className={`text-xs md:text-[11px] shrink-0 ${isUnread(msg.flags) ? "font-semibold text-text-secondary" : "font-normal text-text-muted"}`}>{formatDate(msg.date)}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <p className={`text-[13px] truncate flex-1 ${isUnread(msg.flags) ? "font-bold text-zinc-200" : "font-normal text-zinc-400"}`}>
+                    <p className={`text-[13px] truncate flex-1 ${isUnread(msg.flags) ? "font-bold text-text-primary" : "font-normal text-text-secondary"}`}>
                       {msg.subject || "(Sin asunto)"}
                     </p>
                     {isUnread(msg.flags) && <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0" />}
@@ -580,7 +580,7 @@ export function MailApp() {
         !selectedMsg ? "hidden" : "flex"
       }`}>
         {/* Back button */}
-        <div className="flex items-center px-4 py-2 border-b border-white/[0.06] shrink-0">
+        <div className="flex items-center px-4 py-2 border-b border-border-subtle shrink-0">
           <button onClick={() => setSelectedMsg(null)} className="flex items-center gap-1.5 text-sm text-blue-400 cursor-pointer">
             <ArrowLeft size={15} /> Volver a {FOLDERS.find(f => f.id === activeFolder)?.label || "Bandeja"}
           </button>
@@ -588,14 +588,14 @@ export function MailApp() {
 
         {loadingMsg ? (
           <div className="flex-1 flex items-center justify-center">
-            <Loader2 size={24} className="animate-spin text-zinc-500" />
+            <Loader2 size={24} className="animate-spin text-text-muted" />
           </div>
         ) : !selectedMsg ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-8 gap-3">
-            <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center">
-              <Mail size={24} className="text-zinc-600" strokeWidth={1.2} />
+            <div className="w-16 h-16 rounded-2xl bg-surface-overlay border border-border-subtle flex items-center justify-center">
+              <Mail size={24} className="text-text-muted" strokeWidth={1.2} />
             </div>
-            <p className="text-sm text-zinc-500">Seleccioná un mensaje para leerlo</p>
+            <p className="text-sm text-text-muted">Seleccioná un mensaje para leerlo</p>
             <button onClick={handleCompose} className="text-xs text-blue-400 hover:underline cursor-pointer">
               O redactá uno nuevo
             </button>
@@ -603,32 +603,32 @@ export function MailApp() {
         ) : (
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Message header */}
-            <div className="px-6 py-4 border-b border-white/[0.06] shrink-0">
-              <h2 className="text-lg font-bold text-shell-text mb-3 leading-tight">
+            <div className="px-6 py-4 border-b border-border-subtle shrink-0">
+              <h2 className="text-lg font-bold text-text-primary mb-3 leading-tight">
                 {selectedMsg.subject || "(Sin asunto)"}
               </h2>
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-0.5">
-                  <p className="text-xs text-zinc-400">
-                    <span className="text-zinc-600 mr-1.5">De:</span>
+                  <p className="text-xs text-text-secondary">
+                    <span className="text-text-muted mr-1.5">De:</span>
                     {getSenderName(selectedMsg.from)} {selectedMsg.from?.[0]?.address && (
-                      <span className="text-zinc-600">({selectedMsg.from[0].address})</span>
+                      <span className="text-text-muted">({selectedMsg.from[0].address})</span>
                     )}
                   </p>
-                  <p className="text-xs text-zinc-500">
-                    <span className="text-zinc-600 mr-1.5">Fecha:</span>
+                  <p className="text-xs text-text-muted">
+                    <span className="text-text-muted mr-1.5">Fecha:</span>
                     {selectedMsg.date ? format(new Date(selectedMsg.date), "dd/MM/yyyy 'a las' HH:mm", { locale: es }) : ""}
                   </p>
                   {selectedMsg.attachments?.length > 0 && (
                     <div className="flex items-center gap-1 mt-2">
-                      <Paperclip size={12} className="text-zinc-500" />
-                      <span className="text-xs md:text-[11px] text-zinc-500">{selectedMsg.attachments.length} adjunto(s)</span>
+                      <Paperclip size={12} className="text-text-muted" />
+                      <span className="text-xs md:text-[11px] text-text-muted">{selectedMsg.attachments.length} adjunto(s)</span>
                     </div>
                   )}
                 </div>
                 <button
                   onClick={handleReply}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.07] text-xs text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer shrink-0"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-overlay hover:bg-surface-overlay-hover text-xs text-text-secondary hover:text-text-primary transition-colors cursor-pointer shrink-0"
                 >
                   <Reply size={12} />
                   Responder
@@ -657,15 +657,15 @@ export function MailApp() {
 
             {/* Attachments */}
             {selectedMsg.attachments?.length > 0 && (
-              <div className="px-6 py-3 border-t border-white/[0.06] shrink-0">
-                <p className="text-xs md:text-[11px] font-medium text-zinc-500 uppercase tracking-wider mb-2">Adjuntos</p>
+              <div className="px-6 py-3 border-t border-border-subtle shrink-0">
+                <p className="text-xs md:text-[11px] font-medium text-text-muted uppercase tracking-wider mb-2">Adjuntos</p>
                 <div className="flex flex-wrap gap-2">
                   {selectedMsg.attachments.map((att, i) => (
                     <a
                       key={i}
                       href={`data:${att.contentType};base64,${att.content}`}
                       download={att.filename}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-xs md:text-[11px] text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.07] transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-overlay border border-border-subtle text-xs md:text-[11px] text-text-secondary hover:text-text-primary hover:bg-surface-overlay-hover transition-colors"
                     >
                       <Paperclip size={11} />
                       {att.filename}

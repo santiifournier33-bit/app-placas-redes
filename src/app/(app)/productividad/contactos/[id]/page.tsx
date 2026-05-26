@@ -37,7 +37,7 @@ export default function ContactDetailPage() {
 
   if (!contact) {
     return (
-      <div className="p-8 text-center text-zinc-500 text-sm">
+      <div className="p-8 text-center text-text-muted text-sm">
         Contacto no encontrado.
         <div className="mt-4">
           <button
@@ -68,10 +68,10 @@ export default function ContactDetailPage() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Sub-header */}
-      <div className="h-14 flex items-center gap-3 px-4 border-b border-white/[0.06] shrink-0">
+      <div className="h-14 flex items-center gap-3 px-4 border-b border-border-subtle shrink-0">
         <button
           onClick={() => router.push('/productividad/contactos')}
-          className="p-2 rounded-xl hover:bg-white/[0.06] text-zinc-400 hover:text-zinc-200 cursor-pointer"
+          className="p-2 rounded-xl hover:bg-surface-overlay-hover text-text-secondary hover:text-text-primary cursor-pointer"
           title="Volver a contactos"
         >
           <ArrowLeft size={18} />
@@ -80,10 +80,10 @@ export default function ContactDetailPage() {
           {(contact.first_name || '?')[0]?.toUpperCase()}
         </div>
         <div className="flex flex-col min-w-0 flex-1 leading-tight">
-          <h1 className="text-sm font-bold text-shell-text truncate">{fullName || 'Contacto'}</h1>
+          <h1 className="text-sm font-bold text-text-primary truncate">{fullName || 'Contacto'}</h1>
           <div className="flex items-center gap-2 mt-0.5">
             {contact.source && (
-              <span className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">
+              <span className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-text-muted">
                 {SOURCE_LABELS[contact.source as keyof typeof SOURCE_LABELS] ?? contact.source}
               </span>
             )}
@@ -94,7 +94,7 @@ export default function ContactDetailPage() {
             )}
           </div>
         </div>
-        <div className="hidden md:flex flex-col items-end text-xs md:text-[10px] text-zinc-600 leading-tight px-2 shrink-0">
+        <div className="hidden md:flex flex-col items-end text-xs md:text-[10px] text-text-muted leading-tight px-2 shrink-0">
           <span>
             Creado: {contact.created_at ? new Date(contact.created_at).toLocaleDateString('es-AR') : '—'}
           </span>
@@ -110,7 +110,7 @@ export default function ContactDetailPage() {
         </button>
         <button
           onClick={handleDelete}
-          className="p-2 rounded-xl hover:bg-red-500/10 text-zinc-500 hover:text-red-400 cursor-pointer"
+          className="p-2 rounded-xl hover:bg-red-500/10 text-text-muted hover:text-red-400 cursor-pointer"
           title="Eliminar contacto"
         >
           <Trash2 size={16} />
@@ -118,27 +118,27 @@ export default function ContactDetailPage() {
       </div>
 
       {/* Chips bar */}
-      <div className="flex flex-wrap items-center gap-2 px-4 py-2.5 border-b border-white/[0.06] shrink-0">
+      <div className="flex flex-wrap items-center gap-2 px-4 py-2.5 border-b border-border-subtle shrink-0">
         {contact.primary_phone && (
           <>
             <button
               onClick={() => copyToClipboard(contact.primary_phone!, 'phone')}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] cursor-pointer group"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-overlay border border-border-subtle hover:bg-surface-overlay-hover cursor-pointer group"
             >
-              <Phone size={12} className="text-zinc-500" />
-              <span className="text-xs text-zinc-300">{contact.primary_phone}</span>
+              <Phone size={12} className="text-text-muted" />
+              <span className="text-xs text-text-secondary">{contact.primary_phone}</span>
               {copied === 'phone'
                 ? <Check size={11} className="text-emerald-400" />
-                : <Copy size={11} className="text-zinc-600 group-hover:text-zinc-400" />}
+                : <Copy size={11} className="text-text-muted group-hover:text-text-secondary" />}
             </button>
             <a
               href={`https://wa.me/${contact.primary_phone.replace(/\D/g, '')}`}
               target="_blank"
               rel="noopener"
-              className="p-1.5 rounded-lg hover:bg-white/[0.06]"
+              className="p-1.5 rounded-lg hover:bg-surface-overlay-hover"
               title="WhatsApp"
             >
-              <MessageSquare size={14} className="text-zinc-400" />
+              <MessageSquare size={14} className="text-text-secondary" />
             </a>
           </>
         )}
@@ -146,20 +146,20 @@ export default function ContactDetailPage() {
           <>
             <button
               onClick={() => copyToClipboard(contact.primary_email!, 'email')}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] cursor-pointer group"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-overlay border border-border-subtle hover:bg-surface-overlay-hover cursor-pointer group"
             >
-              <Mail size={12} className="text-zinc-500" />
-              <span className="text-xs text-zinc-300 truncate max-w-[220px]">{contact.primary_email}</span>
+              <Mail size={12} className="text-text-muted" />
+              <span className="text-xs text-text-secondary truncate max-w-[220px]">{contact.primary_email}</span>
               {copied === 'email'
                 ? <Check size={11} className="text-emerald-400" />
-                : <Copy size={11} className="text-zinc-600 group-hover:text-zinc-400" />}
+                : <Copy size={11} className="text-text-muted group-hover:text-text-secondary" />}
             </button>
             <a
               href={`mailto:${contact.primary_email}`}
-              className="p-1.5 rounded-lg hover:bg-white/[0.06]"
+              className="p-1.5 rounded-lg hover:bg-surface-overlay-hover"
               title="Email"
             >
-              <Mail size={14} className="text-zinc-400" />
+              <Mail size={14} className="text-text-secondary" />
             </a>
           </>
         )}
@@ -177,7 +177,7 @@ export default function ContactDetailPage() {
           {/* Column 2: Notas */}
           <div className="overflow-y-auto">
             <div className="px-5 pt-5">
-              <h3 className="text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Notas</h3>
+              <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-wider">Notas</h3>
             </div>
             <ContactNotesTab contactId={contact.id} />
           </div>
@@ -185,7 +185,7 @@ export default function ContactDetailPage() {
           {/* Column 3: Historial */}
           <div className="overflow-y-auto">
             <div className="px-5 pt-5">
-              <h3 className="text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Historial</h3>
+              <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-wider">Historial</h3>
             </div>
             <ContactHistoryTab contactId={contact.id} />
           </div>

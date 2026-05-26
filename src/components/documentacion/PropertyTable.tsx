@@ -24,7 +24,7 @@ const STATUS_COLORS: Record<PropertyStatus, string> = {
   partial: "text-amber-400",
   incomplete: "text-amber-400",
   missing: "text-red-400",
-  unsynced: "text-zinc-500",
+  unsynced: "text-text-muted",
 }
 
 const STATUS_BG: Record<PropertyStatus, string> = {
@@ -50,8 +50,8 @@ export function PropertyTable({ properties, loading, onPropertyClick }: Property
 
   if (properties.length === 0) {
     return (
-      <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-12 text-center">
-        <p className="text-zinc-500 text-sm">No se encontraron propiedades con esos filtros</p>
+      <div className="rounded-2xl border border-border-subtle bg-surface-overlay p-12 text-center">
+        <p className="text-text-muted text-sm">No se encontraron propiedades con esos filtros</p>
       </div>
     )
   }
@@ -59,7 +59,7 @@ export function PropertyTable({ properties, loading, onPropertyClick }: Property
   return (
     <div className="space-y-1">
       {/* Header - desktop only */}
-      <div className="hidden lg:grid grid-cols-[60px_1fr_160px_90px_120px_44px] gap-3 px-4 py-2 text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-[0.12em]">
+      <div className="hidden lg:grid grid-cols-[60px_1fr_160px_90px_120px_44px] gap-3 px-4 py-2 text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.12em]">
         <span>ID</span>
         <span>Propiedad</span>
         <span>Asesor</span>
@@ -95,8 +95,8 @@ function PropertyRow({ property: p, expanded, onToggle, onClick }: {
   return (
     <div className={`rounded-xl border transition-all duration-200 ${
       expanded
-        ? "border-white/[0.1] bg-white/[0.03]"
-        : "border-white/[0.04] bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/[0.06]"
+        ? "border-border-default bg-surface-overlay"
+        : "border-border-subtle bg-white/[0.01] hover:bg-surface-overlay hover:border-border-subtle"
     }`}>
       {/* Main row */}
       <button
@@ -105,23 +105,23 @@ function PropertyRow({ property: p, expanded, onToggle, onClick }: {
       >
         {/* Desktop layout */}
         <div className="hidden lg:grid grid-cols-[60px_1fr_160px_90px_120px_44px] gap-3 items-center px-4 py-3">
-          <span className="text-xs text-zinc-500 font-mono tabular-nums">{p.id}</span>
+          <span className="text-xs text-text-muted font-mono tabular-nums">{p.id}</span>
           <div className="text-left">
-            <p className="text-sm font-medium text-shell-text truncate">
+            <p className="text-sm font-medium text-text-primary truncate">
               {p.type} {p.location}
             </p>
             {p.fileCount > 0 && (
-              <p className="text-xs md:text-[11px] text-zinc-500">{p.fileCount} archivos</p>
+              <p className="text-xs md:text-[11px] text-text-muted">{p.fileCount} archivos</p>
             )}
           </div>
-          <span className="text-xs text-zinc-400 truncate">{p.agent}</span>
-          <span className="text-xs text-zinc-500">{p.operation}</span>
+          <span className="text-xs text-text-secondary truncate">{p.agent}</span>
+          <span className="text-xs text-text-muted">{p.operation}</span>
           <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${statusBg} w-fit`}>
             <StatusIcon size={12} strokeWidth={2} className={statusColor} />
             <span className={`text-xs md:text-[11px] font-semibold ${statusColor}`}>{config.label}</span>
           </div>
           <div className="flex items-center justify-center">
-            {expanded ? <ChevronDown size={16} className="text-zinc-500" /> : <ChevronRight size={16} className="text-zinc-500" />}
+            {expanded ? <ChevronDown size={16} className="text-text-muted" /> : <ChevronRight size={16} className="text-text-muted" />}
           </div>
         </div>
 
@@ -129,8 +129,8 @@ function PropertyRow({ property: p, expanded, onToggle, onClick }: {
         <div className="lg:hidden px-4 py-3">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 text-left">
-              <p className="text-sm font-medium text-shell-text">{p.type} {p.location}</p>
-              <p className="text-xs md:text-[11px] text-zinc-500 mt-0.5">
+              <p className="text-sm font-medium text-text-primary">{p.type} {p.location}</p>
+              <p className="text-xs md:text-[11px] text-text-muted mt-0.5">
                 {p.agent} • {p.operation} • ID {p.id}
               </p>
             </div>
@@ -139,7 +139,7 @@ function PropertyRow({ property: p, expanded, onToggle, onClick }: {
                 <StatusIcon size={11} strokeWidth={2} className={statusColor} />
                 <span className={`text-xs md:text-[10px] font-semibold ${statusColor}`}>{config.label}</span>
               </div>
-              {expanded ? <ChevronDown size={14} className="text-zinc-500" /> : <ChevronRight size={14} className="text-zinc-500" />}
+              {expanded ? <ChevronDown size={14} className="text-text-muted" /> : <ChevronRight size={14} className="text-text-muted" />}
             </div>
           </div>
         </div>
@@ -147,7 +147,7 @@ function PropertyRow({ property: p, expanded, onToggle, onClick }: {
 
       {/* Expanded content */}
       {expanded && (
-        <div className="px-4 pb-4 pt-1 border-t border-white/[0.04] space-y-3">
+        <div className="px-4 pb-4 pt-1 border-t border-border-subtle space-y-3">
           {/* Doc pills */}
           <div className="flex flex-wrap gap-1.5">
             {p.docsPresent.map(doc => (
@@ -173,7 +173,7 @@ function PropertyRow({ property: p, expanded, onToggle, onClick }: {
               </span>
             ))}
             {p.unclassifiedFiles.length > 0 && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-500/10 text-xs md:text-[11px] font-medium text-zinc-400">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-500/10 text-xs md:text-[11px] font-medium text-text-secondary">
                 <FileText size={11} strokeWidth={2} />
                 {p.unclassifiedFiles.length} sin clasificar
               </span>
@@ -195,7 +195,7 @@ function PropertyRow({ property: p, expanded, onToggle, onClick }: {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={e => e.stopPropagation()}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] text-xs md:text-[11px] font-medium text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.06] transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-overlay text-xs md:text-[11px] font-medium text-text-secondary hover:text-text-primary hover:bg-surface-overlay-hover transition-colors"
               >
                 <ExternalLink size={12} strokeWidth={2} />
                 Abrir en Drive

@@ -62,10 +62,10 @@ export default function DashboardPage() {
     return (
       <div className="p-6 max-w-4xl mx-auto">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 w-48 bg-white/[0.04] rounded-xl" />
+          <div className="h-8 w-48 bg-surface-overlay rounded-xl" />
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-28 bg-white/[0.04] rounded-2xl" />
+              <div key={i} className="h-28 bg-surface-overlay rounded-2xl" />
             ))}
           </div>
         </div>
@@ -74,7 +74,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-shell-bg text-shell-text selection:bg-brand-accent/20">
+    <div className="flex flex-col h-full bg-shell-bg text-text-primary selection:bg-brand-accent/20">
       <PageHeader
         title="Dashboard"
         subtitle={format(now, "EEEE d 'de' MMMM", { locale: es })}
@@ -119,10 +119,10 @@ export default function DashboardPage() {
         <WeeklyTrackerWidget />
 
         {/* Pipeline Distribution */}
-        <div className="rounded-2xl border border-shell-border bg-shell-surface/50 backdrop-blur-xl p-5 space-y-4 shadow-sm">
-          <h3 className="text-xs md:text-[11px] font-bold text-shell-text-muted uppercase tracking-[0.15em]">Pipelines</h3>
+        <div className="rounded-2xl border border-border-subtle bg-surface-1/50 backdrop-blur-xl p-5 space-y-4 shadow-sm">
+          <h3 className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-[0.15em]">Pipelines</h3>
           {pipelines.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-6 text-center text-shell-text-muted">
+            <div className="flex flex-col items-center justify-center py-6 text-center text-text-muted">
               <Briefcase size={20} className="stroke-[1.5] mb-2 opacity-50" />
               <p className="text-xs font-medium">Sin pipelines configurados</p>
             </div>
@@ -134,11 +134,11 @@ export default function DashboardPage() {
                   <Link
                     key={p.id}
                     href="/productividad/negocios"
-                    className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-shell-surface-hover/80 transition-colors border border-transparent hover:border-shell-border"
+                    className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-surface-2/80 transition-colors border border-transparent hover:border-border-subtle"
                   >
                     <div className="flex items-center gap-2.5">
                       <span className="text-sm shrink-0">{p.emoji}</span>
-                      <span className="text-xs font-semibold text-shell-text truncate">{p.name}</span>
+                      <span className="text-xs font-semibold text-text-primary truncate">{p.name}</span>
                     </div>
                     <span className="text-xs md:text-[10px] text-brand-accent bg-brand-accent/10 px-2 py-0.5 rounded-full font-bold">{stageCount} etapas</span>
                   </Link>
@@ -151,7 +151,7 @@ export default function DashboardPage() {
 
       {/* Quick Actions */}
       <div>
-        <p className="text-xs md:text-[11px] font-bold text-shell-text-muted uppercase tracking-[0.15em] mb-3 px-1">Acciones rápidas</p>
+        <p className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-[0.15em] mb-3 px-1">Acciones rápidas</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <QuickAction
             icon={<UserPlus size={20} strokeWidth={1.8} />}
@@ -183,15 +183,15 @@ export default function DashboardPage() {
       {/* Two-column: urgent tasks + unhealthy leads */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Top 5 urgent tasks */}
-        <div className="rounded-2xl border border-shell-border bg-shell-surface/50 backdrop-blur-xl p-5 space-y-4 shadow-sm">
+        <div className="rounded-2xl border border-border-subtle bg-surface-1/50 backdrop-blur-xl p-5 space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs md:text-[11px] font-bold text-shell-text-muted uppercase tracking-[0.15em]">Tareas urgentes</h3>
+            <h3 className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-[0.15em]">Tareas urgentes</h3>
             <Link href="/productividad/tareas" className="text-xs md:text-[10px] text-brand-accent hover:underline font-bold uppercase tracking-wider">
               Ver todas
             </Link>
           </div>
           {metrics.urgentTasks.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-6 text-center text-shell-text-muted">
+            <div className="flex flex-col items-center justify-center py-6 text-center text-text-muted">
               <CheckSquare size={20} className="stroke-[1.5] mb-2 opacity-50" />
               <p className="text-xs font-medium">No hay tareas urgentes</p>
             </div>
@@ -203,11 +203,11 @@ export default function DashboardPage() {
                   <Link
                     key={task.id}
                     href="/productividad/tareas"
-                    className="flex items-center gap-2.5 py-2 px-2.5 rounded-xl hover:bg-shell-surface-hover/80 transition-colors border border-transparent hover:border-shell-border"
+                    className="flex items-center gap-2.5 py-2 px-2.5 rounded-xl hover:bg-surface-2/80 transition-colors border border-transparent hover:border-border-subtle"
                   >
-                    <Clock size={14} className={overdue ? "text-red-400" : "text-shell-text-muted"} />
-                    <span className="text-xs text-shell-text flex-1 truncate font-medium">{task.title}</span>
-                    <span className={`text-xs md:text-[10px] shrink-0 font-semibold px-2 py-0.5 rounded-full ${overdue ? "text-red-400 bg-red-400/10" : "text-shell-text-muted bg-shell-surface-hover"}`}>
+                    <Clock size={14} className={overdue ? "text-red-400" : "text-text-muted"} />
+                    <span className="text-xs text-text-primary flex-1 truncate font-medium">{task.title}</span>
+                    <span className={`text-xs md:text-[10px] shrink-0 font-semibold px-2 py-0.5 rounded-full ${overdue ? "text-red-400 bg-red-400/10" : "text-text-muted bg-surface-2"}`}>
                       {format(new Date(task.due_date!), "d MMM", { locale: es })}
                     </span>
                   </Link>
@@ -218,15 +218,15 @@ export default function DashboardPage() {
         </div>
 
         {/* Top 5 unhealthy contacts */}
-        <div className="rounded-2xl border border-shell-border bg-shell-surface/50 backdrop-blur-xl p-5 space-y-4 shadow-sm">
+        <div className="rounded-2xl border border-border-subtle bg-surface-1/50 backdrop-blur-xl p-5 space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs md:text-[11px] font-bold text-shell-text-muted uppercase tracking-[0.15em]">Contactos sin actividad</h3>
+            <h3 className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-[0.15em]">Contactos sin actividad</h3>
             <Link href="/productividad/contactos" className="text-xs md:text-[10px] text-brand-accent hover:underline font-bold uppercase tracking-wider">
               Ver todos
             </Link>
           </div>
           {metrics.unhealthyLeads.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-6 text-center text-shell-text-muted">
+            <div className="flex flex-col items-center justify-center py-6 text-center text-text-muted">
               <Users size={20} className="stroke-[1.5] mb-2 opacity-50" />
               <p className="text-xs font-medium">Todos los contactos al día</p>
             </div>
@@ -240,12 +240,12 @@ export default function DashboardPage() {
                   <Link
                     key={c.id}
                     href="/productividad/contactos"
-                    className="flex items-center gap-2.5 py-2 px-2.5 rounded-xl hover:bg-shell-surface-hover/80 transition-colors border border-transparent hover:border-shell-border"
+                    className="flex items-center gap-2.5 py-2 px-2.5 rounded-xl hover:bg-surface-2/80 transition-colors border border-transparent hover:border-border-subtle"
                   >
                     <div className="w-6 h-6 rounded-full bg-red-500/10 flex items-center justify-center text-xs md:text-[10px] font-bold text-red-400 shrink-0 border border-red-500/20">
                       {(c.first_name || '?')[0]}
                     </div>
-                    <span className="text-xs text-shell-text flex-1 truncate font-semibold">
+                    <span className="text-xs text-text-primary flex-1 truncate font-semibold">
                       {c.first_name} {c.last_name}
                     </span>
                     <span className="text-xs md:text-[10px] text-red-400/90 shrink-0 font-bold bg-red-500/10 px-2 py-0.5 rounded-full">
@@ -273,7 +273,7 @@ export default function DashboardPage() {
           </div>
           <div className="space-y-1">
             {metrics.overdueTasks.slice(0, 3).map(task => (
-              <p key={task.id} className="text-xs text-shell-text/80 pl-6">{task.title}</p>
+              <p key={task.id} className="text-xs text-text-primary/80 pl-6">{task.title}</p>
             ))}
             {metrics.overdueTasks.length > 3 && (
               <p className="text-xs md:text-[10px] text-red-400/70 pl-6 font-bold uppercase tracking-wider">+{metrics.overdueTasks.length - 3} más</p>
@@ -330,12 +330,12 @@ function QuickAction({ icon, label, color, onClick }: {
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-shell-surface/50 border border-shell-border hover:border-shell-accent/20 hover:bg-shell-surface/80 cursor-pointer active:scale-95 transition-all group shadow-sm hover:shadow-md"
+      className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-surface-1/50 border border-border-subtle hover:border-shell-accent/20 hover:bg-surface-1/80 cursor-pointer active:scale-95 transition-all group shadow-sm hover:shadow-md"
     >
       <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-200 ${c.bg}`}>
         <span className={`${c.icon} transition-transform duration-300 group-hover:scale-110`}>{icon}</span>
       </div>
-      <span className="text-xs md:text-[10px] text-shell-text-muted text-center leading-tight font-bold uppercase tracking-wider transition-colors group-hover:text-shell-text">{label}</span>
+      <span className="text-xs md:text-[10px] text-text-muted text-center leading-tight font-bold uppercase tracking-wider transition-colors group-hover:text-text-primary">{label}</span>
     </button>
   )
 }
@@ -351,12 +351,12 @@ function KPICard({ icon, label, value, href, color }: {
   return (
     <Link
       href={href}
-      className={`rounded-2xl border border-shell-border bg-shell-surface/50 backdrop-blur-xl p-4 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 relative overflow-hidden group hover:shadow-[0_8px_32px_rgba(0,0,0,0.12)] ${c.border} ${c.bg}`}
+      className={`rounded-2xl border border-border-subtle bg-surface-1/50 backdrop-blur-xl p-4 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 relative overflow-hidden group hover:shadow-[0_8px_32px_rgba(0,0,0,0.12)] ${c.border} ${c.bg}`}
     >
       <div className={`absolute left-0 top-1/3 bottom-1/3 w-[3px] rounded-r-full ${c.glow}`} />
       <div className={`${c.icon} mb-2 transition-transform duration-300 group-hover:scale-110`}>{icon}</div>
-      <p className="text-2xl font-bold text-shell-text tabular-nums tracking-tight">{value}</p>
-      <p className="text-xs md:text-[9px] text-shell-text-muted font-bold mt-1.5 uppercase tracking-wider">{label}</p>
+      <p className="text-2xl font-bold text-text-primary tabular-nums tracking-tight">{value}</p>
+      <p className="text-xs md:text-[9px] text-text-muted font-bold mt-1.5 uppercase tracking-wider">{label}</p>
     </Link>
   )
 }

@@ -84,7 +84,7 @@ export function ContactNotesTab({ contactId }: { contactId: string }) {
           onChange={(e) => setDraft(e.target.value)}
           rows={3}
           placeholder="Escribí una nota... (soporta **markdown**)"
-          className="w-full bg-white/[0.04] rounded-xl px-3 py-2 text-xs text-zinc-300 placeholder:text-zinc-700 outline-none resize-none border border-white/[0.06] focus:border-blue-500/30"
+          className="w-full bg-surface-overlay rounded-xl px-3 py-2 text-xs text-text-secondary placeholder:text-zinc-700 outline-none resize-none border border-border-subtle focus:border-blue-500/30"
         />
         <button
           onClick={addNote}
@@ -100,20 +100,20 @@ export function ContactNotesTab({ contactId }: { contactId: string }) {
       {loading ? (
         <div className="space-y-3">
           {[1, 2].map(i => (
-            <div key={i} className="animate-pulse h-16 bg-white/[0.04] rounded-xl" />
+            <div key={i} className="animate-pulse h-16 bg-surface-overlay rounded-xl" />
           ))}
         </div>
       ) : notes.length === 0 ? (
-        <p className="text-zinc-600 text-xs text-center py-6">Sin notas</p>
+        <p className="text-text-muted text-xs text-center py-6">Sin notas</p>
       ) : (
         <div className="space-y-3">
           {notes.map(note => (
             <div
               key={note.id}
-              className="relative group rounded-xl border border-white/[0.06] bg-white/[0.02] p-3"
+              className="relative group rounded-xl border border-border-subtle bg-surface-overlay p-3"
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs md:text-[10px] text-zinc-600">
+                <span className="text-xs md:text-[10px] text-text-muted">
                   {note.created_at
                     ? new Date(note.created_at).toLocaleString('es-AR', {
                         day: '2-digit', month: 'short', year: 'numeric',
@@ -129,7 +129,7 @@ export function ContactNotesTab({ contactId }: { contactId: string }) {
                 </button>
               </div>
               <div
-                className="prose prose-invert prose-xs max-w-none text-xs text-zinc-400 [&_strong]:text-zinc-300 [&_a]:text-blue-400 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_p]:mb-1"
+                className="prose prose-invert prose-xs max-w-none text-xs text-text-secondary [&_strong]:text-text-secondary [&_a]:text-blue-400 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_p]:mb-1"
                 dangerouslySetInnerHTML={{ __html: renderMd(note.body) }}
               />
             </div>

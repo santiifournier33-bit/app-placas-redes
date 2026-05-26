@@ -117,7 +117,7 @@ const PORTAL_COLORS: Record<string, string> = {
   argenprop: 'bg-blue-500/15 text-blue-300',
   zonaprop: 'bg-orange-500/15 text-orange-300',
   web: 'bg-emerald-500/15 text-emerald-300',
-  tokko: 'bg-zinc-700 text-zinc-300',
+  tokko: 'bg-zinc-700 text-text-secondary',
   manual: 'bg-purple-500/15 text-purple-300',
 }
 
@@ -190,24 +190,24 @@ export default function ContactDrawer(props: DrawerProps) {
         aria-hidden
       />
       <aside
-        className="fixed top-0 right-0 h-full w-full md:w-[640px] bg-zinc-950 border-l border-white/[0.08] z-50 overflow-y-auto"
+        className="fixed top-0 right-0 h-full w-full md:w-[640px] bg-zinc-950 border-l border-border-default z-50 overflow-y-auto"
         role="dialog"
       >
-        <div className="sticky top-0 bg-zinc-950/95 backdrop-blur z-10 flex items-center gap-3 px-4 h-14 border-b border-white/[0.06]">
+        <div className="sticky top-0 bg-zinc-950/95 backdrop-blur z-10 flex items-center gap-3 px-4 h-14 border-b border-border-subtle">
           <div className="w-9 h-9 rounded-full bg-blue-500/15 flex items-center justify-center text-sm font-bold text-blue-400 shrink-0">
             {(data?.contact.full_name || '?')[0].toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-shell-text truncate">
+            <p className="text-sm font-bold text-text-primary truncate">
               {data?.contact.full_name ?? 'Cargando...'}
             </p>
-            <p className="text-xs md:text-[10px] text-zinc-500">
+            <p className="text-xs md:text-[10px] text-text-muted">
               {data?.contact.is_own ? 'Cartera propia' : 'Cartera de otro asesor'}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-white/[0.08] text-zinc-400 cursor-pointer"
+            className="p-2 rounded-lg hover:bg-surface-overlay-hover text-text-secondary cursor-pointer"
             title="Cerrar"
           >
             <X size={18} />
@@ -217,7 +217,7 @@ export default function ContactDrawer(props: DrawerProps) {
         {loading ? (
           <div className="p-4 space-y-3">
             {[1, 2, 3].map(i => (
-              <div key={i} className="animate-pulse h-20 bg-white/[0.04] rounded-xl" />
+              <div key={i} className="animate-pulse h-20 bg-surface-overlay rounded-xl" />
             ))}
           </div>
         ) : error ? (
@@ -226,7 +226,7 @@ export default function ContactDrawer(props: DrawerProps) {
             {error}
           </div>
         ) : !data || !currentInquiry ? (
-          <p className="p-4 text-zinc-600 text-xs">Sin datos.</p>
+          <p className="p-4 text-text-muted text-xs">Sin datos.</p>
         ) : (
           <div className="p-4 space-y-5">
             {/* ===== A. Por qué hay match ===== */}
@@ -267,7 +267,7 @@ export default function ContactDrawer(props: DrawerProps) {
                 </div>
               )}
               {matchData.zone_kind === 'polygon_approximate' && (
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-500/20 text-zinc-300 text-xs md:text-[10px] font-medium">
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-500/20 text-text-secondary text-xs md:text-[10px] font-medium">
                   📍 Misma zona (aproximado)
                 </div>
               )}
@@ -276,7 +276,7 @@ export default function ContactDrawer(props: DrawerProps) {
                   📍 Barrio vecino (polígono adyacente)
                 </div>
               )}
-              <p className="text-xs text-zinc-300">{matchData.reasons_text}</p>
+              <p className="text-xs text-text-secondary">{matchData.reasons_text}</p>
               <button
                 onClick={() => setShowBreakdown(s => !s)}
                 className="text-xs md:text-[10px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1 cursor-pointer"
@@ -289,24 +289,24 @@ export default function ContactDrawer(props: DrawerProps) {
               </button>
               {showBreakdown && (
                 <div className="grid grid-cols-2 gap-2 pt-1">
-                  <div className="text-xs md:text-[10px] flex justify-between bg-white/[0.03] rounded px-2 py-1">
-                    <span className="text-zinc-500">Zona (40%)</span>
-                    <span className="font-bold text-zinc-200">{matchData.breakdown.zone}/100</span>
+                  <div className="text-xs md:text-[10px] flex justify-between bg-surface-overlay rounded px-2 py-1">
+                    <span className="text-text-muted">Zona (40%)</span>
+                    <span className="font-bold text-text-primary">{matchData.breakdown.zone}/100</span>
                   </div>
-                  <div className="text-xs md:text-[10px] flex justify-between bg-white/[0.03] rounded px-2 py-1">
-                    <span className="text-zinc-500">Precio (30%)</span>
-                    <span className="font-bold text-zinc-200">{matchData.breakdown.price}/100</span>
+                  <div className="text-xs md:text-[10px] flex justify-between bg-surface-overlay rounded px-2 py-1">
+                    <span className="text-text-muted">Precio (30%)</span>
+                    <span className="font-bold text-text-primary">{matchData.breakdown.price}/100</span>
                   </div>
-                  <div className="text-xs md:text-[10px] flex justify-between bg-white/[0.03] rounded px-2 py-1">
-                    <span className="text-zinc-500">Dormitorios (20%)</span>
-                    <span className="font-bold text-zinc-200">{matchData.breakdown.bedrooms}/100</span>
+                  <div className="text-xs md:text-[10px] flex justify-between bg-surface-overlay rounded px-2 py-1">
+                    <span className="text-text-muted">Dormitorios (20%)</span>
+                    <span className="font-bold text-text-primary">{matchData.breakdown.bedrooms}/100</span>
                   </div>
-                  <div className="text-xs md:text-[10px] flex justify-between bg-white/[0.03] rounded px-2 py-1">
-                    <span className="text-zinc-500">Tipo (10%)</span>
-                    <span className="font-bold text-zinc-200">{matchData.breakdown.type}/100</span>
+                  <div className="text-xs md:text-[10px] flex justify-between bg-surface-overlay rounded px-2 py-1">
+                    <span className="text-text-muted">Tipo (10%)</span>
+                    <span className="font-bold text-text-primary">{matchData.breakdown.type}/100</span>
                   </div>
                   {matchData.score_source && (
-                    <div className="col-span-2 text-xs md:text-[10px] text-zinc-600 italic pt-1">
+                    <div className="col-span-2 text-xs md:text-[10px] text-text-muted italic pt-1">
                       Fuente: snapshot de propiedad consultada
                     </div>
                   )}
@@ -319,10 +319,10 @@ export default function ContactDrawer(props: DrawerProps) {
 
             {/* ===== B. Propiedad consultada en su momento ===== */}
             <section className="space-y-2">
-              <h3 className="text-xs md:text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
+              <h3 className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-wider">
                 Propiedad que consultó en su momento
               </h3>
-              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+              <div className="rounded-xl border border-border-subtle bg-surface-overlay overflow-hidden">
                 {currentInquiry.property_snapshot.cover_photo_url && (
                   <div className="relative aspect-[16/9] bg-zinc-900">
                     <Image
@@ -341,16 +341,16 @@ export default function ContactDrawer(props: DrawerProps) {
                 )}
                 <div className="p-3 space-y-1.5">
                   {currentInquiry.tokko_property_reference && (
-                    <p className="text-xs md:text-[10px] text-zinc-600 font-mono">
+                    <p className="text-xs md:text-[10px] text-text-muted font-mono">
                       {currentInquiry.tokko_property_reference}
                     </p>
                   )}
-                  <p className="text-sm font-bold text-shell-text">
+                  <p className="text-sm font-bold text-text-primary">
                     {currentInquiry.property_snapshot.publication_title ??
                       currentInquiry.property_snapshot.address ??
                       'Propiedad'}
                   </p>
-                  <p className="text-xs md:text-[11px] text-zinc-500">
+                  <p className="text-xs md:text-[11px] text-text-muted">
                     {currentInquiry.property_snapshot.address}
                   </p>
                   <p className="text-sm font-bold text-blue-400">
@@ -359,14 +359,14 @@ export default function ContactDrawer(props: DrawerProps) {
                       currentInquiry.property_snapshot.currency,
                     ) ?? '—'}
                   </p>
-                  <div className="flex flex-wrap gap-1.5 text-xs md:text-[10px] text-zinc-500 pt-1">
+                  <div className="flex flex-wrap gap-1.5 text-xs md:text-[10px] text-text-muted pt-1">
                     {currentInquiry.property_snapshot.operation_type && (
-                      <span className="px-1.5 py-0.5 rounded bg-white/[0.04]">
+                      <span className="px-1.5 py-0.5 rounded bg-surface-overlay">
                         {OP_LABEL[currentInquiry.property_snapshot.operation_type] ?? 'Operación'}
                       </span>
                     )}
                     {currentInquiry.property_snapshot.property_type && (
-                      <span className="px-1.5 py-0.5 rounded bg-white/[0.04]">
+                      <span className="px-1.5 py-0.5 rounded bg-surface-overlay">
                         {currentInquiry.property_snapshot.property_type}
                       </span>
                     )}
@@ -395,16 +395,16 @@ export default function ContactDrawer(props: DrawerProps) {
 
             {/* ===== C. Comparativa ===== */}
             <section className="space-y-2">
-              <h3 className="text-xs md:text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
+              <h3 className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-wider">
                 Comparativa
               </h3>
-              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+              <div className="rounded-xl border border-border-subtle bg-surface-overlay overflow-hidden">
                 <table className="w-full text-xs md:text-[11px]">
-                  <thead className="bg-white/[0.03]">
+                  <thead className="bg-surface-overlay">
                     <tr>
-                      <th className="text-left p-2 font-medium text-zinc-500">Atributo</th>
-                      <th className="text-left p-2 font-medium text-zinc-500">Su consulta</th>
-                      <th className="text-left p-2 font-medium text-zinc-500">Esta propiedad</th>
+                      <th className="text-left p-2 font-medium text-text-muted">Atributo</th>
+                      <th className="text-left p-2 font-medium text-text-muted">Su consulta</th>
+                      <th className="text-left p-2 font-medium text-text-muted">Esta propiedad</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -452,42 +452,42 @@ export default function ContactDrawer(props: DrawerProps) {
 
             {/* ===== D. Datos contacto ===== */}
             <section className="space-y-2">
-              <h3 className="text-xs md:text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
+              <h3 className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-wider">
                 Datos del contacto
               </h3>
-              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 space-y-2">
+              <div className="rounded-xl border border-border-subtle bg-surface-overlay p-3 space-y-2">
                 {(data.contact.email || data.contact.phone) ? (
                   <>
                     {data.contact.email && (
                       <div className="flex items-center gap-2 text-xs">
-                        <Mail size={13} className="text-zinc-500 shrink-0" />
-                        <span className="text-zinc-300 truncate">{data.contact.email}</span>
+                        <Mail size={13} className="text-text-muted shrink-0" />
+                        <span className="text-text-secondary truncate">{data.contact.email}</span>
                       </div>
                     )}
                     {data.contact.phone && (
                       <div className="flex items-center gap-2 text-xs">
-                        <Phone size={13} className="text-zinc-500 shrink-0" />
-                        <span className="text-zinc-300">{data.contact.phone}</span>
+                        <Phone size={13} className="text-text-muted shrink-0" />
+                        <span className="text-text-secondary">{data.contact.phone}</span>
                       </div>
                     )}
                   </>
                 ) : (
-                  <p className="text-xs md:text-[11px] text-zinc-600 italic">
+                  <p className="text-xs md:text-[11px] text-text-muted italic">
                     Datos sensibles ocultos — contacto pertenece a otro asesor
                   </p>
                 )}
                 <div className="flex items-center gap-2 text-xs">
-                  <Calendar size={13} className="text-zinc-500 shrink-0" />
-                  <span className="text-zinc-500">
+                  <Calendar size={13} className="text-text-muted shrink-0" />
+                  <span className="text-text-muted">
                     Primera consulta: {fmtDate(currentInquiry.first_inquired_at)}
                   </span>
                 </div>
                 {currentInquiry.source_portal && (
                   <div className="flex items-center gap-2 text-xs">
-                    <Tag size={13} className="text-zinc-500 shrink-0" />
+                    <Tag size={13} className="text-text-muted shrink-0" />
                     <span
                       className={`px-1.5 py-0.5 rounded text-xs md:text-[10px] font-medium ${
-                        PORTAL_COLORS[currentInquiry.source_portal] ?? 'bg-zinc-700 text-zinc-300'
+                        PORTAL_COLORS[currentInquiry.source_portal] ?? 'bg-zinc-700 text-text-secondary'
                       }`}
                     >
                       {currentInquiry.source_portal}
@@ -495,9 +495,9 @@ export default function ContactDrawer(props: DrawerProps) {
                   </div>
                 )}
                 {currentInquiry.comment && (
-                  <div className="pt-2 mt-2 border-t border-white/[0.04]">
-                    <p className="text-xs md:text-[10px] text-zinc-500 mb-1">Mensaje original:</p>
-                    <p className="text-xs md:text-[11px] text-zinc-300 italic leading-relaxed">
+                  <div className="pt-2 mt-2 border-t border-border-subtle">
+                    <p className="text-xs md:text-[10px] text-text-muted mb-1">Mensaje original:</p>
+                    <p className="text-xs md:text-[11px] text-text-secondary italic leading-relaxed">
                       &ldquo;{currentInquiry.comment.slice(0, 400)}&rdquo;
                     </p>
                   </div>
@@ -511,19 +511,19 @@ export default function ContactDrawer(props: DrawerProps) {
               if (otherInquiries.length === 0) return null
               return (
                 <section className="space-y-2">
-                  <h3 className="text-xs md:text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
+                  <h3 className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-wider">
                     Otras propiedades que consultó en la inmobiliaria ({otherInquiries.length})
                   </h3>
-                  <p className="text-xs md:text-[10px] text-zinc-600">
+                  <p className="text-xs md:text-[10px] text-text-muted">
                     Estas son las demás propiedades por las que esta persona se interesó. Te permite entender mejor su perfil de búsqueda.
                   </p>
-                  <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] divide-y divide-white/[0.04]">
+                  <div className="rounded-xl border border-border-subtle bg-surface-overlay divide-y divide-white/[0.04]">
                     {otherInquiries.map(inq => {
                       const isCurrentProperty = String(inq.tokko_property_id) === String(currentPropertyId)
                       return (
                         <div
                           key={inq.id}
-                          className={`p-2.5 flex items-center gap-2.5 hover:bg-white/[0.02] transition-colors ${
+                          className={`p-2.5 flex items-center gap-2.5 hover:bg-surface-overlay transition-colors ${
                             isCurrentProperty ? 'bg-emerald-500/5 border-l-2 border-l-emerald-500/40' : ''
                           }`}
                         >
@@ -543,17 +543,17 @@ export default function ContactDrawer(props: DrawerProps) {
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs md:text-[11px] font-medium text-shell-text truncate">
+                            <p className="text-xs md:text-[11px] font-medium text-text-primary truncate">
                               {inq.property_snapshot.publication_title ??
                                 inq.property_snapshot.address ??
                                 'Propiedad'}
                             </p>
-                            <p className="text-xs md:text-[10px] text-zinc-500">
+                            <p className="text-xs md:text-[10px] text-text-muted">
                               {priceLabel(inq.property_snapshot.price, inq.property_snapshot.currency) ?? '—'}
                               {inq.property_snapshot.bedrooms ? ` · ${inq.property_snapshot.bedrooms} dorm` : ''}
                               {inq.property_snapshot.property_type ? ` · ${inq.property_snapshot.property_type}` : ''}
                             </p>
-                            <p className="text-xs md:text-[10px] text-zinc-600">
+                            <p className="text-xs md:text-[10px] text-text-muted">
                               {fmtDate(inq.last_inquired_at)} · {inq.source_portal ?? 'tokko'}
                             </p>
                           </div>
@@ -562,7 +562,7 @@ export default function ContactDrawer(props: DrawerProps) {
                               <span className={`text-xs md:text-[9px] px-1.5 py-0.5 rounded font-medium ${
                                 inq.status === 'responded'
                                   ? 'bg-emerald-500/10 text-emerald-400'
-                                  : 'bg-white/[0.04] text-zinc-400'
+                                  : 'bg-surface-overlay text-text-secondary'
                               }`}>
                                 {inq.status === 'responded' ? 'Respondida' : inq.status}
                               </span>
@@ -590,7 +590,7 @@ export default function ContactDrawer(props: DrawerProps) {
 
             {/* ===== F. Acciones ===== */}
             {(data.contact.is_own || data.contact.viewer_role === 'admin' || data.contact.phone) && (
-              <section className="sticky bottom-0 -mx-4 px-4 py-3 bg-zinc-950/95 backdrop-blur border-t border-white/[0.08] flex flex-wrap gap-2">
+              <section className="sticky bottom-0 -mx-4 px-4 py-3 bg-zinc-950/95 backdrop-blur border-t border-border-default flex flex-wrap gap-2">
                 {waLink && (
                   <a
                     href={waLink}
@@ -629,7 +629,7 @@ function PrefPill({
       className={`text-xs md:text-[11px] px-2 py-1 rounded-md border whitespace-nowrap ${
         emphasized
           ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200 font-medium'
-          : 'border-white/[0.08] bg-white/[0.03] text-zinc-300'
+          : 'border-border-default bg-surface-overlay text-text-secondary'
       }`}
     >
       {children}
@@ -692,7 +692,7 @@ function PreferencesSection({ prefs }: { prefs: UserPreferences | null }) {
   return (
     <section className="space-y-2">
       <div className="flex items-center gap-2">
-        <h3 className="text-xs md:text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
+        <h3 className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-wider">
           Preferencias declaradas
         </h3>
         <span className="text-xs md:text-[9px] px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-300 font-medium uppercase">
@@ -700,10 +700,10 @@ function PreferencesSection({ prefs }: { prefs: UserPreferences | null }) {
         </span>
       </div>
 
-      <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] divide-y divide-white/[0.04]">
+      <div className="rounded-xl border border-border-subtle bg-surface-overlay divide-y divide-white/[0.04]">
         {(buscaText || priceText) && (
           <div className="p-3 space-y-1.5">
-            <p className="text-xs md:text-[10px] text-zinc-500 font-medium">Tu contacto busca:</p>
+            <p className="text-xs md:text-[10px] text-text-muted font-medium">Tu contacto busca:</p>
             <div className="flex flex-wrap items-center gap-2">
               {buscaText && <PrefPill>{buscaText}</PrefPill>}
               {priceText && <PrefPill emphasized>{priceText}</PrefPill>}
@@ -713,7 +713,7 @@ function PreferencesSection({ prefs }: { prefs: UserPreferences | null }) {
 
         {(prefs.zones?.length ?? 0) > 0 && (
           <div className="p-3 space-y-1.5">
-            <p className="text-xs md:text-[10px] text-zinc-500 font-medium">
+            <p className="text-xs md:text-[10px] text-text-muted font-medium">
               Le interesa encontrar una propiedad en:
             </p>
             <div className="flex flex-wrap gap-1.5">
@@ -726,7 +726,7 @@ function PreferencesSection({ prefs }: { prefs: UserPreferences | null }) {
 
         {hasChars && (
           <div className="p-3 space-y-1.5">
-            <p className="text-xs md:text-[10px] text-zinc-500 font-medium">
+            <p className="text-xs md:text-[10px] text-text-muted font-medium">
               Con las siguientes características:
             </p>
             <div className="flex flex-wrap gap-1.5">
@@ -761,10 +761,10 @@ function ComparisonRow({
       ? 'text-amber-400'
       : 'text-red-400'
   return (
-    <tr className="border-t border-white/[0.04]">
-      <td className="p-2 text-zinc-500">{label}</td>
-      <td className="p-2 text-zinc-400">{a}</td>
-      <td className="p-2 text-zinc-300">
+    <tr className="border-t border-border-subtle">
+      <td className="p-2 text-text-muted">{label}</td>
+      <td className="p-2 text-text-secondary">{a}</td>
+      <td className="p-2 text-text-secondary">
         <span className="flex items-center gap-1.5">
           {b} <span className={`text-sm font-bold ${cls}`}>{icon}</span>
         </span>

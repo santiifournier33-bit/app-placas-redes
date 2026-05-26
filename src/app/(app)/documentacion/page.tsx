@@ -95,8 +95,8 @@ export default function DocumentacionPage() {
             <FolderOpen size={20} strokeWidth={1.8} className="text-violet-400" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-shell-text">Documentación</h1>
-            <p className="text-xs text-zinc-500 mt-0.5">
+            <h1 className="text-xl font-bold text-text-primary">Documentación</h1>
+            <p className="text-xs text-text-muted mt-0.5">
               Control de documentación legal de propiedades
             </p>
           </div>
@@ -104,7 +104,7 @@ export default function DocumentacionPage() {
 
         <div className="flex items-center gap-2 shrink-0">
           {lastUpdatedText && (
-            <span className="hidden sm:flex items-center gap-1 text-xs md:text-[10px] text-zinc-600">
+            <span className="hidden sm:flex items-center gap-1 text-xs md:text-[10px] text-text-muted">
               <Clock size={10} />
               {lastUpdatedText}
             </span>
@@ -112,7 +112,7 @@ export default function DocumentacionPage() {
           <button
             onClick={() => fetchData(true)}
             disabled={loading}
-            className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.06] text-zinc-400 hover:text-zinc-200 transition-all cursor-pointer disabled:opacity-50"
+            className="p-2.5 rounded-xl bg-surface-overlay border border-border-subtle hover:bg-surface-overlay-hover text-text-secondary hover:text-text-primary transition-all cursor-pointer disabled:opacity-50"
             title="Actualizar datos"
           >
             <RefreshCw size={16} strokeWidth={1.8} className={loading ? "animate-spin" : ""} />
@@ -173,7 +173,7 @@ export default function DocumentacionPage() {
       {/* Results count */}
       {!loading && data && (
         <div className="flex items-center justify-between">
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-text-muted">
             {filteredProperties.length} de {data.properties.length} propiedades
           </p>
         </div>

@@ -28,10 +28,10 @@ function formatMarkdown(text: string): string {
   return text
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/^### (.*?)$/gm, '<h3 class="text-sm font-bold text-zinc-100 mt-3 mb-1">$1</h3>')
-    .replace(/^## (.*?)$/gm, '<h2 class="text-sm font-bold text-zinc-100 mt-4 mb-1.5">$1</h2>')
-    .replace(/^- (.*?)$/gm, '<li class="ml-4 list-disc text-zinc-300">$1</li>')
-    .replace(/^(\d+)\. (.*?)$/gm, '<li class="ml-4 list-decimal text-zinc-300">$2</li>')
+    .replace(/^### (.*?)$/gm, '<h3 class="text-sm font-bold text-text-primary mt-3 mb-1">$1</h3>')
+    .replace(/^## (.*?)$/gm, '<h2 class="text-sm font-bold text-text-primary mt-4 mb-1.5">$1</h2>')
+    .replace(/^- (.*?)$/gm, '<li class="ml-4 list-disc text-text-secondary">$1</li>')
+    .replace(/^(\d+)\. (.*?)$/gm, '<li class="ml-4 list-decimal text-text-secondary">$2</li>')
     .replace(/📖.*?$/gm, '') // Strip any source lines
     .replace(/\n\n/g, '</p><p class="mt-2">')
     .replace(/\n/g, '<br/>')
@@ -143,20 +143,20 @@ export function ProceduresChat() {
   return (
     <div className="flex flex-col h-full min-h-0">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-white/[0.06] shrink-0 flex items-center justify-between">
+      <div className="px-6 py-4 border-b border-border-subtle shrink-0 flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2 mb-0.5">
             <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
-            <h1 className="text-xl font-bold text-shell-text">Asistente de Procedimientos</h1>
+            <h1 className="text-xl font-bold text-text-primary">Asistente de Procedimientos</h1>
           </div>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-text-muted">
             Base documental interna · Freire Propiedades · Responde con procedimientos oficiales
           </p>
         </div>
         {messages.length > 0 && (
           <button
             onClick={handleReset}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.05] transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs text-text-muted hover:text-text-primary hover:bg-surface-overlay transition-colors cursor-pointer"
           >
             <RotateCcw size={13} />
             Nueva consulta
@@ -170,11 +170,11 @@ export function ProceduresChat() {
         {/* Empty state + suggestions */}
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center min-h-[40vh] text-center px-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-violet-500/20 border border-white/[0.08] flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-violet-500/20 border border-border-default flex items-center justify-center mb-4">
               <Sparkles size={28} className="text-blue-400" strokeWidth={1.5} />
             </div>
-            <h2 className="text-lg font-bold text-zinc-200 mb-2">¿Qué querés consultar?</h2>
-            <p className="text-sm text-zinc-500 max-w-md mb-8">
+            <h2 className="text-lg font-bold text-text-primary mb-2">¿Qué querés consultar?</h2>
+            <p className="text-sm text-text-muted max-w-md mb-8">
               Preguntá sobre prospección, captación, tasación, negociación, objeciones y cualquier procedimiento de la empresa.
             </p>
 
@@ -184,7 +184,7 @@ export function ProceduresChat() {
                   <button
                     key={i}
                     onClick={() => sendMessage(q)}
-                    className="text-left px-4 py-3 rounded-xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.05] hover:border-blue-500/30 text-sm text-zinc-400 hover:text-zinc-200 transition-all duration-200 cursor-pointer group"
+                    className="text-left px-4 py-3 rounded-xl border border-border-default bg-surface-overlay hover:bg-surface-overlay hover:border-blue-500/30 text-sm text-text-secondary hover:text-text-primary transition-all duration-200 cursor-pointer group"
                   >
                     <span className="text-blue-500 mr-2 group-hover:text-blue-400">→</span>
                     {q}
@@ -200,7 +200,7 @@ export function ProceduresChat() {
           <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
             {msg.role === "assistant" && (
               <div className="mr-2 mt-1 shrink-0">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500/30 to-violet-500/30 border border-white/[0.1] flex items-center justify-center">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500/30 to-violet-500/30 border border-border-default flex items-center justify-center">
                   <Sparkles size={13} className="text-blue-400" />
                 </div>
               </div>
@@ -211,12 +211,12 @@ export function ProceduresChat() {
               <div className={`rounded-2xl px-4 py-3 ${
                 msg.role === "user"
                   ? "bg-blue-600 text-white rounded-tr-sm"
-                  : "bg-white/[0.04] border border-white/[0.08] text-zinc-200 rounded-tl-sm"
+                  : "bg-surface-overlay border border-border-default text-text-primary rounded-tl-sm"
               }`}>
                 {msg.isLoading ? (
                   <div className="flex items-center gap-2 py-1">
-                    <Loader2 size={14} className="animate-spin text-zinc-500" />
-                    <span className="text-xs text-zinc-500">Buscando en procedimientos...</span>
+                    <Loader2 size={14} className="animate-spin text-text-muted" />
+                    <span className="text-xs text-text-muted">Buscando en procedimientos...</span>
                   </div>
                 ) : msg.role === "user" ? (
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
@@ -236,7 +236,7 @@ export function ProceduresChat() {
                     className={`p-1 rounded-lg transition-colors cursor-pointer ${
                       msg.feedback === "up"
                         ? "text-emerald-400 bg-emerald-500/10"
-                        : "text-zinc-700 hover:text-zinc-400 hover:bg-white/[0.04]"
+                        : "text-zinc-700 hover:text-text-secondary hover:bg-surface-overlay"
                     }`}
                     title="Respuesta útil"
                   >
@@ -247,7 +247,7 @@ export function ProceduresChat() {
                     className={`p-1 rounded-lg transition-colors cursor-pointer ${
                       msg.feedback === "down"
                         ? "text-red-400 bg-red-500/10"
-                        : "text-zinc-700 hover:text-zinc-400 hover:bg-white/[0.04]"
+                        : "text-zinc-700 hover:text-text-secondary hover:bg-surface-overlay"
                     }`}
                     title="Respuesta incorrecta"
                   >
@@ -267,7 +267,7 @@ export function ProceduresChat() {
         <div className="px-6 pb-2 shrink-0">
           <button
             onClick={() => setShowSuggestions(prev => !prev)}
-            className="flex items-center gap-1 text-xs md:text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors cursor-pointer"
+            className="flex items-center gap-1 text-xs md:text-[11px] text-text-muted hover:text-text-secondary transition-colors cursor-pointer"
           >
             <ChevronDown size={12} className={`transition-transform ${showSuggestions ? "rotate-180" : ""}`} />
             Preguntas sugeridas
@@ -278,7 +278,7 @@ export function ProceduresChat() {
                 <button
                   key={i}
                   onClick={() => { sendMessage(q); setShowSuggestions(false) }}
-                  className="text-xs md:text-[11px] text-zinc-500 hover:text-zinc-200 border border-white/[0.06] hover:border-blue-500/30 px-2.5 py-1 rounded-full transition-all cursor-pointer hover:bg-blue-500/5"
+                  className="text-xs md:text-[11px] text-text-muted hover:text-text-primary border border-border-subtle hover:border-blue-500/30 px-2.5 py-1 rounded-full transition-all cursor-pointer hover:bg-blue-500/5"
                 >
                   {q.slice(0, 40)}...
                 </button>
@@ -289,7 +289,7 @@ export function ProceduresChat() {
       )}
 
       {/* Input */}
-      <div className="px-4 sm:px-6 pb-4 pt-2 border-t border-white/[0.06] shrink-0">
+      <div className="px-4 sm:px-6 pb-4 pt-2 border-t border-border-subtle shrink-0">
         <form onSubmit={handleSubmit} className="relative">
           <textarea
             ref={inputRef}
@@ -299,7 +299,7 @@ export function ProceduresChat() {
             placeholder="Preguntá sobre prospección, captación, negociación, objeciones..."
             rows={1}
             disabled={isLoading}
-            className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl pl-4 pr-14 py-3.5 text-sm text-shell-text placeholder-zinc-600 focus:outline-none focus:border-blue-500/50 focus:bg-white/[0.05] transition-all resize-none disabled:opacity-50 leading-relaxed"
+            className="w-full bg-surface-overlay border border-border-default rounded-2xl pl-4 pr-14 py-3.5 text-sm text-text-primary placeholder-zinc-600 focus:outline-none focus:border-blue-500/50 focus:bg-surface-overlay transition-all resize-none disabled:opacity-50 leading-relaxed"
             style={{ minHeight: "52px", maxHeight: "140px" }}
             onInput={e => {
               const el = e.currentTarget

@@ -19,7 +19,7 @@ export function InsightCard({ insight }: { insight: Insight }) {
   return (
     <div className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border ${BG[insight.type]} min-w-[200px] shrink-0`}>
       {ICONS[insight.type]}
-      <span className="text-xs text-zinc-300 font-medium">{insight.text}</span>
+      <span className="text-xs text-text-secondary font-medium">{insight.text}</span>
     </div>
   )
 }

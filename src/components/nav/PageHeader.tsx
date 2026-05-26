@@ -70,7 +70,7 @@ export function PageHeader({
     <div
       className={cn(
         "sticky top-0 z-40 flex items-center gap-3 px-4 border-b border-border-subtle shrink-0",
-        "bg-shell-surface/85 backdrop-blur-md supports-[backdrop-filter]:bg-shell-surface/75",
+        "bg-surface-1/85 backdrop-blur-md supports-[backdrop-filter]:bg-surface-1/75",
         // h-14 when there's no breadcrumb; auto-grows when crumb row present.
         breadcrumb ? "py-2 min-h-14" : "h-14",
         className,

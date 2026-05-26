@@ -36,10 +36,10 @@ export function TabNav({ role }: TabNavProps) {
   const visibleTabs = tabs.filter(t => !t.adminOnly || role === 'admin')
 
   return (
-    <div className="sticky top-0 z-20 h-14 flex items-center gap-2 bg-shell-bg/90 backdrop-blur-xl border-b border-white/[0.06] px-4 lg:px-4">
+    <div className="sticky top-0 z-20 h-14 flex items-center gap-2 bg-shell-bg/90 backdrop-blur-xl border-b border-border-subtle px-4 lg:px-4">
       <button
         onClick={toggle}
-        className="hidden lg:flex p-2 rounded-xl hover:bg-white/[0.06] text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer shrink-0"
+        className="hidden lg:flex p-2 rounded-xl hover:bg-surface-overlay-hover text-text-muted hover:text-text-secondary transition-colors cursor-pointer shrink-0"
         title={collapsed ? "Expandir sidebar" : "Colapsar sidebar"}
       >
         {collapsed ? <PanelLeftOpen size={18} strokeWidth={1.8} /> : <PanelLeftClose size={18} strokeWidth={1.8} />}
@@ -55,7 +55,7 @@ export function TabNav({ role }: TabNavProps) {
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 cursor-pointer ${
                 active
                   ? "text-blue-400 bg-blue-500/10"
-                  : "text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.04]"
+                  : "text-text-muted hover:text-text-secondary hover:bg-surface-overlay"
               }`}
             >
               {icon}

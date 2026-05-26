@@ -56,7 +56,7 @@ function EmailInput({ value, onChange, placeholder }: { value: string, onChange:
         onKeyDown={handleKeyDown}
         onBlur={() => addEmail(input)}
         placeholder={emails.length === 0 ? placeholder : ""}
-        className="flex-1 min-w-[120px] bg-transparent text-sm text-shell-text placeholder-zinc-600 outline-none"
+        className="flex-1 min-w-[120px] bg-transparent text-sm text-text-primary placeholder-zinc-600 outline-none"
       />
     </div>
   )
@@ -143,15 +143,15 @@ export function MailComposer({ onClose, replyTo }: MailComposerProps) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#0D0D14] rounded-2xl border border-white/[0.08] overflow-hidden shadow-2xl">
+    <div className="flex flex-col h-full bg-[#0D0D14] rounded-2xl border border-border-default overflow-hidden shadow-2xl">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white/[0.03] border-b border-white/[0.06] shrink-0">
-        <h3 className="text-sm font-semibold text-shell-text">
+      <div className="flex items-center justify-between px-4 py-3 bg-surface-overlay border-b border-border-subtle shrink-0">
+        <h3 className="text-sm font-semibold text-text-primary">
           {replyTo ? "Responder correo" : "Nuevo mensaje"}
         </h3>
         <button
           onClick={onClose}
-          className="p-1.5 rounded-lg hover:bg-white/[0.06] text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+          className="p-1.5 rounded-lg hover:bg-surface-overlay-hover text-text-muted hover:text-text-secondary transition-colors cursor-pointer"
         >
           <X size={16} />
         </button>
@@ -161,24 +161,24 @@ export function MailComposer({ onClose, replyTo }: MailComposerProps) {
       <div className="divide-y divide-white/[0.04] shrink-0">
         {/* From */}
         <div className="flex items-center gap-3 px-4 py-2.5">
-          <span className="text-xs md:text-[11px] font-medium text-zinc-500 w-14 shrink-0 uppercase tracking-wider mt-1.5">De</span>
-          <span className="text-sm text-zinc-400 truncate py-1">{credentials?.user}</span>
+          <span className="text-xs md:text-[11px] font-medium text-text-muted w-14 shrink-0 uppercase tracking-wider mt-1.5">De</span>
+          <span className="text-sm text-text-secondary truncate py-1">{credentials?.user}</span>
         </div>
 
         {/* To */}
         <div className="flex items-start gap-3 px-4 py-1.5 min-h-[44px]">
-          <span className="text-xs md:text-[11px] font-medium text-zinc-500 w-14 shrink-0 uppercase tracking-wider mt-2.5">Para</span>
+          <span className="text-xs md:text-[11px] font-medium text-text-muted w-14 shrink-0 uppercase tracking-wider mt-2.5">Para</span>
           <EmailInput value={to} onChange={setTo} placeholder="destinatario@ejemplo.com" />
           <div className="flex gap-2 shrink-0 mt-2">
-            <button onClick={() => setShowCc(!showCc)} className="text-xs md:text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors">Cc</button>
-            <button onClick={() => setShowBcc(!showBcc)} className="text-xs md:text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors">Cco</button>
+            <button onClick={() => setShowCc(!showCc)} className="text-xs md:text-[11px] text-text-muted hover:text-text-secondary transition-colors">Cc</button>
+            <button onClick={() => setShowBcc(!showBcc)} className="text-xs md:text-[11px] text-text-muted hover:text-text-secondary transition-colors">Cco</button>
           </div>
         </div>
 
         {/* CC */}
         {showCc && (
           <div className="flex items-start gap-3 px-4 py-1.5 min-h-[44px]">
-            <span className="text-xs md:text-[11px] font-medium text-zinc-500 w-14 shrink-0 uppercase tracking-wider mt-2.5">Cc</span>
+            <span className="text-xs md:text-[11px] font-medium text-text-muted w-14 shrink-0 uppercase tracking-wider mt-2.5">Cc</span>
             <EmailInput value={cc} onChange={setCc} placeholder="copia a..." />
           </div>
         )}
@@ -186,20 +186,20 @@ export function MailComposer({ onClose, replyTo }: MailComposerProps) {
         {/* BCC */}
         {showBcc && (
           <div className="flex items-start gap-3 px-4 py-1.5 min-h-[44px]">
-            <span className="text-xs md:text-[11px] font-medium text-zinc-500 w-14 shrink-0 uppercase tracking-wider mt-2.5">Cco</span>
+            <span className="text-xs md:text-[11px] font-medium text-text-muted w-14 shrink-0 uppercase tracking-wider mt-2.5">Cco</span>
             <EmailInput value={bcc} onChange={setBcc} placeholder="copia oculta a..." />
           </div>
         )}
 
         {/* Subject */}
         <div className="flex items-center gap-3 px-4 py-2.5">
-          <span className="text-xs md:text-[11px] font-medium text-zinc-500 w-14 shrink-0 uppercase tracking-wider">Asunto</span>
+          <span className="text-xs md:text-[11px] font-medium text-text-muted w-14 shrink-0 uppercase tracking-wider">Asunto</span>
           <input
             type="text"
             value={subject}
             onChange={e => setSubject(e.target.value)}
             placeholder="Asunto del correo"
-            className="flex-1 bg-transparent text-sm text-shell-text placeholder-zinc-600 outline-none"
+            className="flex-1 bg-transparent text-sm text-text-primary placeholder-zinc-600 outline-none"
           />
         </div>
       </div>
@@ -209,18 +209,18 @@ export function MailComposer({ onClose, replyTo }: MailComposerProps) {
         value={body}
         onChange={e => setBody(e.target.value)}
         placeholder="Escribí tu mensaje..."
-        className="flex-1 bg-transparent text-sm text-shell-text placeholder-zinc-600 outline-none resize-none px-4 py-4 leading-relaxed"
+        className="flex-1 bg-transparent text-sm text-text-primary placeholder-zinc-600 outline-none resize-none px-4 py-4 leading-relaxed"
       />
 
       {/* Attachments */}
       {attachments.length > 0 && (
-        <div className="px-4 py-2 flex flex-wrap gap-2 border-t border-white/[0.04] shrink-0">
+        <div className="px-4 py-2 flex flex-wrap gap-2 border-t border-border-subtle shrink-0">
           {attachments.map((file, i) => (
-            <div key={i} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/[0.06] text-xs md:text-[11px] text-zinc-400">
+            <div key={i} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-overlay border border-border-subtle text-xs md:text-[11px] text-text-secondary">
               <Paperclip size={11} />
               <span className="max-w-[120px] truncate">{file.name}</span>
-              <span className="text-zinc-600">({formatFileSize(file.size)})</span>
-              <button onClick={() => removeAttachment(i)} className="text-zinc-600 hover:text-red-400 transition-colors cursor-pointer">
+              <span className="text-text-muted">({formatFileSize(file.size)})</span>
+              <button onClick={() => removeAttachment(i)} className="text-text-muted hover:text-red-400 transition-colors cursor-pointer">
                 <X size={11} />
               </button>
             </div>
@@ -237,7 +237,7 @@ export function MailComposer({ onClose, replyTo }: MailComposerProps) {
       )}
 
       {/* Footer Toolbar */}
-      <div className="flex items-center gap-2 px-4 py-3 border-t border-white/[0.06] bg-white/[0.02] shrink-0">
+      <div className="flex items-center gap-2 px-4 py-3 border-t border-border-subtle bg-surface-overlay shrink-0">
         <button
           onClick={handleSend}
           disabled={sending || sent || !to || !subject || !body}
@@ -250,7 +250,7 @@ export function MailComposer({ onClose, replyTo }: MailComposerProps) {
         <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileChange} />
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="p-2 rounded-xl hover:bg-white/[0.06] text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+          className="p-2 rounded-xl hover:bg-surface-overlay-hover text-text-muted hover:text-text-secondary transition-colors cursor-pointer"
           title="Adjuntar archivo"
         >
           <Paperclip size={15} />

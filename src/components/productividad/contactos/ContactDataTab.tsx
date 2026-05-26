@@ -57,7 +57,7 @@ export function ContactDataTab({ contact }: ContactDataTabProps) {
 
   return (
     <div className="p-5 space-y-4">
-      <h3 className="text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Datos</h3>
+      <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-wider">Datos</h3>
       <div className="space-y-2">
         {FIELDS.map(field => {
           const raw = contact[field.key]
@@ -66,7 +66,7 @@ export function ContactDataTab({ contact }: ContactDataTabProps) {
             const stringVal = raw != null ? String(raw) : null
             return (
               <div key={field.key} className="flex items-center gap-3">
-                <span className="text-xs md:text-[11px] text-zinc-500 w-28 shrink-0">{field.label}</span>
+                <span className="text-xs md:text-[11px] text-text-muted w-28 shrink-0">{field.label}</span>
                 <div className="flex-1">
                   <InlineSelectChip
                     value={stringVal}
@@ -86,7 +86,7 @@ export function ContactDataTab({ contact }: ContactDataTabProps) {
 
           return (
             <div key={field.key} className="flex items-center gap-3">
-              <span className="text-xs md:text-[11px] text-zinc-500 w-28 shrink-0">{field.label}</span>
+              <span className="text-xs md:text-[11px] text-text-muted w-28 shrink-0">{field.label}</span>
               <div className="flex-1">
                 <EditableCell
                   value={raw as string | number | boolean | null}

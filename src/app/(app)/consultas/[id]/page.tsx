@@ -79,7 +79,7 @@ const PORTAL_COLORS: Record<string, string> = {
   argenprop: 'bg-blue-500/15 text-blue-300',
   zonaprop: 'bg-orange-500/15 text-orange-300',
   web: 'bg-emerald-500/15 text-emerald-300',
-  tokko: 'bg-zinc-700 text-zinc-300',
+  tokko: 'bg-zinc-700 text-text-secondary',
   manual: 'bg-purple-500/15 text-purple-300',
 }
 
@@ -185,18 +185,18 @@ export default function ConsultaPropertyDetailPage() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="h-14 flex items-center gap-3 px-4 border-b border-white/[0.06] shrink-0">
+      <div className="h-14 flex items-center gap-3 px-4 border-b border-border-subtle shrink-0">
         <button
           onClick={() => router.push('/consultas')}
-          className="p-2 rounded-xl hover:bg-white/[0.06] text-zinc-400 hover:text-zinc-200 cursor-pointer"
+          className="p-2 rounded-xl hover:bg-surface-overlay-hover text-text-secondary hover:text-text-primary cursor-pointer"
           title="Volver"
         >
           <ArrowLeft size={18} />
         </button>
-        <h1 className="text-sm font-bold text-shell-text truncate flex-1">
+        <h1 className="text-sm font-bold text-text-primary truncate flex-1">
           {property?.title ?? 'Propiedad'}
         </h1>
-        <span className="text-xs text-zinc-600">
+        <span className="text-xs text-text-muted">
           {visible.length}/{matches.length} · {matchTypeCounts.direct} directas · {matchTypeCounts.history} macheos
         </span>
       </div>
@@ -206,7 +206,7 @@ export default function ConsultaPropertyDetailPage() {
           {/* Property panel */}
           <div className="p-4 space-y-3">
             {loadingProp ? (
-              <div className="animate-pulse aspect-[4/3] bg-white/[0.04] rounded-2xl" />
+              <div className="animate-pulse aspect-[4/3] bg-surface-overlay rounded-2xl" />
             ) : property ? (
               <>
                 <div className="relative aspect-[4/3] bg-zinc-900 rounded-2xl overflow-hidden">
@@ -221,24 +221,24 @@ export default function ConsultaPropertyDetailPage() {
                   )}
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-zinc-500">{property.reference_code}</p>
-                  <h2 className="text-base font-bold text-shell-text">{property.title}</h2>
-                  <p className="text-sm text-zinc-400">{property.address}</p>
+                  <p className="text-xs text-text-muted">{property.reference_code}</p>
+                  <h2 className="text-base font-bold text-text-primary">{property.title}</h2>
+                  <p className="text-sm text-text-secondary">{property.address}</p>
                   <p className="text-lg font-bold text-blue-400 mt-2">{property.price}</p>
-                  <div className="flex flex-wrap gap-2 text-xs text-zinc-500 mt-2">
-                    <span className="px-2 py-0.5 rounded bg-white/[0.04]">{property.operation_type}</span>
-                    <span className="px-2 py-0.5 rounded bg-white/[0.04]">{property.type}</span>
+                  <div className="flex flex-wrap gap-2 text-xs text-text-muted mt-2">
+                    <span className="px-2 py-0.5 rounded bg-surface-overlay">{property.operation_type}</span>
+                    <span className="px-2 py-0.5 rounded bg-surface-overlay">{property.type}</span>
                     {property.bedrooms > 0 && <span>{property.bedrooms} dorm</span>}
                     {property.bathrooms > 0 && <span>{property.bathrooms} baño</span>}
                     {property.surface_total > 0 && <span>{property.surface_total} m²</span>}
                   </div>
                   {property.description && (
-                    <p className="text-xs text-zinc-500 mt-3 leading-relaxed">{property.description}</p>
+                    <p className="text-xs text-text-muted mt-3 leading-relaxed">{property.description}</p>
                   )}
                 </div>
               </>
             ) : (
-              <p className="text-xs text-zinc-600">No se encontró la propiedad</p>
+              <p className="text-xs text-text-muted">No se encontró la propiedad</p>
             )}
           </div>
 
@@ -246,12 +246,12 @@ export default function ConsultaPropertyDetailPage() {
           <div className="p-4 space-y-3">
             {/* Filters bar */}
             <div className="flex flex-wrap items-center gap-2 text-xs">
-              <h3 className="text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider mr-auto">
+              <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-wider mr-auto">
                 Contactos compatibles
               </h3>
               <button
                 onClick={() => setSortMode(m => m === 'score' ? 'recency' : 'score')}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-overlay hover:bg-surface-overlay-hover text-text-secondary cursor-pointer"
                 title="Cambiar orden"
               >
                 <ArrowUpDown size={12} />
@@ -260,7 +260,7 @@ export default function ConsultaPropertyDetailPage() {
               <button
                 onClick={() => setOnlyOwn(o => !o)}
                 className={`px-2.5 py-1 rounded-lg cursor-pointer ${
-                  onlyOwn ? 'bg-blue-500/20 text-blue-300' : 'bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08]'
+                  onlyOwn ? 'bg-blue-500/20 text-blue-300' : 'bg-surface-overlay text-text-secondary hover:bg-surface-overlay-hover'
                 }`}
               >
                 Solo mis contactos
@@ -268,13 +268,13 @@ export default function ConsultaPropertyDetailPage() {
             </div>
 
             {/* Match Type tabs */}
-            <div className="flex flex-wrap gap-1 border-b border-white/[0.04] pb-2">
+            <div className="flex flex-wrap gap-1 border-b border-border-subtle pb-2">
               <button
                 onClick={() => setMatchTypeFilter('all')}
                 className={`px-2.5 py-1 rounded-lg text-xs md:text-[10px] font-bold transition-all cursor-pointer ${
                   matchTypeFilter === 'all'
                     ? 'bg-blue-600/20 text-blue-300 border border-blue-500/30'
-                    : 'bg-white/[0.03] text-zinc-500 border border-transparent hover:bg-white/[0.06]'
+                    : 'bg-surface-overlay text-text-muted border border-transparent hover:bg-surface-overlay-hover'
                 }`}
               >
                 Todos ({matchTypeCounts.all})
@@ -284,7 +284,7 @@ export default function ConsultaPropertyDetailPage() {
                 className={`px-2.5 py-1 rounded-lg text-xs md:text-[10px] font-bold transition-all cursor-pointer ${
                   matchTypeFilter === 'direct'
                     ? 'bg-emerald-600/20 text-emerald-300 border border-emerald-500/30'
-                    : 'bg-white/[0.03] text-zinc-500 border border-transparent hover:bg-white/[0.06]'
+                    : 'bg-surface-overlay text-text-muted border border-transparent hover:bg-surface-overlay-hover'
                 }`}
               >
                 Consultas directas ({matchTypeCounts.direct})
@@ -294,7 +294,7 @@ export default function ConsultaPropertyDetailPage() {
                 className={`px-2.5 py-1 rounded-lg text-xs md:text-[10px] font-bold transition-all cursor-pointer ${
                   matchTypeFilter === 'history'
                     ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
-                    : 'bg-white/[0.03] text-zinc-500 border border-transparent hover:bg-white/[0.06]'
+                    : 'bg-surface-overlay text-text-muted border border-transparent hover:bg-surface-overlay-hover'
                 }`}
               >
                 Por historial ({matchTypeCounts.history})
@@ -308,8 +308,8 @@ export default function ConsultaPropertyDetailPage() {
                   onClick={() => setPortalFilter('all')}
                   className={`px-2 py-0.5 rounded text-xs md:text-[10px] font-medium cursor-pointer ${
                     portalFilter === 'all'
-                      ? 'bg-white/[0.12] text-zinc-200'
-                      : 'bg-white/[0.04] text-zinc-500 hover:bg-white/[0.06]'
+                      ? 'bg-surface-overlay-hover text-text-primary'
+                      : 'bg-surface-overlay text-text-muted hover:bg-surface-overlay-hover'
                   }`}
                 >
                   Todos ({matches.length})
@@ -320,8 +320,8 @@ export default function ConsultaPropertyDetailPage() {
                     onClick={() => setPortalFilter(portal)}
                     className={`px-2 py-0.5 rounded text-xs md:text-[10px] font-medium cursor-pointer ${
                       portalFilter === portal
-                        ? PORTAL_COLORS[portal] ?? 'bg-zinc-700 text-zinc-300'
-                        : 'bg-white/[0.04] text-zinc-500 hover:bg-white/[0.06]'
+                        ? PORTAL_COLORS[portal] ?? 'bg-zinc-700 text-text-secondary'
+                        : 'bg-surface-overlay text-text-muted hover:bg-surface-overlay-hover'
                     }`}
                   >
                     {portal} ({count})
@@ -333,7 +333,7 @@ export default function ConsultaPropertyDetailPage() {
             {loadingMatches ? (
               <div className="space-y-2">
                 {[1, 2, 3].map(i => (
-                  <div key={i} className="animate-pulse h-20 bg-white/[0.04] rounded-xl" />
+                  <div key={i} className="animate-pulse h-20 bg-surface-overlay rounded-xl" />
                 ))}
               </div>
             ) : error ? (
@@ -342,7 +342,7 @@ export default function ConsultaPropertyDetailPage() {
                 <span>{error}</span>
               </div>
             ) : visible.length === 0 ? (
-              <p className="text-xs text-zinc-600 py-8 text-center">
+              <p className="text-xs text-text-muted py-8 text-center">
                 {matches.length === 0
                   ? 'Sin contactos compatibles para esta propiedad.'
                   : 'Ningún match con los filtros actuales.'}
@@ -411,7 +411,7 @@ function MatchCard({
     : null
 
   const portal = match.source_portal ?? match.source ?? 'tokko'
-  const portalCls = PORTAL_COLORS[portal] ?? 'bg-zinc-700 text-zinc-300'
+  const portalCls = PORTAL_COLORS[portal] ?? 'bg-zinc-700 text-text-secondary'
   const recencyCls = RECENCY_BG[match.recency_bucket]
 
   const MATCH_TYPE_BADGES = {
@@ -421,7 +421,7 @@ function MatchCard({
   const matchTypeBadge = MATCH_TYPE_BADGES[match.match_type]
 
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 space-y-2">
+    <div className="rounded-xl border border-border-subtle bg-surface-overlay p-3 space-y-2">
       <div className="flex items-start gap-3">
         <div className="w-9 h-9 rounded-full bg-blue-500/15 flex items-center justify-center text-sm font-bold text-blue-400 shrink-0">
           {(match.full_name || '?')[0].toUpperCase()}
@@ -452,15 +452,15 @@ function MatchCard({
               </span>
             )}
             {!match.is_own && (
-              <span className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">
+              <span className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-text-muted">
                 Otro asesor
               </span>
             )}
           </div>
           {match.can_see_pii && match.email && (
-            <p className="text-xs md:text-[10px] text-zinc-500 mt-0.5 truncate">{match.email}</p>
+            <p className="text-xs md:text-[10px] text-text-muted mt-0.5 truncate">{match.email}</p>
           )}
-          <p className="text-xs md:text-[11px] text-zinc-500 mt-1">{match.reasons_text}</p>
+          <p className="text-xs md:text-[11px] text-text-muted mt-1">{match.reasons_text}</p>
           {match.total_consultas != null && match.total_consultas > 1 && (
             <p className="text-xs md:text-[10px] text-amber-400/80 mt-1">
               Consultó {match.total_consultas} veces
@@ -483,7 +483,7 @@ function MatchCard({
       </div>
 
       {expandedBreakdown && (
-        <div className="grid grid-cols-4 gap-1.5 pt-2 border-t border-white/[0.04]">
+        <div className="grid grid-cols-4 gap-1.5 pt-2 border-t border-border-subtle">
           <BreakdownPill label="Zona" value={match.breakdown.zone} />
           <BreakdownPill label="Precio" value={match.breakdown.price} />
           <BreakdownPill label="Dorm" value={match.breakdown.bedrooms} />
@@ -491,7 +491,7 @@ function MatchCard({
         </div>
       )}
 
-      <div className="flex items-center gap-2 pt-2 border-t border-white/[0.04]">
+      <div className="flex items-center gap-2 pt-2 border-t border-border-subtle">
         {waLink && (
           <a
             href={waLink}
@@ -505,7 +505,7 @@ function MatchCard({
         )}
         <button
           onClick={onOpenDrawer}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] text-zinc-300 text-xs font-medium hover:bg-white/[0.08] cursor-pointer"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-overlay text-text-secondary text-xs font-medium hover:bg-surface-overlay-hover cursor-pointer"
         >
           Ver contacto
         </button>
@@ -530,7 +530,7 @@ function BreakdownPill({ label, value }: { label: string; value: number }) {
   const cls =
     value >= 80 ? 'bg-emerald-500/10 text-emerald-300'
       : value >= 40 ? 'bg-amber-500/10 text-amber-300'
-        : 'bg-zinc-800/50 text-zinc-500'
+        : 'bg-zinc-800/50 text-text-muted'
   return (
     <div className={`rounded-md px-2 py-1 text-xs md:text-[10px] ${cls}`}>
       <div className="opacity-70">{label}</div>

@@ -21,7 +21,7 @@ export function KanbanColumn({ stage, contacts, allStages, onDrop, onTapContact 
       className={`flex flex-col w-72 shrink-0 rounded-2xl border transition-colors ${
         dragOver
           ? 'border-blue-500/30 bg-blue-500/5'
-          : 'border-white/[0.06] bg-white/[0.02]'
+          : 'border-border-subtle bg-surface-overlay'
       }`}
       onDragOver={(e) => {
         e.preventDefault()
@@ -36,10 +36,10 @@ export function KanbanColumn({ stage, contacts, allStages, onDrop, onTapContact 
         if (contactPipelineId) onDrop(contactPipelineId, stage.id)
       }}
     >
-      <div className="flex items-center gap-2 px-3 py-3 border-b border-white/[0.04]">
+      <div className="flex items-center gap-2 px-3 py-3 border-b border-border-subtle">
         {stage.emoji && <span className="text-sm">{stage.emoji}</span>}
-        <span className="text-sm font-medium text-shell-text truncate">{stage.name}</span>
-        <span className="text-xs font-bold text-zinc-600 tabular-nums ml-auto">{contacts.length}</span>
+        <span className="text-sm font-medium text-text-primary truncate">{stage.name}</span>
+        <span className="text-xs font-bold text-text-muted tabular-nums ml-auto">{contacts.length}</span>
       </div>
 
       <div className="flex-1 p-2 space-y-2 overflow-y-auto max-h-[calc(100vh-260px)] min-h-[100px]">

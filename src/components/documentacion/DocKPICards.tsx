@@ -80,12 +80,12 @@ export function DocKPICards({ total, complete, partial, incomplete, missing, uns
       {/* Progress bar */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-xs md:text-[11px] font-bold text-zinc-600 uppercase tracking-[0.12em]">
+          <span className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-[0.12em]">
             Progreso general
           </span>
-          <span className="text-sm font-bold text-shell-text tabular-nums">{percentage}%</span>
+          <span className="text-sm font-bold text-text-primary tabular-nums">{percentage}%</span>
         </div>
-        <div className="h-2.5 rounded-full bg-white/[0.04] overflow-hidden">
+        <div className="h-2.5 rounded-full bg-surface-overlay overflow-hidden">
           <div className="h-full flex">
             {total > 0 && (
               <>
@@ -109,7 +109,7 @@ export function DocKPICards({ total, complete, partial, incomplete, missing, uns
             )}
           </div>
         </div>
-        <div className="flex gap-4 text-xs md:text-[10px] text-zinc-500">
+        <div className="flex gap-4 text-xs md:text-[10px] text-text-muted">
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" /> Completa</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500" /> Incompleta</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500/50" /> Sin docs</span>
@@ -130,11 +130,11 @@ function KPICard({ icon, label, value, subtitle, color }: {
   color: typeof COLORS.total
 }) {
   return (
-    <div className={`rounded-2xl border border-white/[0.06] ${color.bg} p-4 transition-all hover:scale-[1.02]`}>
+    <div className={`rounded-2xl border border-border-subtle ${color.bg} p-4 transition-all hover:scale-[1.02]`}>
       <div className={`${color.icon} mb-2`}>{icon}</div>
       <p className={`text-2xl font-bold ${color.text} tabular-nums`}>{value}</p>
       <div className="flex items-center gap-2 mt-1">
-        <p className="text-xs md:text-[11px] text-zinc-500 font-medium">{label}</p>
+        <p className="text-xs md:text-[11px] text-text-muted font-medium">{label}</p>
         {subtitle && (
           <span className={`text-xs md:text-[10px] font-bold ${color.text} opacity-70`}>{subtitle}</span>
         )}

@@ -32,7 +32,7 @@ export function ProviderCard({ provider, onClick }: ProviderCardProps) {
   return (
     <div
       onClick={onClick}
-      className="flex items-center gap-4 p-4 rounded-2xl border border-white/[0.06] hover:border-white/[0.1] bg-white/[0.02] hover:bg-white/[0.03] transition-all cursor-pointer group"
+      className="flex items-center gap-4 p-4 rounded-2xl border border-border-subtle hover:border-border-default bg-surface-overlay hover:bg-surface-overlay transition-all cursor-pointer group"
     >
       {/* Category color dot */}
       <div
@@ -46,11 +46,11 @@ export function ProviderCard({ provider, onClick }: ProviderCardProps) {
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-medium text-zinc-200">{provider.name}</span>
+          <span className="text-sm font-medium text-text-primary">{provider.name}</span>
           {category && <CategoryBadge category={category} size="sm" />}
         </div>
 
-        <div className="mt-1 flex items-center gap-3 text-xs text-zinc-500 flex-wrap">
+        <div className="mt-1 flex items-center gap-3 text-xs text-text-muted flex-wrap">
           {provider.recurrence && provider.recurrence.freq !== "once" && (
             <span className="flex items-center gap-1 text-blue-400/70">
               <RotateCcw size={10} />
@@ -68,16 +68,16 @@ export function ProviderCard({ provider, onClick }: ProviderCardProps) {
 
       <div className="text-right shrink-0">
         <div className="flex flex-col items-end gap-0.5">
-          {totalARS > 0 && <span className="text-xs text-zinc-300 font-medium">{formatARS(totalARS)}</span>}
-          {totalUSD > 0 && <span className="text-xs text-zinc-300 font-medium">{formatUSD(totalUSD)}</span>}
+          {totalARS > 0 && <span className="text-xs text-text-secondary font-medium">{formatARS(totalARS)}</span>}
+          {totalUSD > 0 && <span className="text-xs text-text-secondary font-medium">{formatUSD(totalUSD)}</span>}
           {totalARS === 0 && totalUSD === 0 && (
-            <span className="text-xs text-zinc-600 flex items-center gap-1"><DollarSign size={10} />Sin gastos</span>
+            <span className="text-xs text-text-muted flex items-center gap-1"><DollarSign size={10} />Sin gastos</span>
           )}
         </div>
-        <div className="text-xs text-zinc-600 mt-0.5">{provPayments.length} pago{provPayments.length !== 1 ? "s" : ""}</div>
+        <div className="text-xs text-text-muted mt-0.5">{provPayments.length} pago{provPayments.length !== 1 ? "s" : ""}</div>
       </div>
 
-      <ChevronRight size={14} className="text-zinc-600 group-hover:text-zinc-400 transition-colors shrink-0" />
+      <ChevronRight size={14} className="text-text-muted group-hover:text-text-secondary transition-colors shrink-0" />
     </div>
   )
 }

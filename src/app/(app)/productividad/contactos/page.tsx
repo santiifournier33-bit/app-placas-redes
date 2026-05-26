@@ -77,7 +77,7 @@ export default function ContactosPage() {
     return (
       <div className="p-6 space-y-3">
         {[1, 2, 3].map(i => (
-          <div key={i} className="animate-pulse h-10 bg-white/[0.04] rounded-xl" />
+          <div key={i} className="animate-pulse h-10 bg-surface-overlay rounded-xl" />
         ))}
       </div>
     )
@@ -86,26 +86,26 @@ export default function ContactosPage() {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Toolbar */}
-      <div className="px-4 py-3 border-b border-white/[0.04] space-y-2 shrink-0">
+      <div className="px-4 py-3 border-b border-border-subtle space-y-2 shrink-0">
         {/* Top row: count + actions */}
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-zinc-500 mr-auto">
+          <span className="text-xs text-text-muted mr-auto">
             {filtered.length} contacto{filtered.length !== 1 ? 's' : ''}
             {filtered.length !== contacts.length && ` de ${contacts.length}`}
           </span>
 
           {/* View toggle (mobile only show both, desktop default table) */}
-          <div className="flex items-center bg-white/[0.04] rounded-lg p-0.5">
+          <div className="flex items-center bg-surface-overlay rounded-lg p-0.5">
             <button
               onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded cursor-pointer ${viewMode === 'table' ? 'bg-white/[0.08] text-zinc-300' : 'text-zinc-600'}`}
+              className={`p-1.5 rounded cursor-pointer ${viewMode === 'table' ? 'bg-surface-overlay-hover text-text-secondary' : 'text-text-muted'}`}
               title="Tabla"
             >
               <Table2 size={14} />
             </button>
             <button
               onClick={() => setViewMode('cards')}
-              className={`p-1.5 rounded cursor-pointer ${viewMode === 'cards' ? 'bg-white/[0.08] text-zinc-300' : 'text-zinc-600'}`}
+              className={`p-1.5 rounded cursor-pointer ${viewMode === 'cards' ? 'bg-surface-overlay-hover text-text-secondary' : 'text-text-muted'}`}
               title="Cards"
             >
               <LayoutGrid size={14} />
@@ -114,14 +114,14 @@ export default function ContactosPage() {
 
           <button
             onClick={() => setShowImport(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-zinc-400 hover:text-zinc-300 hover:bg-white/[0.06] cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-text-secondary hover:text-text-secondary hover:bg-surface-overlay-hover cursor-pointer"
             title="Importar CSV"
           >
             <Upload size={13} /> Importar
           </button>
           <button
             onClick={() => exportContactsCSV(filtered)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-zinc-400 hover:text-zinc-300 hover:bg-white/[0.06] cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-text-secondary hover:text-text-secondary hover:bg-surface-overlay-hover cursor-pointer"
             title="Exportar CSV"
           >
             <Download size={13} /> Exportar
@@ -136,13 +136,13 @@ export default function ContactosPage() {
 
         {/* Search + filters */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 bg-white/[0.04] rounded-xl px-3 py-2 border border-white/[0.06] flex-1 min-w-0">
-            <Search size={14} className="text-zinc-600 shrink-0" />
+          <div className="flex items-center gap-2 bg-surface-overlay rounded-xl px-3 py-2 border border-border-subtle flex-1 min-w-0">
+            <Search size={14} className="text-text-muted shrink-0" />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Buscar nombre, teléfono, email, rol, contexto..."
-              className="flex-1 bg-transparent text-xs text-shell-text placeholder:text-zinc-700 outline-none"
+              className="flex-1 bg-transparent text-xs text-text-primary placeholder:text-zinc-700 outline-none"
             />
           </div>
           <div className="flex gap-1.5 overflow-x-auto scroll-x-affordance shrink-0">
@@ -224,14 +224,14 @@ function FilterChip({ label, value, options, onChange }: {
         className={`appearance-none text-xs md:text-[11px] font-medium px-2.5 py-1.5 pr-6 rounded-lg border cursor-pointer outline-none transition-all [color-scheme:dark] ${
           active
             ? 'border-blue-500/30 bg-blue-500/10 text-blue-400'
-            : 'border-white/[0.06] bg-white/[0.04] text-zinc-400'
+            : 'border-border-subtle bg-surface-overlay text-text-secondary'
         }`}
       >
         {options.map(opt => (
           <option key={opt.value} value={opt.value}>{label}: {opt.label}</option>
         ))}
       </select>
-      <ChevronDown size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
+      <ChevronDown size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
     </div>
   )
 }

@@ -75,7 +75,7 @@ export function IngresosChart({ period }: IngresosChartProps) {
     <div className="w-full h-[300px] relative">
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center z-10">
-          <Loader2 size={18} className="animate-spin text-zinc-500" />
+          <Loader2 size={18} className="animate-spin text-text-muted" />
         </div>
       )}
 
@@ -100,7 +100,7 @@ export function IngresosChart({ period }: IngresosChartProps) {
       {!loading && !hasData && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center">
-            <p className="text-xs text-zinc-600">
+            <p className="text-xs text-text-muted">
               {error ? "Error al cargar ingresos" : "Sin ingresos registrados en el período"}
             </p>
             {error && <p className="text-xs text-zinc-700 mt-1">{error}</p>}

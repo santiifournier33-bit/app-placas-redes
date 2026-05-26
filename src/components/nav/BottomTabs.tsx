@@ -64,7 +64,7 @@ export function BottomTabs({ role }: BottomTabsProps) {
       {/* Bottom nav bar */}
       <nav
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-        className="fixed bottom-0 left-0 right-0 bg-shell-surface/90 backdrop-blur-xl border-t border-shell-border z-50 lg:hidden shadow-[0_-8px_32px_rgba(0,0,0,0.15)]"
+        className="fixed bottom-0 left-0 right-0 bg-surface-1/90 backdrop-blur-xl border-t border-border-subtle z-50 lg:hidden shadow-[0_-8px_32px_rgba(0,0,0,0.15)]"
       >
         <div className="flex items-stretch px-4 pt-1.5 pb-2">
 
@@ -73,7 +73,7 @@ export function BottomTabs({ role }: BottomTabsProps) {
             href="/dashboard"
             scroll={false}
             className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs md:text-[10px] font-semibold transition-all duration-200 min-h-[48px] ${
-              homeActive ? "text-shell-accent" : "text-shell-text-muted hover:text-shell-text"
+              homeActive ? "text-shell-accent" : "text-text-muted hover:text-text-primary"
             }`}
           >
             <LayoutDashboard size={20} strokeWidth={2} className={`transition-transform duration-200 ${homeActive ? "scale-110 drop-shadow-[0_0_8px_var(--color-shell-accent-muted)]" : ""}`} />
@@ -85,7 +85,7 @@ export function BottomTabs({ role }: BottomTabsProps) {
             href="/productividad/tareas"
             scroll={false}
             className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs md:text-[10px] font-semibold transition-all duration-200 min-h-[48px] ${
-              prodActive ? "text-shell-accent" : "text-shell-text-muted hover:text-shell-text"
+              prodActive ? "text-shell-accent" : "text-text-muted hover:text-text-primary"
             }`}
           >
             <ListTodo size={20} strokeWidth={2} className={`transition-transform duration-200 ${prodActive ? "scale-110 drop-shadow-[0_0_8px_var(--color-shell-accent-muted)]" : ""}`} />
@@ -97,7 +97,7 @@ export function BottomTabs({ role }: BottomTabsProps) {
             href="/diseno"
             scroll={false}
             className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs md:text-[10px] font-semibold transition-all duration-200 min-h-[48px] ${
-              disenActive ? "text-shell-accent" : "text-shell-text-muted hover:text-shell-text"
+              disenActive ? "text-shell-accent" : "text-text-muted hover:text-text-primary"
             }`}
           >
             <Paintbrush size={20} strokeWidth={2} className={`transition-transform duration-200 ${disenActive ? "scale-110 drop-shadow-[0_0_8px_var(--color-shell-accent-muted)]" : ""}`} />
@@ -108,7 +108,7 @@ export function BottomTabs({ role }: BottomTabsProps) {
           <button
             onClick={() => setAppsOpen(true)}
             className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs md:text-[10px] font-semibold transition-all duration-200 min-h-[48px] cursor-pointer ${
-              appsOpen ? "text-shell-accent" : "text-shell-text-muted hover:text-shell-text"
+              appsOpen ? "text-shell-accent" : "text-text-muted hover:text-text-primary"
             }`}
           >
             <Grid3x3 size={20} strokeWidth={2} className={`transition-transform duration-200 ${appsOpen ? "scale-110 drop-shadow-[0_0_8px_var(--color-shell-accent-muted)]" : ""}`} />
@@ -139,7 +139,7 @@ export function BottomTabs({ role }: BottomTabsProps) {
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 220 }}
               style={{ paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}
-              className="relative mt-auto bg-shell-surface border-t border-shell-border rounded-t-[2.5rem] max-h-[85vh] overflow-y-auto shadow-[0_-12px_40px_rgba(0,0,0,0.3)] z-10"
+              className="relative mt-auto bg-surface-1 border-t border-border-subtle rounded-t-[2.5rem] max-h-[85vh] overflow-y-auto shadow-[0_-12px_40px_rgba(0,0,0,0.3)] z-10"
             >
               {/* Handle */}
               <div className="flex justify-center pt-4 pb-2">
@@ -148,12 +148,12 @@ export function BottomTabs({ role }: BottomTabsProps) {
 
               {/* Header */}
               <div className="flex items-center justify-between px-6 py-4">
-                <h2 className="text-base font-bold text-shell-text">Herramientas</h2>
+                <h2 className="text-base font-bold text-text-primary">Herramientas</h2>
                 <button
                   onClick={() => setAppsOpen(false)}
-                  className="p-2 hover:bg-shell-surface-hover rounded-xl cursor-pointer transition-colors"
+                  className="p-2 hover:bg-surface-2 rounded-xl cursor-pointer transition-colors"
                 >
-                  <X size={18} className="text-shell-text-muted" />
+                  <X size={18} className="text-text-muted" />
                 </button>
               </div>
 
@@ -161,7 +161,7 @@ export function BottomTabs({ role }: BottomTabsProps) {
               <div className="px-6 space-y-8">
                 {APPS_SECTIONS.map(section => (
                   <div key={section.title} className="space-y-4">
-                    <p className="text-xs md:text-[11px] font-bold text-shell-text-muted uppercase tracking-[0.15em] px-1">
+                    <p className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-[0.15em] px-1">
                       {section.title}
                     </p>
                     <div className="grid grid-cols-3 gap-3">
@@ -174,12 +174,12 @@ export function BottomTabs({ role }: BottomTabsProps) {
                           return (
                             <div
                               key={item.href}
-                              className="flex flex-col items-center gap-2 p-3 rounded-2xl opacity-30 cursor-not-allowed select-none bg-shell-surface-hover/30 border border-transparent"
+                              className="flex flex-col items-center gap-2 p-3 rounded-2xl opacity-30 cursor-not-allowed select-none bg-surface-2/30 border border-transparent"
                             >
                               <div className="w-12 h-12 rounded-2xl bg-shell-text-muted/10 flex items-center justify-center">
-                                <Icon size={20} strokeWidth={1.5} className="text-shell-text-muted" />
+                                <Icon size={20} strokeWidth={1.5} className="text-text-muted" />
                               </div>
-                              <span className="text-xs md:text-[10px] text-shell-text-muted text-center leading-tight font-medium">{item.label}</span>
+                              <span className="text-xs md:text-[10px] text-text-muted text-center leading-tight font-medium">{item.label}</span>
                             </div>
                           )
                         }
@@ -193,22 +193,22 @@ export function BottomTabs({ role }: BottomTabsProps) {
                             className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all duration-200 cursor-pointer border ${
                               active
                                 ? "bg-shell-accent-muted border-shell-accent/20"
-                                : "hover:bg-shell-surface-hover border-transparent"
+                                : "hover:bg-surface-2 border-transparent"
                             }`}
                           >
                             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
                               active
                                 ? "bg-shell-accent/20"
-                                : "bg-shell-surface-hover"
+                                : "bg-surface-2"
                             }`}>
                               <Icon
                                 size={20}
                                 strokeWidth={1.5}
-                                className={active ? "text-shell-accent" : "text-shell-text"}
+                                className={active ? "text-shell-accent" : "text-text-primary"}
                               />
                             </div>
                             <span className={`text-xs md:text-[10px] text-center leading-tight font-semibold ${
-                              active ? "text-shell-accent" : "text-shell-text-muted"
+                              active ? "text-shell-accent" : "text-text-muted"
                             }`}>
                               {item.label}
                             </span>

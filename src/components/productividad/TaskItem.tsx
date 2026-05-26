@@ -11,7 +11,7 @@ const priorityColors: Record<number, string> = {
   1: "border-red-500 text-red-500",
   2: "border-orange-500 text-orange-500",
   3: "border-blue-500 text-blue-500",
-  4: "border-zinc-600 text-zinc-600",
+  4: "border-zinc-600 text-text-muted",
 }
 
 const priorityBg: Record<number, string> = {

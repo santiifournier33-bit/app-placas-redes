@@ -134,15 +134,15 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
 
       {/* Modal */}
       <div
-        className="relative w-full h-full lg:w-[90vw] lg:max-w-5xl lg:h-[85vh] bg-shell-surface border-0 lg:border border-shell-border rounded-none lg:rounded-[24px] flex flex-col overflow-hidden shadow-2xl"
+        className="relative w-full h-full lg:w-[90vw] lg:max-w-5xl lg:h-[85vh] bg-surface-1 border-0 lg:border border-border-subtle rounded-none lg:rounded-[24px] flex flex-col overflow-hidden shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Header ─────────────────────────────────── */}
-        <div className="px-6 py-4 border-b border-shell-border bg-shell-bg/20 shrink-0">
+        <div className="px-6 py-4 border-b border-border-subtle bg-shell-bg/20 shrink-0">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-shell-text">Nuevo contacto</h2>
-            <button onClick={onClose} className="p-2 hover:bg-shell-surface-hover rounded-xl cursor-pointer transition-colors">
-              <X size={20} className="text-shell-text-muted" />
+            <h2 className="text-base font-bold text-text-primary">Nuevo contacto</h2>
+            <button onClick={onClose} className="p-2 hover:bg-surface-2 rounded-xl cursor-pointer transition-colors">
+              <X size={20} className="text-text-muted" />
             </button>
           </div>
 
@@ -152,7 +152,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
               <AlertTriangle size={16} className="text-brand-accent shrink-0 mt-0.5" />
               <div className="text-xs">
                 <p className="font-bold text-brand-accent uppercase tracking-wider">Ya existe un contacto similar:</p>
-                <p className="text-shell-text/90 mt-1 font-semibold">
+                <p className="text-text-primary/90 mt-1 font-semibold">
                   {duplicate.first_name} {duplicate.last_name}
                   {duplicate.primary_phone && ` — ${duplicate.primary_phone}`}
                 </p>
@@ -164,9 +164,9 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
         {/* ── Body: 2-column layout ──────────────────── */}
         <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden bg-shell-bg/10">
           {/* Left column: DATOS BÁSICOS + CONTEXTO + NOTAS */}
-          <div className="w-full lg:w-1/2 border-r-0 lg:border-r border-shell-border p-6 space-y-6 lg:overflow-y-auto shrink-0 lg:shrink">
+          <div className="w-full lg:w-1/2 border-r-0 lg:border-r border-border-subtle p-6 space-y-6 lg:overflow-y-auto shrink-0 lg:shrink">
             <div>
-              <h3 className="text-xs md:text-[10px] font-bold text-shell-text-muted uppercase tracking-[0.15em] mb-4">Datos básicos</h3>
+              <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.15em] mb-4">Datos básicos</h3>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3.5">
                   <Field label="Nombre *">
@@ -175,7 +175,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
                       onChange={e => setFirstName(e.target.value)}
                       autoFocus
                       placeholder="Nombre"
-                      className="w-full h-11 bg-shell-bg/40 border border-shell-border rounded-xl px-3 text-sm font-semibold text-shell-text placeholder:text-shell-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
+                      className="w-full h-11 bg-shell-bg/40 border border-border-subtle rounded-xl px-3 text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
                     />
                   </Field>
                   <Field label="Apellido">
@@ -183,7 +183,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
                       value={lastName}
                       onChange={e => setLastName(e.target.value)}
                       placeholder="Apellido"
-                      className="w-full h-11 bg-shell-bg/40 border border-shell-border rounded-xl px-3 text-sm font-semibold text-shell-text placeholder:text-shell-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
+                      className="w-full h-11 bg-shell-bg/40 border border-border-subtle rounded-xl px-3 text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
                     />
                   </Field>
                 </div>
@@ -194,7 +194,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
                     value={phone}
                     onChange={e => setPhone(e.target.value)}
                     placeholder="+54 11 1234-5678"
-                    className="w-full h-11 bg-shell-bg/40 border border-shell-border rounded-xl px-3 text-sm font-semibold text-shell-text placeholder:text-shell-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
+                    className="w-full h-11 bg-shell-bg/40 border border-border-subtle rounded-xl px-3 text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
                   />
                 </Field>
 
@@ -204,7 +204,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     placeholder="contacto@email.com"
-                    className="w-full h-11 bg-shell-bg/40 border border-shell-border rounded-xl px-3 text-sm font-semibold text-shell-text placeholder:text-shell-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
+                    className="w-full h-11 bg-shell-bg/40 border border-border-subtle rounded-xl px-3 text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
                   />
                 </Field>
 
@@ -214,7 +214,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
                       value={rol}
                       onChange={e => setRol(e.target.value)}
                       placeholder="Ej: Arquitecto, Inversor..."
-                      className="w-full h-11 bg-shell-bg/40 border border-shell-border rounded-xl px-3 text-sm font-semibold text-shell-text placeholder:text-shell-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
+                      className="w-full h-11 bg-shell-bg/40 border border-border-subtle rounded-xl px-3 text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
                     />
                   </Field>
                   <Field label="Ubicación">
@@ -222,7 +222,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
                       value={ubicacion}
                       onChange={e => setUbicacion(e.target.value)}
                       placeholder="Ej: Pilar, CABA..."
-                      className="w-full h-11 bg-shell-bg/40 border border-shell-border rounded-xl px-3 text-sm font-semibold text-shell-text placeholder:text-shell-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
+                      className="w-full h-11 bg-shell-bg/40 border border-border-subtle rounded-xl px-3 text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
                     />
                   </Field>
                 </div>
@@ -231,34 +231,34 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
 
             {/* Contexto */}
             <div>
-              <h3 className="text-xs md:text-[10px] font-bold text-shell-text-muted uppercase tracking-[0.15em] mb-3">Contexto</h3>
+              <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.15em] mb-3">Contexto</h3>
               <textarea
                 value={contexto}
                 onChange={e => setContexto(e.target.value)}
                 placeholder="¿Cómo conocés a esta persona? ¿En qué contexto se conocieron?"
                 rows={3}
-                className="w-full bg-shell-bg/40 border border-shell-border rounded-xl p-3 text-sm font-semibold text-shell-text placeholder:text-shell-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all resize-none"
+                className="w-full bg-shell-bg/40 border border-border-subtle rounded-xl p-3 text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all resize-none"
               />
             </div>
 
             {/* Notas iniciales */}
             <div>
-              <h3 className="text-xs md:text-[10px] font-bold text-shell-text-muted uppercase tracking-[0.15em] mb-3">Notas iniciales</h3>
+              <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.15em] mb-3">Notas iniciales</h3>
               <textarea
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
                 placeholder="Información relevante, observaciones, detalles de la primera interacción..."
                 rows={3}
-                className="w-full bg-shell-bg/40 border border-shell-border rounded-xl p-3 text-sm font-semibold text-shell-text placeholder:text-shell-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all resize-none"
+                className="w-full bg-shell-bg/40 border border-border-subtle rounded-xl p-3 text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all resize-none"
               />
             </div>
           </div>
 
           {/* Right column: CLASIFICACIÓN + FLAGS + PIPELINE */}
-          <div className="w-full lg:w-1/2 p-6 space-y-6 lg:overflow-y-auto shrink-0 lg:shrink border-t border-shell-border lg:border-t-0">
+          <div className="w-full lg:w-1/2 p-6 space-y-6 lg:overflow-y-auto shrink-0 lg:shrink border-t border-border-subtle lg:border-t-0">
             {/* Clasificación */}
             <div>
-              <h3 className="text-xs md:text-[10px] font-bold text-shell-text-muted uppercase tracking-[0.15em] mb-4">Clasificación</h3>
+              <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.15em] mb-4">Clasificación</h3>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3.5">
                   <Field label="Origen">
@@ -284,8 +284,8 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
 
             {/* Flags */}
             <div className="space-y-3.5">
-              <h3 className="text-xs md:text-[10px] font-bold text-shell-text-muted uppercase tracking-[0.15em]">Flags</h3>
-              <div className="flex flex-wrap gap-4 py-1.5 px-3 bg-shell-bg/40 border border-shell-border rounded-xl">
+              <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.15em]">Flags</h3>
+              <div className="flex flex-wrap gap-4 py-1.5 px-3 bg-shell-bg/40 border border-border-subtle rounded-xl">
                 <CheckboxField label="¿Estratégico?" checked={esEstrategico} onChange={setEsEstrategico} />
                 <CheckboxField label="¿Influyente?" checked={esInfluyente} onChange={setEsInfluyente} />
                 <CheckboxField label="¿Mentor?" checked={esMentor} onChange={setEsMentor} />
@@ -293,8 +293,8 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
             </div>
 
             {/* Pipeline (optional) */}
-            <div className="pt-5 border-t border-shell-border space-y-4">
-              <h3 className="text-xs md:text-[10px] font-bold text-shell-text-muted uppercase tracking-[0.15em]">Agregar a pipeline (opcional)</h3>
+            <div className="pt-5 border-t border-border-subtle space-y-4">
+              <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.15em]">Agregar a pipeline (opcional)</h3>
               <div className="grid grid-cols-2 gap-3.5">
                 <Field label="Pipeline">
                   <InlineSelectChip
@@ -333,18 +333,18 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
         )}
 
         {/* ── Footer ─────────────────────────────────── */}
-        <div className="px-6 py-4 border-t border-shell-border bg-shell-bg/20 shrink-0 flex items-center justify-end gap-3">
+        <div className="px-6 py-4 border-t border-border-subtle bg-shell-bg/20 shrink-0 flex items-center justify-end gap-3">
           <button
             onClick={onClose}
             disabled={submitting}
-            className="px-5 py-2.5 rounded-xl text-sm font-bold text-shell-text-muted hover:bg-shell-surface-hover cursor-pointer disabled:opacity-50 transition-colors h-11"
+            className="px-5 py-2.5 rounded-xl text-sm font-bold text-text-muted hover:bg-surface-2 cursor-pointer disabled:opacity-50 transition-colors h-11"
           >
             Cancelar
           </button>
           <button
             onClick={handleSubmit}
             disabled={submitting || !firstName.trim()}
-            className="px-6 py-2.5 rounded-xl text-sm font-bold bg-brand-accent hover:brightness-105 text-brand-primary cursor-pointer disabled:bg-shell-surface-hover disabled:text-shell-text-muted/50 disabled:cursor-not-allowed transition-all shadow-[0_4px_16px_rgba(200,164,90,0.15)] h-11 flex items-center justify-center"
+            className="px-6 py-2.5 rounded-xl text-sm font-bold bg-brand-accent hover:brightness-105 text-brand-primary cursor-pointer disabled:bg-surface-2 disabled:text-text-muted/50 disabled:cursor-not-allowed transition-all shadow-[0_4px_16px_rgba(200,164,90,0.15)] h-11 flex items-center justify-center"
           >
             {submitting ? 'Guardando...' : 'Crear contacto'}
           </button>
@@ -359,7 +359,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-xs md:text-[11px] text-shell-text-muted font-bold block uppercase tracking-wider">{label}</label>
+      <label className="text-xs md:text-[11px] text-text-muted font-bold block uppercase tracking-wider">{label}</label>
       {children}
     </div>
   )
@@ -372,7 +372,7 @@ function CheckboxField({ label, checked, onChange }: { label: string; checked: b
         className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-colors ${
           checked
             ? 'bg-brand-accent border-brand-accent text-brand-primary'
-            : 'border-shell-border bg-shell-bg/40 group-hover:border-shell-text-muted'
+            : 'border-border-subtle bg-shell-bg/40 group-hover:border-shell-text-muted'
         }`}
         onClick={() => onChange(!checked)}
       >
@@ -382,7 +382,7 @@ function CheckboxField({ label, checked, onChange }: { label: string; checked: b
           </svg>
         )}
       </div>
-      <span className="text-xs font-bold text-shell-text-muted group-hover:text-shell-text transition-colors">{label}</span>
+      <span className="text-xs font-bold text-text-muted group-hover:text-text-primary transition-colors">{label}</span>
     </label>
   )
 }

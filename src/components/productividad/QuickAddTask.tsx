@@ -15,7 +15,7 @@ const PRIORITY_OPTIONS = [
   { value: 1 as const, label: "Prioridad 1", color: "text-red-400",    flag: "bg-red-500"    },
   { value: 2 as const, label: "Prioridad 2", color: "text-orange-400", flag: "bg-orange-500" },
   { value: 3 as const, label: "Prioridad 3", color: "text-blue-400",   flag: "bg-blue-500"   },
-  { value: 4 as const, label: "Sin prioridad", color: "text-zinc-500", flag: "bg-zinc-600"   },
+  { value: 4 as const, label: "Sin prioridad", color: "text-text-muted", flag: "bg-zinc-600"   },
 ]
 
 const TYPE_ICONS: Record<TaskType, React.ReactNode> = {
@@ -125,7 +125,7 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
   }).slice(0, 20)
 
   return (
-    <div className="rounded-xl border border-white/[0.1] bg-[#16161f] p-3 space-y-2.5">
+    <div className="rounded-xl border border-border-default bg-[#16161f] p-3 space-y-2.5">
       {/* Title input */}
       <input
         ref={inputRef}
@@ -133,13 +133,13 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
         onChange={(e) => setTitle(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Nombre de la tarea"
-        className="w-full bg-transparent text-sm text-shell-text placeholder:text-zinc-600 outline-none"
+        className="w-full bg-transparent text-sm text-text-primary placeholder:text-text-muted outline-none"
       />
 
       {/* Description placeholder line */}
       <input
         placeholder="Descripcion"
-        className="w-full bg-transparent text-xs text-zinc-600 placeholder:text-zinc-700 outline-none"
+        className="w-full bg-transparent text-xs text-text-muted placeholder:text-zinc-700 outline-none"
       />
 
       {/* Action row */}
@@ -150,14 +150,14 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
           <button
             onClick={() => { closeAllDropdowns(); setShowDatePicker(!showDatePicker) }}
             className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs md:text-[11px] font-medium transition-colors cursor-pointer ${
-              dueDate ? "bg-blue-500/15 text-blue-400 border border-blue-500/20" : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
+              dueDate ? "bg-blue-500/15 text-blue-400 border border-blue-500/20" : "text-text-muted hover:bg-surface-overlay-hover hover:text-text-secondary"
             }`}
           >
             <Calendar size={13} />
             {dateLabel ?? "Fecha"}
           </button>
           {showDatePicker && (
-            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-white/[0.08] py-1 z-20 shadow-xl min-w-[160px]">
+            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[160px]">
               {[
                 { label: "Hoy", value: todayStr, sub: format(today, "EEE", { locale: es }) },
                 { label: "Mañana", value: tomorrowStr, sub: format(addDays(today, 1), "EEE", { locale: es }) },
@@ -166,18 +166,18 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
                 <button
                   key={opt.value}
                   onClick={() => { setDueDate(opt.value); setShowDatePicker(false) }}
-                  className="flex items-center justify-between gap-3 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-300 cursor-pointer"
+                  className="flex items-center justify-between gap-3 px-3 py-2 w-full hover:bg-surface-overlay text-xs text-text-secondary cursor-pointer"
                 >
                   <span>{opt.label}</span>
-                  <span className="text-zinc-600">{opt.sub}</span>
+                  <span className="text-text-muted">{opt.sub}</span>
                 </button>
               ))}
-              <div className="border-t border-white/[0.06] mt-1 pt-1 px-3 pb-2">
+              <div className="border-t border-border-subtle mt-1 pt-1 px-3 pb-2">
                 <input
                   type="date"
                   value={dueDate ?? ""}
                   onChange={(e) => { setDueDate(e.target.value); setShowDatePicker(false) }}
-                  className="w-full bg-transparent text-xs text-zinc-400 outline-none [color-scheme:dark]"
+                  className="w-full bg-transparent text-xs text-text-secondary outline-none [color-scheme:dark]"
                 />
               </div>
             </div>
@@ -189,23 +189,23 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
           <button
             onClick={() => { closeAllDropdowns(); setShowPriority(!showPriority) }}
             className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs md:text-[11px] font-medium transition-colors cursor-pointer ${
-              priority < 4 ? "bg-white/[0.06] border border-white/[0.06]" : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
+              priority < 4 ? "bg-surface-overlay-hover border border-border-subtle" : "text-text-muted hover:bg-surface-overlay-hover hover:text-text-secondary"
             }`}
           >
             <Flag size={13} className={PRIORITY_OPTIONS.find(p => p.value === priority)?.color} />
             {priority < 4 ? `P${priority}` : "Prioridad"}
           </button>
           {showPriority && (
-            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-white/[0.08] py-1 z-20 shadow-xl min-w-[140px]">
+            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[140px]">
               {PRIORITY_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => { setPriority(opt.value); setShowPriority(false) }}
-                  className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs cursor-pointer"
+                  className="flex items-center gap-2 px-3 py-2 w-full hover:bg-surface-overlay text-xs cursor-pointer"
                 >
                   <Flag size={13} className={opt.color} />
                   <span className={opt.color}>{opt.label}</span>
-                  {priority === opt.value && <span className="ml-auto text-zinc-500">✓</span>}
+                  {priority === opt.value && <span className="ml-auto text-text-muted">✓</span>}
                 </button>
               ))}
             </div>
@@ -217,25 +217,25 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
           <button
             onClick={() => { closeAllDropdowns(); setShowType(!showType) }}
             className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs md:text-[11px] font-medium transition-colors cursor-pointer ${
-              taskType !== "tarea" ? "bg-violet-500/15 text-violet-400 border border-violet-500/20" : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
+              taskType !== "tarea" ? "bg-violet-500/15 text-violet-400 border border-violet-500/20" : "text-text-muted hover:bg-surface-overlay-hover hover:text-text-secondary"
             }`}
           >
-            <span className={taskType !== "tarea" ? "text-violet-400" : "text-zinc-500"}>
+            <span className={taskType !== "tarea" ? "text-violet-400" : "text-text-muted"}>
               {TYPE_ICONS[taskType]}
             </span>
             {taskType !== "tarea" ? TASK_TYPES[taskType].label : "Tipo"}
           </button>
           {showType && (
-            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-white/[0.08] py-1 z-20 shadow-xl min-w-[140px]">
+            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[140px]">
               {(Object.entries(TASK_TYPES) as [TaskType, typeof TASK_TYPES[TaskType]][]).map(([key, val]) => (
                 <button
                   key={key}
                   onClick={() => { setTaskType(key); setShowType(false) }}
-                  className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-300 cursor-pointer"
+                  className="flex items-center gap-2 px-3 py-2 w-full hover:bg-surface-overlay text-xs text-text-secondary cursor-pointer"
                 >
-                  <span className="text-zinc-500">{TYPE_ICONS[key]}</span>
+                  <span className="text-text-muted">{TYPE_ICONS[key]}</span>
                   <span>{val.label}</span>
-                  {taskType === key && <span className="ml-auto text-zinc-500">✓</span>}
+                  {taskType === key && <span className="ml-auto text-text-muted">✓</span>}
                 </button>
               ))}
             </div>
@@ -253,7 +253,7 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
                 ? "text-zinc-700 cursor-not-allowed opacity-50"
                 : reminderOffsetMin !== null
                   ? "bg-amber-500/15 text-amber-400 border border-amber-500/20 cursor-pointer"
-                  : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300 cursor-pointer"
+                  : "text-text-muted hover:bg-surface-overlay-hover hover:text-text-secondary cursor-pointer"
             }`}
           >
             <Bell size={13} />
@@ -268,7 +268,7 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
                     : "1 día antes"}
           </button>
           {showReminder && (
-            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-white/[0.08] py-1 z-20 shadow-xl min-w-[160px]">
+            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[160px]">
               {[
                 { value: null, label: 'Sin recordatorio' },
                 { value: 0, label: 'A la hora' },
@@ -279,10 +279,10 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
                 <button
                   key={opt.value ?? 'none'}
                   onClick={() => { setReminderOffsetMin(opt.value); setShowReminder(false) }}
-                  className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-300 cursor-pointer"
+                  className="flex items-center gap-2 px-3 py-2 w-full hover:bg-surface-overlay text-xs text-text-secondary cursor-pointer"
                 >
                   {opt.label}
-                  {reminderOffsetMin === opt.value && <span className="ml-auto text-zinc-500">✓</span>}
+                  {reminderOffsetMin === opt.value && <span className="ml-auto text-text-muted">✓</span>}
                 </button>
               ))}
             </div>
@@ -294,14 +294,14 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
           <button
             onClick={() => { closeAllDropdowns(); setShowRecurrence(!showRecurrence) }}
             className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs md:text-[11px] font-medium transition-colors cursor-pointer ${
-              recurrenceFreq ? "bg-teal-500/15 text-teal-400 border border-teal-500/20" : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
+              recurrenceFreq ? "bg-teal-500/15 text-teal-400 border border-teal-500/20" : "text-text-muted hover:bg-surface-overlay-hover hover:text-text-secondary"
             }`}
           >
             <Repeat size={13} />
             {recurrenceFreq ? { daily: 'Diario', weekly: 'Semanal', biweekly: 'Quincenal', monthly: 'Mensual' }[recurrenceFreq] ?? 'Recurrente' : 'Repetir'}
           </button>
           {showRecurrence && (
-            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-white/[0.08] py-1 z-20 shadow-xl min-w-[140px]">
+            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[140px]">
               {[
                 { value: null, label: 'Sin repetición' },
                 { value: 'daily', label: 'Diario' },
@@ -312,10 +312,10 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
                 <button
                   key={opt.value ?? 'none'}
                   onClick={() => { setRecurrenceFreq(opt.value); setShowRecurrence(false) }}
-                  className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-300 cursor-pointer"
+                  className="flex items-center gap-2 px-3 py-2 w-full hover:bg-surface-overlay text-xs text-text-secondary cursor-pointer"
                 >
                   {opt.label}
-                  {recurrenceFreq === opt.value && <span className="ml-auto text-zinc-500">✓</span>}
+                  {recurrenceFreq === opt.value && <span className="ml-auto text-text-muted">✓</span>}
                 </button>
               ))}
             </div>
@@ -328,28 +328,28 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
           <button
             onClick={() => { closeAllDropdowns(); setShowContactPicker(!showContactPicker); setContactSearch("") }}
             className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs md:text-[11px] font-medium transition-colors cursor-pointer ${
-              contactId ? "bg-green-500/15 text-green-400 border border-green-500/20" : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300"
+              contactId ? "bg-green-500/15 text-green-400 border border-green-500/20" : "text-text-muted hover:bg-surface-overlay-hover hover:text-text-secondary"
             }`}
           >
             <UserCircle size={13} />
             {selectedContact ? `${selectedContact.first_name} ${selectedContact.last_name}` : "Contacto"}
           </button>
           {showContactPicker && (
-            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-white/[0.08] z-20 shadow-xl w-52">
-              <div className="p-2 border-b border-white/[0.06]">
+            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-border-default z-20 shadow-xl w-52">
+              <div className="p-2 border-b border-border-subtle">
                 <input
                   autoFocus
                   value={contactSearch}
                   onChange={(e) => setContactSearch(e.target.value)}
                   placeholder="Buscar contacto..."
-                  className="w-full bg-transparent text-xs text-zinc-300 placeholder:text-zinc-600 outline-none"
+                  className="w-full bg-transparent text-xs text-text-secondary placeholder:text-text-muted outline-none"
                 />
               </div>
               <div className="max-h-44 overflow-y-auto py-1">
                 {contactId && (
                   <button
                     onClick={() => { setContactId(null); setShowContactPicker(false) }}
-                    className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-500 cursor-pointer"
+                    className="flex items-center gap-2 px-3 py-2 w-full hover:bg-surface-overlay text-xs text-text-muted cursor-pointer"
                   >
                     <UserCircle size={12} />
                     Sin contacto
@@ -359,20 +359,20 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
                   <button
                     key={c.id}
                     onClick={() => { setContactId(c.id); setShowContactPicker(false) }}
-                    className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs cursor-pointer"
+                    className="flex items-center gap-2 px-3 py-2 w-full hover:bg-surface-overlay text-xs cursor-pointer"
                   >
                     <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-xs md:text-[10px] text-blue-400 font-bold shrink-0">
                       {(c.first_name || c.last_name || "?")[0]}
                     </div>
                     <div className="flex-1 min-w-0 text-left">
-                      <div className="text-zinc-300 truncate">{c.first_name} {c.last_name}</div>
-                      <div className="text-zinc-600 truncate">{c.primary_phone}</div>
+                      <div className="text-text-secondary truncate">{c.first_name} {c.last_name}</div>
+                      <div className="text-text-muted truncate">{c.primary_phone}</div>
                     </div>
-                    {contactId === c.id && <span className="text-zinc-600 ml-auto">✓</span>}
+                    {contactId === c.id && <span className="text-text-muted ml-auto">✓</span>}
                   </button>
                 ))}
                 {filteredContacts.length === 0 && (
-                  <p className="text-xs text-zinc-600 text-center py-3">Sin resultados</p>
+                  <p className="text-xs text-text-muted text-center py-3">Sin resultados</p>
                 )}
               </div>
             </div>
@@ -382,26 +382,26 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
       </div>
 
       {/* Buttons */}
-      <div className="flex items-center justify-between pt-1 border-t border-white/[0.06]">
+      <div className="flex items-center justify-between pt-1 border-t border-border-subtle">
         <div className="relative">
           <button
             onClick={() => { closeAllDropdowns(); setShowSectionPicker(!showSectionPicker) }}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs md:text-[11px] font-medium text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300 cursor-pointer"
+            className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs md:text-[11px] font-medium text-text-muted hover:bg-surface-overlay-hover hover:text-text-secondary cursor-pointer"
           >
             {(() => {
               const sec = sections.find(s => s.id === currentSectionId)
               return sec ? sec.name : "(Sin sección)"
             })()}
-            <span className="text-zinc-600">▾</span>
+            <span className="text-text-muted">▾</span>
           </button>
           {showSectionPicker && (
-            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-white/[0.08] py-1 z-20 shadow-xl min-w-[180px] max-h-60 overflow-y-auto">
+            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[180px] max-h-60 overflow-y-auto">
               <button
                 onClick={() => { setCurrentSectionId(null); setShowSectionPicker(false) }}
-                className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-300 cursor-pointer"
+                className="flex items-center gap-2 px-3 py-2 w-full hover:bg-surface-overlay text-xs text-text-secondary cursor-pointer"
               >
                 (Sin sección)
-                {currentSectionId === null && <span className="ml-auto text-zinc-500">✓</span>}
+                {currentSectionId === null && <span className="ml-auto text-text-muted">✓</span>}
               </button>
               {sections
                 .sort((a, b) => a.position - b.position)
@@ -409,10 +409,10 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
                   <button
                     key={s.id}
                     onClick={() => { setCurrentSectionId(s.id); setShowSectionPicker(false) }}
-                    className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-300 cursor-pointer"
+                    className="flex items-center gap-2 px-3 py-2 w-full hover:bg-surface-overlay text-xs text-text-secondary cursor-pointer"
                   >
                     <span className="truncate">{s.name}</span>
-                    {currentSectionId === s.id && <span className="ml-auto text-zinc-500 shrink-0">✓</span>}
+                    {currentSectionId === s.id && <span className="ml-auto text-text-muted shrink-0">✓</span>}
                   </button>
                 ))}
             </div>
@@ -421,7 +421,7 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
         <div className="flex items-center gap-2">
           <button
             onClick={onClose}
-            className="px-3 py-1.5 rounded-lg text-xs text-zinc-500 hover:bg-white/[0.06] cursor-pointer"
+            className="px-3 py-1.5 rounded-lg text-xs text-text-muted hover:bg-surface-overlay-hover cursor-pointer"
           >
             Cancelar
           </button>
@@ -431,7 +431,7 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
             className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors ${
               title.trim()
                 ? "bg-red-500 hover:bg-red-600 text-white"
-                : "bg-zinc-800 text-zinc-600 cursor-not-allowed"
+                : "bg-zinc-800 text-text-muted cursor-not-allowed"
             }`}
           >
             Crear

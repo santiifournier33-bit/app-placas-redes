@@ -55,16 +55,16 @@ export function MiniCalendar({ onSelectDate }: MiniCalendarProps) {
   }
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
+    <div className="rounded-2xl border border-border-subtle bg-surface-overlay p-4">
       {/* Month nav */}
       <div className="flex items-center justify-between mb-3">
-        <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-1 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer">
+        <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-1 text-text-muted hover:text-text-secondary transition-colors cursor-pointer">
           <ChevronLeft size={16} />
         </button>
-        <span className="text-sm font-medium text-zinc-200 capitalize">
+        <span className="text-sm font-medium text-text-primary capitalize">
           {format(currentMonth, "MMMM yyyy", { locale: es })}
         </span>
-        <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-1 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer">
+        <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-1 text-text-muted hover:text-text-secondary transition-colors cursor-pointer">
           <ChevronRight size={16} />
         </button>
       </div>
@@ -72,7 +72,7 @@ export function MiniCalendar({ onSelectDate }: MiniCalendarProps) {
       {/* Weekday headers */}
       <div className="grid grid-cols-7 mb-1">
         {WEEKDAYS.map((d) => (
-          <div key={d} className="text-center text-xs text-zinc-600 font-medium py-1">{d}</div>
+          <div key={d} className="text-center text-xs text-text-muted font-medium py-1">{d}</div>
         ))}
       </div>
 
@@ -92,12 +92,12 @@ export function MiniCalendar({ onSelectDate }: MiniCalendarProps) {
                 isSelected
                   ? "bg-blue-500/20"
                   : isToday(day)
-                    ? "bg-white/[0.06]"
-                    : "hover:bg-white/[0.04]"
+                    ? "bg-surface-overlay-hover"
+                    : "hover:bg-surface-overlay"
               } ${inMonth ? "" : "opacity-30"}`}
             >
               <span className={`text-xs ${
-                isToday(day) ? "text-blue-400 font-semibold" : inMonth ? "text-zinc-300" : "text-zinc-600"
+                isToday(day) ? "text-blue-400 font-semibold" : inMonth ? "text-text-secondary" : "text-text-muted"
               }`}>
                 {format(day, "d")}
               </span>
@@ -120,8 +120,8 @@ export function MiniCalendar({ onSelectDate }: MiniCalendarProps) {
 
       {/* Selected date payments */}
       {selectedDate && selectedPayments.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-white/[0.06] space-y-1.5">
-          <p className="text-xs text-zinc-500 font-medium capitalize">
+        <div className="mt-3 pt-3 border-t border-border-subtle space-y-1.5">
+          <p className="text-xs text-text-muted font-medium capitalize">
             {format(selectedDate, "EEEE d MMMM", { locale: es })}
           </p>
           {selectedPayments.map((p) => {
@@ -130,8 +130,8 @@ export function MiniCalendar({ onSelectDate }: MiniCalendarProps) {
             return (
               <div key={p.id} className="flex items-center gap-2 text-xs">
                 <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: cat?.color ?? "#64748b" }} />
-                <span className="text-zinc-300 flex-1 truncate">{cat?.name ?? "Sin categoría"}</span>
-                <span className={`${status === "vencido" ? "text-red-400" : status === "pagado" ? "text-emerald-400" : "text-zinc-400"}`}>
+                <span className="text-text-secondary flex-1 truncate">{cat?.name ?? "Sin categoría"}</span>
+                <span className={`${status === "vencido" ? "text-red-400" : status === "pagado" ? "text-emerald-400" : "text-text-secondary"}`}>
                   {p.currency === "ARS" ? "$" : "US$"}{p.amount.toLocaleString()}
                 </span>
               </div>

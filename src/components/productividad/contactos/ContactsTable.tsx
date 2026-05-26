@@ -70,13 +70,13 @@ function CopyChip({ value, kind }: { value: string; kind: 'phone' | 'email' }) {
     <button
       onClick={handleCopy}
       title={`Copiar ${kind === 'phone' ? 'teléfono' : 'email'}`}
-      className="group inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 text-xs md:text-[11px] cursor-pointer max-w-full"
+      className="group inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-overlay hover:bg-surface-overlay-hover text-text-secondary text-xs md:text-[11px] cursor-pointer max-w-full"
     >
       <span className="truncate">{value}</span>
       {copied ? (
         <Check size={11} className="text-emerald-400 shrink-0" />
       ) : (
-        <Copy size={11} className="text-zinc-500 opacity-0 group-hover:opacity-100 shrink-0" />
+        <Copy size={11} className="text-text-muted opacity-0 group-hover:opacity-100 shrink-0" />
       )}
     </button>
   )
@@ -133,7 +133,7 @@ function PipelineStageCell({
         anchorRef={buttonRef}
         open={open}
         onClose={() => setOpen(false)}
-        className="bg-[#1e1e2c] border border-white/[0.08] rounded-xl shadow-2xl p-1.5 max-h-72 overflow-y-auto"
+        className="bg-[#1e1e2c] border border-border-default rounded-xl shadow-2xl p-1.5 max-h-72 overflow-y-auto"
         minWidth={180}
       >
         {stages.map(stage => {
@@ -144,7 +144,7 @@ function PipelineStageCell({
               key={stage.id}
               onClick={(e) => handleSelect(stage.id, e)}
               className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors ${
-                isSelected ? 'bg-white/[0.06]' : 'hover:bg-white/[0.04]'
+                isSelected ? 'bg-surface-overlay-hover' : 'hover:bg-surface-overlay'
               }`}
             >
               <span
@@ -154,7 +154,7 @@ function PipelineStageCell({
                 {stage.name}
               </span>
               {isSelected && (
-                <span className="ml-auto text-zinc-400 text-xs">✓</span>
+                <span className="ml-auto text-text-secondary text-xs">✓</span>
               )}
             </button>
           )
@@ -240,7 +240,7 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
         <button
           ref={colPickerBtnRef}
           onClick={() => setShowColPicker(!showColPicker)}
-          className="text-xs md:text-[11px] text-zinc-500 hover:text-zinc-300 cursor-pointer"
+          className="text-xs md:text-[11px] text-text-muted hover:text-text-secondary cursor-pointer"
         >
           Columnas ({visibleCols.length}/{ALL_COLUMNS.length})
         </button>
@@ -249,7 +249,7 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
           open={showColPicker}
           onClose={() => setShowColPicker(false)}
           placement="bottom-end"
-          className="bg-[#1e1e2c] border border-white/[0.08] rounded-xl shadow-2xl p-3 max-h-80 overflow-y-auto"
+          className="bg-[#1e1e2c] border border-border-default rounded-xl shadow-2xl p-3 max-h-80 overflow-y-auto"
           minWidth={208}
         >
           {ALL_COLUMNS.map(col => (
@@ -260,7 +260,7 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
                 onChange={() => toggleCol(col.key)}
                 className="accent-blue-500"
               />
-              <span className="text-xs text-zinc-400">{col.label}</span>
+              <span className="text-xs text-text-secondary">{col.label}</span>
             </label>
           ))}
         </PortalDropdown>
@@ -270,12 +270,12 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead className="sticky top-0 z-10 bg-[#12121a]">
-            <tr className="border-b border-white/[0.06]">
+            <tr className="border-b border-border-subtle">
               {visibleCols.map((col, idx) => (
                 <th
                   key={col.key}
-                  className={`text-left px-2 py-2.5 font-semibold text-zinc-500 uppercase tracking-wider ${col.width} ${
-                    col.sortable ? 'cursor-pointer hover:text-zinc-300 select-none' : ''
+                  className={`text-left px-2 py-2.5 font-semibold text-text-muted uppercase tracking-wider ${col.width} ${
+                    col.sortable ? 'cursor-pointer hover:text-text-secondary select-none' : ''
                   } ${idx === 0 ? 'sticky left-0 z-20 bg-[#12121a]' : ''}`}
                   onClick={() => col.sortable && toggleSort(col.key)}
                 >
@@ -289,7 +289,7 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
                   </div>
                 </th>
               ))}
-              <th className="w-20 px-2 py-2.5 font-semibold text-zinc-500 uppercase tracking-wider">Acc.</th>
+              <th className="w-20 px-2 py-2.5 font-semibold text-text-muted uppercase tracking-wider">Acc.</th>
             </tr>
           </thead>
           <tbody>
@@ -297,7 +297,7 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
               <tr
                 key={contact.id}
                 onClick={() => onSelectContact(contact)}
-                className={`border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors group cursor-pointer ${
+                className={`border-b border-white/[0.03] hover:bg-surface-overlay transition-colors group cursor-pointer ${
                   selectedId === contact.id ? 'bg-blue-500/[0.06] border-l-2 border-l-blue-500/50' : ''
                 }`}
               >
@@ -306,14 +306,14 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
                     {col.key === 'full_name' ? (
                       <button
                         onClick={(e) => { e.stopPropagation(); onSelectContact(contact) }}
-                        className="px-1 text-left text-xs text-shell-text hover:underline cursor-pointer truncate block w-full"
+                        className="px-1 text-left text-xs text-text-primary hover:underline cursor-pointer truncate block w-full"
                       >
                         {`${contact.first_name ?? ''} ${contact.last_name ?? ''}`.trim() || '—'}
                       </button>
                     ) : col.key === 'tags' ? (
                       <div className="flex gap-1 flex-wrap px-1">
                         {(contact.tags ?? []).map((tag, i) => (
-                          <span key={i} className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500">{tag}</span>
+                          <span key={i} className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-text-muted">{tag}</span>
                         ))}
                       </div>
                     ) : col.key === 'pipeline_stage' ? (
@@ -379,23 +379,23 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
                   <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => onSelectContact(contact)}
-                      className="p-1.5 hover:bg-white/[0.06] rounded cursor-pointer"
+                      className="p-1.5 hover:bg-surface-overlay-hover rounded cursor-pointer"
                       title="Detalle"
                     >
-                      <ExternalLink size={13} className="text-zinc-500" />
+                      <ExternalLink size={13} className="text-text-muted" />
                     </button>
                     {contact.primary_phone && (
                       <>
-                        <a href={`tel:${contact.primary_phone}`} className="p-1.5 hover:bg-white/[0.06] rounded">
-                          <Phone size={13} className="text-zinc-500" />
+                        <a href={`tel:${contact.primary_phone}`} className="p-1.5 hover:bg-surface-overlay-hover rounded">
+                          <Phone size={13} className="text-text-muted" />
                         </a>
                         <a
                           href={`https://wa.me/${contact.primary_phone.replace(/\D/g, '')}`}
                           target="_blank"
                           rel="noopener"
-                          className="p-1.5 hover:bg-white/[0.06] rounded"
+                          className="p-1.5 hover:bg-surface-overlay-hover rounded"
                         >
-                          <MessageSquare size={13} className="text-zinc-500" />
+                          <MessageSquare size={13} className="text-text-muted" />
                         </a>
                       </>
                     )}
@@ -408,7 +408,7 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
 
         {sorted.length === 0 && (
           <div className="py-16 text-center">
-            <p className="text-zinc-600 text-sm">Sin contactos</p>
+            <p className="text-text-muted text-sm">Sin contactos</p>
           </div>
         )}
       </div>

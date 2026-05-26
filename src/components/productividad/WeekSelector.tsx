@@ -25,20 +25,20 @@ export function WeekSelector({ weekKey, onChange }: WeekSelectorProps) {
   }
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
-      <button onClick={prev} className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer">
-        <ChevronLeft size={18} className="text-zinc-400" />
+    <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle">
+      <button onClick={prev} className="p-1.5 hover:bg-surface-overlay-hover rounded-lg cursor-pointer">
+        <ChevronLeft size={18} className="text-text-secondary" />
       </button>
       <div className="text-center">
-        <p className="text-sm font-medium text-shell-text">
+        <p className="text-sm font-medium text-text-primary">
           {format(weekDate, "d MMM", { locale: es })} — {format(weekEnd, "d MMM", { locale: es })}
         </p>
         {current && (
           <span className="text-xs md:text-[10px] font-bold text-blue-400 uppercase tracking-wider">Semana actual</span>
         )}
       </div>
-      <button onClick={next} className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer">
-        <ChevronRight size={18} className="text-zinc-400" />
+      <button onClick={next} className="p-1.5 hover:bg-surface-overlay-hover rounded-lg cursor-pointer">
+        <ChevronRight size={18} className="text-text-secondary" />
       </button>
     </div>
   )

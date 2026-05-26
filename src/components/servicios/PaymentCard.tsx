@@ -51,24 +51,24 @@ export function PaymentCard({ payment, onEdit, compact = false }: PaymentCardPro
   if (compact) {
     return (
       <div
-        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.03] transition-colors cursor-pointer group"
+        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-surface-overlay transition-colors cursor-pointer group"
         onClick={() => onEdit?.(payment)}
       >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             {category && <CategoryBadge category={category} size="sm" />}
-            {provider && <span className="text-xs text-zinc-500 truncate">{provider.name}</span>}
+            {provider && <span className="text-xs text-text-muted truncate">{provider.name}</span>}
           </div>
-          <div className="text-xs text-zinc-500 mt-0.5">{dueDateLabel}</div>
+          <div className="text-xs text-text-muted mt-0.5">{dueDateLabel}</div>
         </div>
-        <CurrencyAmount amount={payment.amount} currency={payment.currency} amountUSD={payment.amountUSD} className="text-zinc-200 font-medium" />
+        <CurrencyAmount amount={payment.amount} currency={payment.currency} amountUSD={payment.amountUSD} className="text-text-primary font-medium" />
         {status !== "pagado" && (
           <button
             onClick={handleMarkPaid}
-            className="w-6 h-6 rounded-full border border-white/[0.1] flex items-center justify-center hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-colors opacity-0 group-hover:opacity-100"
+            className="w-6 h-6 rounded-full border border-border-default flex items-center justify-center hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-colors opacity-0 group-hover:opacity-100"
             title="Marcar pagado"
           >
-            <Check size={10} className="text-zinc-400" />
+            <Check size={10} className="text-text-secondary" />
           </button>
         )}
       </div>
@@ -77,7 +77,7 @@ export function PaymentCard({ payment, onEdit, compact = false }: PaymentCardPro
 
   return (
     <div
-      className="flex items-start gap-4 p-4 rounded-2xl border border-white/[0.06] hover:border-white/[0.1] bg-white/[0.02] hover:bg-white/[0.03] transition-all cursor-pointer group"
+      className="flex items-start gap-4 p-4 rounded-2xl border border-border-subtle hover:border-border-default bg-surface-overlay hover:bg-surface-overlay transition-all cursor-pointer group"
       onClick={() => onEdit?.(payment)}
     >
       {/* Check button */}
@@ -87,11 +87,11 @@ export function PaymentCard({ payment, onEdit, compact = false }: PaymentCardPro
         className={`w-8 h-8 rounded-full border flex items-center justify-center shrink-0 mt-0.5 transition-all ${
           status === "pagado"
             ? "bg-emerald-500/20 border-emerald-500/40 cursor-default"
-            : "border-white/[0.12] hover:bg-emerald-500/20 hover:border-emerald-500/40 cursor-pointer"
+            : "border-border-default hover:bg-emerald-500/20 hover:border-emerald-500/40 cursor-pointer"
         }`}
         title={status === "pagado" ? "Pagado" : "Marcar pagado"}
       >
-        <Check size={14} className={status === "pagado" ? "text-emerald-400" : "text-zinc-600 group-hover:text-zinc-400"} />
+        <Check size={14} className={status === "pagado" ? "text-emerald-400" : "text-text-muted group-hover:text-text-secondary"} />
       </button>
 
       {/* Content */}
@@ -102,17 +102,17 @@ export function PaymentCard({ payment, onEdit, compact = false }: PaymentCardPro
               {category && <CategoryBadge category={category} />}
               <StatusBadge status={status} size="sm" />
             </div>
-            <div className="mt-1 flex items-center gap-2 text-sm text-zinc-400">
-              {provider && <span className="font-medium text-zinc-300">{provider.name}</span>}
-              {payment.notes && <span className="truncate text-zinc-500">{payment.notes}</span>}
+            <div className="mt-1 flex items-center gap-2 text-sm text-text-secondary">
+              {provider && <span className="font-medium text-text-secondary">{provider.name}</span>}
+              {payment.notes && <span className="truncate text-text-muted">{payment.notes}</span>}
             </div>
           </div>
           <div className="text-right shrink-0">
-            <CurrencyAmount amount={payment.amount} currency={payment.currency} amountUSD={payment.amountUSD} showBoth size="md" className="text-zinc-100 font-semibold" />
+            <CurrencyAmount amount={payment.amount} currency={payment.currency} amountUSD={payment.amountUSD} showBoth size="md" className="text-text-primary font-semibold" />
           </div>
         </div>
 
-        <div className="mt-2 flex items-center gap-3 text-xs text-zinc-500">
+        <div className="mt-2 flex items-center gap-3 text-xs text-text-muted">
           <span className="flex items-center gap-1">
             <Calendar size={11} />
             {dueDateLabel}

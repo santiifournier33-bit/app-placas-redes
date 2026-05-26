@@ -103,13 +103,13 @@ export function PaymentForm({ payment, onClose, onSaved }: PaymentFormProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full sm:max-w-lg bg-[#16161e] border border-white/[0.08] rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+      <div className="relative w-full sm:max-w-lg bg-[#16161e] border border-border-default rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0">
-          <h2 className="text-base font-semibold text-zinc-100">
+          <h2 className="text-base font-semibold text-text-primary">
             {payment ? "Editar gasto" : "Nuevo gasto"}
           </h2>
-          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer">
+          <button onClick={onClose} className="text-text-muted hover:text-text-secondary transition-colors cursor-pointer">
             <X size={18} />
           </button>
         </div>
@@ -119,10 +119,10 @@ export function PaymentForm({ payment, onClose, onSaved }: PaymentFormProps) {
 
           {/* Monto + Moneda */}
           <div className="space-y-1">
-            <label className="text-xs text-zinc-500 font-medium">Monto *</label>
+            <label className="text-xs text-text-muted font-medium">Monto *</label>
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm">
                   {form.currency === "ARS" ? "$" : "US$"}
                 </span>
                 <input
@@ -132,17 +132,17 @@ export function PaymentForm({ payment, onClose, onSaved }: PaymentFormProps) {
                   value={form.amount}
                   onChange={(e) => set("amount", e.target.value)}
                   placeholder="0"
-                  className="w-full pl-8 pr-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-blue-500/40"
+                  className="w-full pl-8 pr-3 py-2 bg-surface-overlay border border-border-default rounded-xl text-sm text-text-primary placeholder-zinc-600 focus:outline-none focus:border-blue-500/40"
                 />
               </div>
-              <div className="flex rounded-xl border border-white/[0.08] overflow-hidden">
+              <div className="flex rounded-xl border border-border-default overflow-hidden">
                 {(["ARS", "USD"] as Currency[]).map((c) => (
                   <button
                     key={c}
                     type="button"
                     onClick={() => set("currency", c)}
                     className={`px-3 py-2 text-xs font-medium transition-colors ${
-                      form.currency === c ? "bg-blue-500/20 text-blue-400" : "text-zinc-500 hover:text-zinc-300"
+                      form.currency === c ? "bg-blue-500/20 text-blue-400" : "text-text-muted hover:text-text-secondary"
                     }`}
                   >
                     {c}
@@ -155,75 +155,75 @@ export function PaymentForm({ payment, onClose, onSaved }: PaymentFormProps) {
 
           {/* Categoría */}
           <div className="space-y-1">
-            <label className="text-xs text-zinc-500 font-medium">Categoría *</label>
+            <label className="text-xs text-text-muted font-medium">Categoría *</label>
             <CategoryPicker value={form.categoryId} onChange={(id) => set("categoryId", id)} />
             {errors.categoryId && <p className="text-xs text-red-400">{errors.categoryId}</p>}
           </div>
 
           {/* Fecha vencimiento */}
           <div className="space-y-1">
-            <label className="text-xs text-zinc-500 font-medium">Fecha de vencimiento *</label>
+            <label className="text-xs text-text-muted font-medium">Fecha de vencimiento *</label>
             <input
               type="date"
               value={form.dueDate}
               onChange={(e) => set("dueDate", e.target.value)}
-              className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-zinc-200 focus:outline-none focus:border-blue-500/40 [color-scheme:dark]"
+              className="w-full px-3 py-2 bg-surface-overlay border border-border-default rounded-xl text-sm text-text-primary focus:outline-none focus:border-blue-500/40 [color-scheme:dark]"
             />
             {errors.dueDate && <p className="text-xs text-red-400">{errors.dueDate}</p>}
           </div>
 
           {/* Recurrencia */}
           <div className="space-y-1">
-            <label className="text-xs text-zinc-500 font-medium">Recurrencia</label>
+            <label className="text-xs text-text-muted font-medium">Recurrencia</label>
             <RecurrencePicker value={form.recurrence} onChange={(r) => set("recurrence", r)} />
           </div>
 
           {/* Notas */}
           <div className="space-y-1">
-            <label className="text-xs text-zinc-500 font-medium">Notas</label>
+            <label className="text-xs text-text-muted font-medium">Notas</label>
             <textarea
               value={form.notes}
               onChange={(e) => set("notes", e.target.value)}
               placeholder="Notas opcionales..."
               rows={2}
-              className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-blue-500/40 resize-none"
+              className="w-full px-3 py-2 bg-surface-overlay border border-border-default rounded-xl text-sm text-text-primary placeholder-zinc-600 focus:outline-none focus:border-blue-500/40 resize-none"
             />
           </div>
 
           {/* Tags */}
           <div className="space-y-1">
-            <label className="text-xs text-zinc-500 font-medium">Tags</label>
+            <label className="text-xs text-text-muted font-medium">Tags</label>
             <input
               type="text"
               value={form.tags}
               onChange={(e) => set("tags", e.target.value)}
               placeholder="Ej: urgente, mensual, fijo"
-              className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-blue-500/40"
+              className="w-full px-3 py-2 bg-surface-overlay border border-border-default rounded-xl text-sm text-text-primary placeholder-zinc-600 focus:outline-none focus:border-blue-500/40"
             />
-            <p className="text-xs text-zinc-600">Separados por coma</p>
+            <p className="text-xs text-text-muted">Separados por coma</p>
           </div>
 
           {/* Adjuntos */}
           <div className="space-y-1">
-            <label className="text-xs text-zinc-500 font-medium">Adjuntos</label>
+            <label className="text-xs text-text-muted font-medium">Adjuntos</label>
             <AttachmentList attachments={form.attachments} onChange={(a) => set("attachments", a)} />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-2 px-5 py-4 border-t border-white/[0.06] shrink-0">
+        <div className="flex items-center gap-2 px-5 py-4 border-t border-border-subtle shrink-0">
           {!payment && (
             <button
               type="button"
               onClick={handleSaveAndMore}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs text-zinc-400 hover:text-zinc-200 border border-white/[0.08] rounded-xl hover:bg-white/[0.04] transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 text-xs text-text-secondary hover:text-text-primary border border-border-default rounded-xl hover:bg-surface-overlay transition-colors"
             >
               <Plus size={12} />
               Crear y agregar otro
             </button>
           )}
           <div className="flex-1" />
-          <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
+          <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-text-muted hover:text-text-secondary transition-colors">
             Cancelar
           </button>
           <button

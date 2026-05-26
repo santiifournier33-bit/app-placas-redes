@@ -99,10 +99,10 @@ export function ImportCSVModal({ onClose }: ImportCSVModalProps) {
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06] shrink-0">
-          <h3 className="text-sm font-bold text-shell-text">Importar CSV</h3>
-          <button onClick={onClose} className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer">
-            <X size={18} className="text-zinc-400" />
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border-subtle shrink-0">
+          <h3 className="text-sm font-bold text-text-primary">Importar CSV</h3>
+          <button onClick={onClose} className="p-1.5 hover:bg-surface-overlay-hover rounded-lg cursor-pointer">
+            <X size={18} className="text-text-secondary" />
           </button>
         </div>
 
@@ -114,12 +114,12 @@ export function ImportCSVModal({ onClose }: ImportCSVModalProps) {
               onDragOver={e => { e.preventDefault(); setDragOver(true) }}
               onDragLeave={() => setDragOver(false)}
               className={`flex flex-col items-center justify-center gap-3 py-12 rounded-xl border-2 border-dashed transition-colors ${
-                dragOver ? 'border-blue-500/50 bg-blue-500/5' : 'border-white/[0.1]'
+                dragOver ? 'border-blue-500/50 bg-blue-500/5' : 'border-border-default'
               }`}
             >
-              <Upload size={32} className="text-zinc-500" />
-              <p className="text-sm text-zinc-400">Arrastrá un archivo CSV acá</p>
-              <p className="text-xs text-zinc-600">o</p>
+              <Upload size={32} className="text-text-muted" />
+              <p className="text-sm text-text-secondary">Arrastrá un archivo CSV acá</p>
+              <p className="text-xs text-text-muted">o</p>
               <label className="px-4 py-2 rounded-xl bg-blue-500/15 text-blue-400 text-xs font-medium hover:bg-blue-500/25 cursor-pointer">
                 Elegir archivo
                 <input type="file" accept=".csv" onChange={onFileSelect} className="hidden" />
@@ -130,7 +130,7 @@ export function ImportCSVModal({ onClose }: ImportCSVModalProps) {
           {step === 'mapping' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs text-text-secondary">
                   {rows.length} filas · {mappedCount} columnas mapeadas
                 </p>
                 {!hasFirstName && (
@@ -144,14 +144,14 @@ export function ImportCSVModal({ onClose }: ImportCSVModalProps) {
               <div className="space-y-1">
                 {mapping.map(m => (
                   <div key={m.csvHeader} className="flex items-center gap-2 py-1.5">
-                    <span className="text-xs text-zinc-500 w-36 truncate shrink-0" title={m.csvHeader}>
+                    <span className="text-xs text-text-muted w-36 truncate shrink-0" title={m.csvHeader}>
                       {m.csvHeader}
                     </span>
                     <ArrowRight size={12} className="text-zinc-700 shrink-0" />
                     <select
                       value={m.dbField ?? ''}
                       onChange={e => updateMapping(m.csvHeader, e.target.value || null)}
-                      className="flex-1 bg-white/[0.04] rounded-lg px-2 py-1.5 text-xs text-zinc-300 border border-white/[0.06] outline-none cursor-pointer [color-scheme:dark]"
+                      className="flex-1 bg-surface-overlay rounded-lg px-2 py-1.5 text-xs text-text-secondary border border-border-subtle outline-none cursor-pointer [color-scheme:dark]"
                     >
                       <option value="">— Ignorar —</option>
                       {MAPPABLE_FIELDS.map(f => (
@@ -165,16 +165,16 @@ export function ImportCSVModal({ onClose }: ImportCSVModalProps) {
               {/* Preview */}
               {rows.length > 0 && (
                 <div>
-                  <p className="text-xs md:text-[10px] text-zinc-600 uppercase tracking-wider mb-2">Vista previa (primeras 3 filas)</p>
+                  <p className="text-xs md:text-[10px] text-text-muted uppercase tracking-wider mb-2">Vista previa (primeras 3 filas)</p>
                   <div className="space-y-2">
                     {rows.slice(0, 3).map((row, i) => (
-                      <div key={i} className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-2">
+                      <div key={i} className="rounded-lg border border-border-subtle bg-surface-overlay p-2">
                         {mapping.filter(m => m.dbField).map(m => (
                           <div key={m.csvHeader} className="flex gap-2 text-xs md:text-[11px]">
-                            <span className="text-zinc-600 w-20 shrink-0">
+                            <span className="text-text-muted w-20 shrink-0">
                               {MAPPABLE_FIELDS.find(f => f.value === m.dbField)?.label}:
                             </span>
-                            <span className="text-zinc-400 truncate">{row[m.csvHeader] || '—'}</span>
+                            <span className="text-text-secondary truncate">{row[m.csvHeader] || '—'}</span>
                           </div>
                         ))}
                       </div>
@@ -187,13 +187,13 @@ export function ImportCSVModal({ onClose }: ImportCSVModalProps) {
 
           {step === 'importing' && (
             <div className="flex flex-col items-center gap-4 py-8">
-              <div className="w-full bg-white/[0.06] rounded-full h-2 overflow-hidden">
+              <div className="w-full bg-surface-overlay-hover rounded-full h-2 overflow-hidden">
                 <div
                   className="h-full bg-blue-500 transition-all duration-200"
                   style={{ width: `${progress.total ? (progress.done / progress.total) * 100 : 0}%` }}
                 />
               </div>
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-text-secondary">
                 {progress.done} / {progress.total} contactos
               </p>
               {progress.errors > 0 && (
@@ -207,8 +207,8 @@ export function ImportCSVModal({ onClose }: ImportCSVModalProps) {
               <div className="w-12 h-12 rounded-full bg-emerald-500/15 flex items-center justify-center">
                 <Check size={24} className="text-emerald-400" />
               </div>
-              <p className="text-sm text-zinc-300 font-medium">Importación completa</p>
-              <p className="text-xs text-zinc-500">
+              <p className="text-sm text-text-secondary font-medium">Importación completa</p>
+              <p className="text-xs text-text-muted">
                 {progress.done - progress.errors} importados · {progress.errors} omitidos
               </p>
             </div>
@@ -216,12 +216,12 @@ export function ImportCSVModal({ onClose }: ImportCSVModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-white/[0.06] flex justify-end gap-2 shrink-0">
+        <div className="px-5 py-4 border-t border-border-subtle flex justify-end gap-2 shrink-0">
           {step === 'mapping' && (
             <>
               <button
                 onClick={() => setStep('upload')}
-                className="px-4 py-2 rounded-xl text-xs text-zinc-400 hover:bg-white/[0.06] cursor-pointer"
+                className="px-4 py-2 rounded-xl text-xs text-text-secondary hover:bg-surface-overlay-hover cursor-pointer"
               >
                 Volver
               </button>

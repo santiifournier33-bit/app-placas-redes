@@ -16,7 +16,7 @@ const priorityLabels: Record<number, { label: string; color: string }> = {
   1: { label: "P1", color: "text-red-400" },
   2: { label: "P2", color: "text-orange-400" },
   3: { label: "P3", color: "text-blue-400" },
-  4: { label: "P4", color: "text-zinc-500" },
+  4: { label: "P4", color: "text-text-muted" },
 }
 
 const TYPE_ICONS: Record<TaskType, React.ReactNode> = {
@@ -170,11 +170,11 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
           role="dialog"
           aria-modal="true"
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-[760px] max-h-[90vh] bg-[#13131a] border border-white/[0.08] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+          className="w-full max-w-[760px] max-h-[90vh] bg-[#13131a] border border-border-default rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150"
         >
           {/* Header bar */}
-          <div className="flex items-center justify-between px-5 h-12 border-b border-white/[0.06] shrink-0">
-            <div className="flex items-center gap-1 text-xs text-zinc-500">
+          <div className="flex items-center justify-between px-5 h-12 border-b border-border-subtle shrink-0">
+            <div className="flex items-center gap-1 text-xs text-text-muted">
               <span>Bandeja de entrada</span>
               {section && (
                 <>
@@ -188,7 +188,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                 onClick={goPrev}
                 disabled={!prevId}
                 title="Tarea anterior"
-                className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer text-zinc-500 hover:text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                className="p-1.5 hover:bg-surface-overlay-hover rounded-lg cursor-pointer text-text-muted hover:text-text-secondary disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
               >
                 <ChevronUp size={16} />
               </button>
@@ -196,15 +196,15 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                 onClick={goNext}
                 disabled={!nextId}
                 title="Tarea siguiente"
-                className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer text-zinc-500 hover:text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                className="p-1.5 hover:bg-surface-overlay-hover rounded-lg cursor-pointer text-text-muted hover:text-text-secondary disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
               >
                 <ChevronDown size={16} />
               </button>
-              <div className="w-px h-4 bg-white/[0.08] mx-1" />
+              <div className="w-px h-4 bg-surface-overlay-hover mx-1" />
               <button
                 ref={menuBtnRef}
                 onClick={() => setShowMenu(!showMenu)}
-                className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer text-zinc-500 hover:text-zinc-300"
+                className="p-1.5 hover:bg-surface-overlay-hover rounded-lg cursor-pointer text-text-muted hover:text-text-secondary"
               >
                 <MoreHorizontal size={16} />
               </button>
@@ -213,21 +213,21 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                 open={showMenu}
                 onClose={() => setShowMenu(false)}
                 placement="bottom-end"
-                className="bg-[#1e1e2c] border border-white/[0.08] rounded-xl shadow-2xl py-1 min-w-[200px]"
+                className="bg-[#1e1e2c] border border-border-default rounded-xl shadow-2xl py-1 min-w-[200px]"
               >
                 <button
                   onClick={() => { setEditingTitle(true); setShowMenu(false) }}
-                  className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-300 cursor-pointer"
+                  className="flex items-center gap-2 px-3 py-2 w-full hover:bg-surface-overlay text-xs text-text-secondary cursor-pointer"
                 >
-                  <Pencil size={13} className="text-zinc-500" /> Editar tarea
+                  <Pencil size={13} className="text-text-muted" /> Editar tarea
                 </button>
                 <button
                   onClick={handleCopyLink}
-                  className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-300 cursor-pointer"
+                  className="flex items-center gap-2 px-3 py-2 w-full hover:bg-surface-overlay text-xs text-text-secondary cursor-pointer"
                 >
-                  <Link2 size={13} className="text-zinc-500" /> Copiar enlace a la tarea
+                  <Link2 size={13} className="text-text-muted" /> Copiar enlace a la tarea
                 </button>
-                <div className="border-t border-white/[0.06] my-1" />
+                <div className="border-t border-border-subtle my-1" />
                 <button
                   onClick={() => { deleteTask(task.id); setShowMenu(false); onClose() }}
                   className="flex items-center gap-2 px-3 py-2 w-full hover:bg-red-500/10 text-xs text-red-400 cursor-pointer"
@@ -237,7 +237,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
               </PortalDropdown>
               <button
                 onClick={onClose}
-                className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer text-zinc-500 hover:text-zinc-300"
+                className="p-1.5 hover:bg-surface-overlay-hover rounded-lg cursor-pointer text-text-muted hover:text-text-secondary"
               >
                 <X size={16} />
               </button>
@@ -268,13 +268,13 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                     onKeyDown={(e) => {
                       if (e.key === "Enter") (e.target as HTMLInputElement).blur()
                     }}
-                    className="flex-1 bg-transparent text-xl font-semibold text-shell-text outline-none"
+                    className="flex-1 bg-transparent text-xl font-semibold text-text-primary outline-none"
                   />
                 ) : (
                   <h2
                     onClick={() => setEditingTitle(true)}
                     className={`flex-1 text-xl font-semibold cursor-text leading-snug ${
-                      task.completed ? "line-through text-zinc-600" : "text-shell-text"
+                      task.completed ? "line-through text-text-muted" : "text-text-primary"
                     }`}
                   >
                     {task.title}
@@ -291,12 +291,12 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                     onBlur={() => updateTask(task.id, { description })}
                     placeholder="Descripción"
                     rows={3}
-                    className="w-full bg-transparent text-sm text-zinc-400 placeholder:text-zinc-600 outline-none resize-none"
+                    className="w-full bg-transparent text-sm text-text-secondary placeholder:text-text-muted outline-none resize-none"
                   />
                 ) : (
                   <button
                     onClick={() => setShowDesc(true)}
-                    className="flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-400 cursor-pointer"
+                    className="flex items-center gap-2 text-sm text-text-muted hover:text-text-secondary cursor-pointer"
                   >
                     <AlignLeft size={14} />
                     Descripción
@@ -305,15 +305,15 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
               </div>
 
               {/* Subtasks */}
-              <div className="ml-8 border-t border-white/[0.06] pt-4">
+              <div className="ml-8 border-t border-border-subtle pt-4">
                 <button
                   onClick={() => setSubtasksOpen(!subtasksOpen)}
-                  className="flex items-center gap-2 text-sm font-semibold text-zinc-400 mb-3 cursor-pointer hover:text-zinc-200"
+                  className="flex items-center gap-2 text-sm font-semibold text-text-secondary mb-3 cursor-pointer hover:text-text-primary"
                 >
                   {subtasksOpen ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
                   Subtareas
                   {subtasks.length > 0 && (
-                    <span className="text-xs font-normal text-zinc-600">
+                    <span className="text-xs font-normal text-text-muted">
                       {subtasks.filter((s) => s.completed).length}/{subtasks.length}
                     </span>
                   )}
@@ -335,7 +335,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                             </svg>
                           )}
                         </button>
-                        <span className={`text-sm flex-1 ${sub.completed ? "line-through text-zinc-600" : "text-zinc-300"}`}>
+                        <span className={`text-sm flex-1 ${sub.completed ? "line-through text-text-muted" : "text-text-secondary"}`}>
                           {sub.title}
                         </span>
                       </div>
@@ -343,13 +343,13 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
 
                     {/* Add subtask */}
                     <div className="flex items-center gap-3 py-1">
-                      <Plus size={14} className="text-zinc-600 shrink-0" />
+                      <Plus size={14} className="text-text-muted shrink-0" />
                       <input
                         value={newSubtask}
                         onChange={(e) => setNewSubtask(e.target.value)}
                         onKeyDown={(e) => { if (e.key === "Enter") handleSubtaskAdd() }}
                         placeholder="Añadir subtarea"
-                        className="flex-1 bg-transparent text-sm text-zinc-400 placeholder:text-zinc-700 outline-none"
+                        className="flex-1 bg-transparent text-sm text-text-secondary placeholder:text-zinc-700 outline-none"
                       />
                     </div>
                   </div>
@@ -357,22 +357,22 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
               </div>
 
               {/* Comment field (bottom) */}
-              <div className="ml-8 mt-6 flex items-center gap-3 border border-white/[0.06] rounded-xl px-3 py-2.5 bg-white/[0.02]">
+              <div className="ml-8 mt-6 flex items-center gap-3 border border-border-subtle rounded-xl px-3 py-2.5 bg-surface-overlay">
                 <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
                   S
                 </div>
                 <input
                   placeholder="Comentar"
-                  className="flex-1 bg-transparent text-sm text-zinc-400 placeholder:text-zinc-600 outline-none"
+                  className="flex-1 bg-transparent text-sm text-text-secondary placeholder:text-text-muted outline-none"
                 />
               </div>
             </div>
 
             {/* Right: metadata sidebar */}
-            <div className="w-56 border-l border-white/[0.06] px-4 py-5 space-y-4 overflow-y-auto shrink-0">
+            <div className="w-56 border-l border-border-subtle px-4 py-5 space-y-4 overflow-y-auto shrink-0">
               {/* Proyecto */}
               <MetaRow label="Proyecto">
-                <span className="text-xs text-zinc-400">
+                <span className="text-xs text-text-secondary">
                   {section ? section.name : "Bandeja de entrada"}
                 </span>
               </MetaRow>
@@ -387,7 +387,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                       due_date: e.target.value ?? null,
                     })
                   }
-                  className="bg-transparent text-xs text-zinc-400 outline-none cursor-pointer [color-scheme:dark] w-full"
+                  className="bg-transparent text-xs text-text-secondary outline-none cursor-pointer [color-scheme:dark] w-full"
                 />
               </MetaRow>
 
@@ -402,12 +402,12 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                     {priorityLabels[task.priority ?? 4].label}
                   </button>
                   {showPriority && (
-                    <div className="absolute right-0 top-6 bg-[#222230] rounded-xl border border-white/[0.08] py-1 z-10 shadow-xl min-w-[130px]">
+                    <div className="absolute right-0 top-6 bg-[#222230] rounded-xl border border-border-default py-1 z-10 shadow-xl min-w-[130px]">
                       {([1, 2, 3, 4] as const).map((p) => (
                         <button
                           key={p}
                           onClick={() => { updateTask(task.id, { priority: p }); setShowPriority(false) }}
-                          className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs cursor-pointer"
+                          className="flex items-center gap-2 px-3 py-2 w-full hover:bg-surface-overlay text-xs cursor-pointer"
                         >
                           <Flag size={12} className={priorityLabels[p].color} />
                           <span className={priorityLabels[p].color}>Prioridad {p}</span>
@@ -424,23 +424,23 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                   <button
                     onClick={() => { setShowType(!showType); setShowPriority(false) }}
                     className={`flex items-center gap-1.5 text-xs cursor-pointer ${
-                      effectiveType !== "tarea" ? "text-violet-400" : "text-zinc-500"
+                      effectiveType !== "tarea" ? "text-violet-400" : "text-text-muted"
                     }`}
                   >
                     {TYPE_ICONS[effectiveType]}
                     {TASK_TYPES[effectiveType]?.label ?? "Tarea"}
                   </button>
                   {showType && (
-                    <div className="absolute right-0 top-6 bg-[#222230] rounded-xl border border-white/[0.08] py-1 z-10 shadow-xl min-w-[130px]">
+                    <div className="absolute right-0 top-6 bg-[#222230] rounded-xl border border-border-default py-1 z-10 shadow-xl min-w-[130px]">
                       {(Object.entries(TASK_TYPES) as [TaskType, typeof TASK_TYPES[TaskType]][]).map(([key, val]) => (
                         <button
                           key={key}
                           onClick={() => { updateTask(task.id, { task_type: key }); setShowType(false) }}
-                          className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-300 cursor-pointer"
+                          className="flex items-center gap-2 px-3 py-2 w-full hover:bg-surface-overlay text-xs text-text-secondary cursor-pointer"
                         >
-                          <span className="text-zinc-500">{TYPE_ICONS[key]}</span>
+                          <span className="text-text-muted">{TYPE_ICONS[key]}</span>
                           {val.label}
-                          {effectiveType === key && <span className="ml-auto text-zinc-600">✓</span>}
+                          {effectiveType === key && <span className="ml-auto text-text-muted">✓</span>}
                         </button>
                       ))}
                     </div>
@@ -463,7 +463,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                       ? "text-zinc-700 cursor-not-allowed"
                       : reminderOffsetMin !== null
                         ? "text-amber-400"
-                        : "text-zinc-500 hover:text-zinc-300"
+                        : "text-text-muted hover:text-text-secondary"
                   }`}
                 >
                   <Bell size={13} className="shrink-0" />
@@ -473,7 +473,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                   anchorRef={reminderBtnRef}
                   open={showReminder}
                   onClose={() => setShowReminder(false)}
-                  className="bg-[#1e1e2c] border border-white/[0.08] rounded-xl shadow-2xl py-1 min-w-[160px]"
+                  className="bg-[#1e1e2c] border border-border-default rounded-xl shadow-2xl py-1 min-w-[160px]"
                 >
                   {[
                     { value: null, label: "Sin recordatorio" },
@@ -485,10 +485,10 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                     <button
                       key={opt.value ?? "none"}
                       onClick={() => { setReminderPreset(opt.value); setShowReminder(false) }}
-                      className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-300 cursor-pointer"
+                      className="flex items-center gap-2 px-3 py-2 w-full hover:bg-surface-overlay text-xs text-text-secondary cursor-pointer"
                     >
                       {opt.label}
-                      {reminderOffsetMin === opt.value && <span className="ml-auto text-zinc-500">✓</span>}
+                      {reminderOffsetMin === opt.value && <span className="ml-auto text-text-muted">✓</span>}
                     </button>
                   ))}
                 </PortalDropdown>
@@ -499,9 +499,9 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                 <div className="relative">
                   <button
                     onClick={() => { setShowContactPicker(!showContactPicker); setContactSearch("") }}
-                    className="flex items-center gap-1.5 text-xs cursor-pointer text-zinc-400 hover:text-zinc-200 w-full text-left"
+                    className="flex items-center gap-1.5 text-xs cursor-pointer text-text-secondary hover:text-text-primary w-full text-left"
                   >
-                    <UserCircle size={13} className="shrink-0 text-zinc-500" />
+                    <UserCircle size={13} className="shrink-0 text-text-muted" />
                     <span className="truncate">
                       {linkedContact
                         ? `${linkedContact.first_name} ${linkedContact.last_name}`
@@ -509,21 +509,21 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                     </span>
                   </button>
                   {showContactPicker && (
-                    <div className="absolute right-0 top-6 bg-[#222230] rounded-xl border border-white/[0.08] z-20 shadow-xl w-52">
-                      <div className="p-2 border-b border-white/[0.06]">
+                    <div className="absolute right-0 top-6 bg-[#222230] rounded-xl border border-border-default z-20 shadow-xl w-52">
+                      <div className="p-2 border-b border-border-subtle">
                         <input
                           autoFocus
                           value={contactSearch}
                           onChange={(e) => setContactSearch(e.target.value)}
                           placeholder="Buscar contacto..."
-                          className="w-full bg-transparent text-xs text-zinc-300 placeholder:text-zinc-600 outline-none"
+                          className="w-full bg-transparent text-xs text-text-secondary placeholder:text-text-muted outline-none"
                         />
                       </div>
                       <div className="max-h-48 overflow-y-auto py-1">
                         {task.contact_id && (
                           <button
                             onClick={() => { updateTask(task.id, { contact_id: null }); setShowContactPicker(false) }}
-                            className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs text-zinc-500 cursor-pointer"
+                            className="flex items-center gap-2 px-3 py-2 w-full hover:bg-surface-overlay text-xs text-text-muted cursor-pointer"
                           >
                             <UserCircle size={12} />
                             Sin contacto
@@ -539,23 +539,23 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                             <button
                               key={c.id}
                               onClick={() => { updateTask(task.id, { contact_id: c.id }); setShowContactPicker(false) }}
-                              className="flex items-center gap-2 px-3 py-2 w-full hover:bg-white/[0.04] text-xs cursor-pointer"
+                              className="flex items-center gap-2 px-3 py-2 w-full hover:bg-surface-overlay text-xs cursor-pointer"
                             >
                               <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-xs md:text-[10px] text-blue-400 font-bold shrink-0">
                                 {(c.first_name || c.last_name || "?")[0]}
                               </div>
                               <div className="flex-1 min-w-0 text-left">
-                                <div className="text-zinc-300 truncate">{c.first_name} {c.last_name}</div>
-                                <div className="text-zinc-600 truncate">{c.primary_phone}</div>
+                                <div className="text-text-secondary truncate">{c.first_name} {c.last_name}</div>
+                                <div className="text-text-muted truncate">{c.primary_phone}</div>
                               </div>
-                              {task.contact_id === c.id && <span className="text-zinc-600 ml-auto">✓</span>}
+                              {task.contact_id === c.id && <span className="text-text-muted ml-auto">✓</span>}
                             </button>
                           ))}
                         {contacts.filter((c) => {
                           const q = contactSearch.toLowerCase()
                           return !q || `${c.first_name} ${c.last_name}`.toLowerCase().includes(q) || (c.primary_phone ?? '').includes(q)
                         }).length === 0 && (
-                          <p className="text-xs text-zinc-600 text-center py-3">Sin resultados</p>
+                          <p className="text-xs text-text-muted text-center py-3">Sin resultados</p>
                         )}
                       </div>
                     </div>
@@ -564,10 +564,10 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
               </MetaRow>
 
               {/* Delete */}
-              <div className="pt-4 border-t border-white/[0.06]">
+              <div className="pt-4 border-t border-border-subtle">
                 <button
                   onClick={() => { deleteTask(task.id); onClose() }}
-                  className="flex items-center gap-2 text-xs text-zinc-600 hover:text-red-400 cursor-pointer transition-colors"
+                  className="flex items-center gap-2 text-xs text-text-muted hover:text-red-400 cursor-pointer transition-colors"
                 >
                   <Trash2 size={13} />
                   Eliminar tarea
@@ -586,7 +586,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
 function MetaRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">{label}</p>
       {children}
     </div>
   )
@@ -594,12 +594,12 @@ function MetaRow({ label, children }: { label: string; children: React.ReactNode
 
 function MobileHeader({ task, onClose, onDelete }: { task: Task; onClose: () => void; onDelete: () => void }) {
   return (
-    <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
-      <button onClick={onClose} className="p-1.5 hover:bg-white/[0.06] rounded-lg cursor-pointer">
-        <X size={20} className="text-zinc-400" />
+    <div className="flex items-center justify-between p-4 border-b border-border-subtle">
+      <button onClick={onClose} className="p-1.5 hover:bg-surface-overlay-hover rounded-lg cursor-pointer">
+        <X size={20} className="text-text-secondary" />
       </button>
       <button onClick={onDelete} className="p-1.5 hover:bg-red-500/10 rounded-lg cursor-pointer">
-        <Trash2 size={18} className="text-zinc-500 hover:text-red-400" />
+        <Trash2 size={18} className="text-text-muted hover:text-red-400" />
       </button>
     </div>
   )
@@ -647,7 +647,7 @@ function TaskBody({
             task.completed ? "bg-blue-500 border-transparent" : "border-zinc-600"
           }`}
         />
-        <h2 className={`flex-1 text-lg font-semibold ${task.completed ? "line-through text-zinc-600" : "text-shell-text"}`}>
+        <h2 className={`flex-1 text-lg font-semibold ${task.completed ? "line-through text-text-muted" : "text-text-primary"}`}>
           {task.title}
         </h2>
       </div>
@@ -662,7 +662,7 @@ function TaskBody({
               due_date: e.target.value ?? null,
             })
           }
-          className="bg-transparent text-sm text-zinc-400 outline-none cursor-pointer [color-scheme:dark]"
+          className="bg-transparent text-sm text-text-secondary outline-none cursor-pointer [color-scheme:dark]"
         />
       </div>
 
@@ -676,12 +676,12 @@ function TaskBody({
           {priorityLabels[task.priority ?? 4].label}
         </button>
         {showPriority && (
-          <div className="absolute left-0 top-8 bg-[#222230] rounded-xl border border-white/[0.08] py-1 z-10 shadow-xl">
+          <div className="absolute left-0 top-8 bg-[#222230] rounded-xl border border-border-default py-1 z-10 shadow-xl">
             {([1, 2, 3, 4] as const).map((p) => (
               <button
                 key={p}
                 onClick={() => { updateTask(task.id, { priority: p }); setShowPriority(false) }}
-                className="flex items-center gap-2 px-4 py-2 w-full hover:bg-white/[0.04] text-sm cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 w-full hover:bg-surface-overlay text-sm cursor-pointer"
               >
                 <Flag size={14} className={priorityLabels[p].color} />
                 <span className={priorityLabels[p].color}>Prioridad {p}</span>
@@ -693,13 +693,13 @@ function TaskBody({
 
       {/* Reminder */}
       <div className="flex items-center gap-2">
-        <Bell size={15} className={task.reminder ? "text-amber-400" : "text-zinc-500"} />
+        <Bell size={15} className={task.reminder ? "text-amber-400" : "text-text-muted"} />
         <input
           type="datetime-local"
           value={task.reminder ?? ""}
           onChange={(e) => updateTask(task.id, { reminder: e.target.value || null })}
           className={`bg-transparent text-sm outline-none cursor-pointer [color-scheme:dark] ${
-            task.reminder ? "text-amber-400" : "text-zinc-500"
+            task.reminder ? "text-amber-400" : "text-text-muted"
           }`}
         />
       </div>
@@ -712,12 +712,12 @@ function TaskBody({
           onBlur={() => updateTask(task.id, { description })}
           placeholder="Descripcion..."
           rows={2}
-          className="w-full bg-white/[0.04] rounded-xl px-3 py-2 text-sm text-shell-text placeholder:text-zinc-600 outline-none resize-none border border-white/[0.06] focus:border-blue-500/30"
+          className="w-full bg-surface-overlay rounded-xl px-3 py-2 text-sm text-text-primary placeholder:text-text-muted outline-none resize-none border border-border-subtle focus:border-blue-500/30"
         />
       ) : (
         <button
           onClick={() => setShowDesc(true)}
-          className="flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-300 cursor-pointer"
+          className="flex items-center gap-2 text-sm text-text-muted hover:text-text-secondary cursor-pointer"
         >
           <AlignLeft size={15} />
           Descripcion
@@ -725,15 +725,15 @@ function TaskBody({
       )}
 
       {/* Subtasks */}
-      <div className="space-y-1 pt-1 border-t border-white/[0.06]">
+      <div className="space-y-1 pt-1 border-t border-border-subtle">
         <button
           onClick={() => setSubtasksOpen(!subtasksOpen)}
-          className="flex items-center gap-2 text-sm font-semibold text-zinc-400 mb-2 cursor-pointer"
+          className="flex items-center gap-2 text-sm font-semibold text-text-secondary mb-2 cursor-pointer"
         >
           {subtasksOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
           Subtareas
           {subtasks.length > 0 && (
-            <span className="text-xs font-normal text-zinc-600">
+            <span className="text-xs font-normal text-text-muted">
               {subtasks.filter((s) => s.completed).length}/{subtasks.length}
             </span>
           )}
@@ -755,19 +755,19 @@ function TaskBody({
                     </svg>
                   )}
                 </button>
-                <span className={`text-sm ${sub.completed ? "line-through text-zinc-600" : "text-zinc-300"}`}>
+                <span className={`text-sm ${sub.completed ? "line-through text-text-muted" : "text-text-secondary"}`}>
                   {sub.title}
                 </span>
               </div>
             ))}
             <div className="flex items-center gap-3 pt-1">
-              <Plus size={14} className="text-zinc-600 shrink-0" />
+              <Plus size={14} className="text-text-muted shrink-0" />
               <input
                 value={newSubtask}
                 onChange={(e) => setNewSubtask(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") handleSubtaskAdd() }}
                 placeholder="Anadir subtarea"
-                className="flex-1 bg-transparent text-sm text-zinc-400 placeholder:text-zinc-700 outline-none"
+                className="flex-1 bg-transparent text-sm text-text-secondary placeholder:text-zinc-700 outline-none"
               />
             </div>
           </>

@@ -68,7 +68,7 @@ export function ReunionLunesView() {
       {loading ? (
         <div className="p-6 space-y-4">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-16 bg-white/[0.04] rounded-xl animate-pulse" />
+            <div key={i} className="h-16 bg-surface-overlay rounded-xl animate-pulse" />
           ))}
         </div>
       ) : (
@@ -102,20 +102,20 @@ export function ReunionLunesView() {
           </div>
 
           {/* Ranking table */}
-          <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
-            <div className="px-4 py-3 border-b border-white/[0.06]">
-              <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Ranking semanal</h3>
+          <div className="rounded-xl border border-border-subtle bg-surface-overlay overflow-hidden">
+            <div className="px-4 py-3 border-b border-border-subtle">
+              <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider">Ranking semanal</h3>
             </div>
 
             {agents.length === 0 ? (
-              <p className="text-sm text-zinc-600 text-center py-8">Sin datos para esta semana</p>
+              <p className="text-sm text-text-muted text-center py-8">Sin datos para esta semana</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-white/[0.04]">
-                      <th className="text-left px-4 py-2 text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider">#</th>
-                      <th className="text-left px-4 py-2 text-xs md:text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Agente</th>
+                    <tr className="border-b border-border-subtle">
+                      <th className="text-left px-4 py-2 text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-wider">#</th>
+                      <th className="text-left px-4 py-2 text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-wider">Agente</th>
                       <SortHeader label="Tareas" sortKey="tasks_completed" current={sortBy} onSort={setSortBy} />
                       <SortHeader label="Contactos" sortKey="contacts_created" current={sortBy} onSort={setSortBy} />
                       <SortHeader label="Movimientos" sortKey="contacts_moved" current={sortBy} onSort={setSortBy} />
@@ -126,11 +126,11 @@ export function ReunionLunesView() {
                     {sorted.map((agent, i) => (
                       <tr
                         key={agent.profile_id}
-                        className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors"
+                        className="border-b border-white/[0.03] hover:bg-surface-overlay transition-colors"
                       >
                         <td className="px-4 py-2.5">
                           <span className={`text-xs font-bold tabular-nums ${
-                            i === 0 ? "text-amber-400" : i === 1 ? "text-zinc-400" : i === 2 ? "text-orange-400" : "text-zinc-600"
+                            i === 0 ? "text-amber-400" : i === 1 ? "text-text-secondary" : i === 2 ? "text-orange-400" : "text-text-muted"
                           }`}>
                             {i + 1}
                           </span>
@@ -141,18 +141,18 @@ export function ReunionLunesView() {
                               {(agent.display_name || agent.email)[0].toUpperCase()}
                             </div>
                             <div className="min-w-0">
-                              <p className="text-xs font-medium text-shell-text truncate">
+                              <p className="text-xs font-medium text-text-primary truncate">
                                 {agent.display_name || agent.email.split("@")[0]}
                               </p>
-                              <p className="text-xs md:text-[10px] text-zinc-600 truncate">{agent.email}</p>
+                              <p className="text-xs md:text-[10px] text-text-muted truncate">{agent.email}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-4 py-2.5 text-xs text-zinc-300 tabular-nums text-center">{agent.tasks_completed}</td>
-                        <td className="px-4 py-2.5 text-xs text-zinc-300 tabular-nums text-center">{agent.contacts_created}</td>
-                        <td className="px-4 py-2.5 text-xs text-zinc-300 tabular-nums text-center">{agent.contacts_moved}</td>
+                        <td className="px-4 py-2.5 text-xs text-text-secondary tabular-nums text-center">{agent.tasks_completed}</td>
+                        <td className="px-4 py-2.5 text-xs text-text-secondary tabular-nums text-center">{agent.contacts_created}</td>
+                        <td className="px-4 py-2.5 text-xs text-text-secondary tabular-nums text-center">{agent.contacts_moved}</td>
                         <td className="px-4 py-2.5 text-center">
-                          <span className="text-xs font-bold text-shell-text tabular-nums">{agent.total_actions}</span>
+                          <span className="text-xs font-bold text-text-primary tabular-nums">{agent.total_actions}</span>
                         </td>
                       </tr>
                     ))}
@@ -177,7 +177,7 @@ export function ReunionLunesView() {
                     <div className="w-5 h-5 rounded-full bg-amber-500/15 flex items-center justify-center text-xs md:text-[9px] font-bold text-amber-400 shrink-0">
                       {(a.display_name || a.email)[0].toUpperCase()}
                     </div>
-                    <span className="text-sm text-zinc-400">
+                    <span className="text-sm text-text-secondary">
                       {a.display_name || a.email.split("@")[0]}
                     </span>
                   </div>
@@ -206,10 +206,10 @@ function SummaryCard({ icon, label, value, color }: {
 }) {
   const c = CARD_COLORS[color]
   return (
-    <div className={`rounded-2xl border border-white/[0.06] ${c.bg} p-4`}>
+    <div className={`rounded-2xl border border-border-subtle ${c.bg} p-4`}>
       <div className={`${c.icon} mb-2`}>{icon}</div>
       <p className={`text-2xl font-bold ${c.text} tabular-nums`}>{value}</p>
-      <p className="text-xs md:text-[11px] text-zinc-500 font-medium mt-1">{label}</p>
+      <p className="text-xs md:text-[11px] text-text-muted font-medium mt-1">{label}</p>
     </div>
   )
 }
@@ -224,7 +224,7 @@ function SortHeader({ label, sortKey, current, onSort }: {
   return (
     <th
       className={`px-4 py-2 text-xs md:text-[10px] font-bold uppercase tracking-wider text-center cursor-pointer select-none transition-colors ${
-        active ? "text-blue-400" : "text-zinc-600 hover:text-zinc-400"
+        active ? "text-blue-400" : "text-text-muted hover:text-text-secondary"
       }`}
       onClick={() => onSort(sortKey)}
     >
