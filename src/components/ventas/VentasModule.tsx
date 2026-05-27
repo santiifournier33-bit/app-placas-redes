@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { DollarSign, Activity, PieChart, Sparkles } from "lucide-react"
 import ProductionTab from "./ProductionTab"
 import ActivityTab from "./ActivityTab"
@@ -8,8 +9,21 @@ import BalanceTab from "./BalanceTab"
 
 type TabType = "produccion" | "actividad" | "balance" | "analiticas"
 
+const VALID_TABS: TabType[] = ["produccion", "actividad", "balance", "analiticas"]
+
 export default function VentasModule() {
-  const [activeTab, setActiveTab] = useState<TabType>("produccion")
+  const searchParams = useSearchParams()
+  const initialFromQuery = (searchParams.get("tab") ?? "") as TabType
+  const initialTab: TabType = VALID_TABS.includes(initialFromQuery) ? initialFromQuery : "produccion"
+
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab)
+
+  // Sync activeTab when the sidebar accordion changes ?tab=.
+  useEffect(() => {
+    const t = (searchParams.get("tab") ?? "") as TabType
+    if (VALID_TABS.includes(t) && t !== activeTab) setActiveTab(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   return (
     <div className="space-y-6">

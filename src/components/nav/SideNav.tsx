@@ -3,17 +3,19 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
-import { getModulesForRole, type ModuleDefinition } from "@/lib/auth/modules"
+import { getModulesForRole, type ModuleDefinition, type SubModuleDefinition } from "@/lib/auth/modules"
 import type { UserRole } from "@/lib/auth/session"
 import {
   LayoutDashboard, Paintbrush, ListTodo, MessageCircleQuestion, BookOpen,
   FolderOpen, BarChart3, DollarSign, Receipt, Mail,
-  LogOut, Lock, PenLine
+  LogOut, Lock, PenLine, ChevronRight
 } from "lucide-react"
-import { ReactNode, useState, useEffect } from "react"
+import { ReactNode, useState, useEffect, useMemo } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 import { resetAllStores } from "@/lib/stores/resetAllStores"
 import { useConsultasBadge } from "@/lib/stores/useConsultasBadge"
 import { getTheme } from "@/lib/theme"
+import { useSidebar } from "./SidebarContext"
 
 const EASE = "cubic-bezier(0.22, 1, 0.36, 1)"
 
@@ -41,10 +43,85 @@ interface SideNavProps {
   collapsed?: boolean
 }
 
+const EXPANDED_STORAGE_KEY = "freire:sidenav:expanded"
+
+// Match a pathname (with optional ?search) to a child href. Children can use
+// query params (e.g. /diseno?tab=properties), so we compare path + query.
+function childMatchesLocation(child: SubModuleDefinition, pathname: string, search: string): boolean {
+  const [childPath, childQuery = ""] = child.href.split("?")
+  if (pathname !== childPath) return false
+  if (!childQuery) return true
+  // Every key in childQuery must match the URL's search params
+  const want = new URLSearchParams(childQuery)
+  const have = new URLSearchParams(search)
+  for (const [k, v] of want) {
+    if (have.get(k) !== v) return false
+  }
+  return true
+}
+
+function moduleContainsLocation(mod: ModuleDefinition, pathname: string, search: string): boolean {
+  if (!mod.children) return false
+  return mod.children.some(c => childMatchesLocation(c, pathname, search))
+}
+
 export function SideNav({ role, email, collapsed = false }: SideNavProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const { toggle: toggleSidebar } = useSidebar()
   const [theme, setThemeState] = useState<'light' | 'dark'>('dark')
+
+  // Read current ?search at render time. usePathname does not include it.
+  const [search, setSearch] = useState<string>("")
+  useEffect(() => {
+    setSearch(typeof window !== "undefined" ? window.location.search : "")
+    const onPop = () => setSearch(window.location.search)
+    window.addEventListener("popstate", onPop)
+    return () => window.removeEventListener("popstate", onPop)
+  }, [pathname])
+
+  // Accordion expanded set (module ids). Persisted in localStorage so the
+  // user's preferred shape survives reloads. Auto-includes any module that
+  // contains the current location on mount.
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(EXPANDED_STORAGE_KEY)
+      const stored: string[] = raw ? JSON.parse(raw) : []
+      const next = new Set(stored)
+      // ensure the module containing the current route is open
+      for (const m of getModulesForRole(role)) {
+        if (moduleContainsLocation(m, pathname, typeof window !== "undefined" ? window.location.search : "")) {
+          next.add(m.id)
+        }
+      }
+      setExpanded(next)
+    } catch {
+      setExpanded(new Set())
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const toggleGroup = (id: string) => {
+    setExpanded(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      try { localStorage.setItem(EXPANDED_STORAGE_KEY, JSON.stringify([...next])) } catch {}
+      return next
+    })
+  }
+
+  // Click on a parent module while sidebar is collapsed:
+  // expand the sidebar AND open the accordion in the same tick (Opción A).
+  const handleParentClickCollapsed = (id: string) => {
+    if (collapsed) toggleSidebar()
+    setExpanded(prev => {
+      const next = new Set(prev)
+      next.add(id)
+      try { localStorage.setItem(EXPANDED_STORAGE_KEY, JSON.stringify([...next])) } catch {}
+      return next
+    })
+  }
 
   useEffect(() => {
     setThemeState(getTheme())
@@ -104,7 +181,17 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
       {/* Navigation */}
       <nav className="flex-1 p-2 space-y-1 overflow-y-auto overflow-x-hidden">
         {sharedModules.map((mod) => (
-          <NavItem key={mod.id} mod={mod} pathname={pathname} collapsed={collapsed} />
+          <NavRow
+            key={mod.id}
+            mod={mod}
+            pathname={pathname}
+            search={search}
+            collapsed={collapsed}
+            role={role}
+            expanded={expanded.has(mod.id)}
+            onToggleGroup={toggleGroup}
+            onCollapsedParentClick={handleParentClickCollapsed}
+          />
         ))}
 
         {adminModules.length > 0 && (
@@ -123,7 +210,17 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
               <span className="absolute left-0 right-0 bottom-0 border-t border-border-subtle" />
             </div>
             {adminModules.map((mod) => (
-              <NavItem key={mod.id} mod={mod} pathname={pathname} collapsed={collapsed} />
+              <NavRow
+            key={mod.id}
+            mod={mod}
+            pathname={pathname}
+            search={search}
+            collapsed={collapsed}
+            role={role}
+            expanded={expanded.has(mod.id)}
+            onToggleGroup={toggleGroup}
+            onCollapsedParentClick={handleParentClickCollapsed}
+          />
             ))}
           </>
         )}
@@ -164,6 +261,142 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
         </button>
       </div>
     </aside>
+  )
+}
+
+// Dispatcher: picks a leaf NavItem or an accordion NavGroup based on whether
+// the module declares `children`. Receives lifted state from the parent so
+// the expand/collapse animation can coordinate with the sidebar width.
+interface NavRowProps {
+  mod: ModuleDefinition
+  pathname: string
+  search: string
+  collapsed: boolean
+  role: UserRole
+  expanded: boolean
+  onToggleGroup: (id: string) => void
+  onCollapsedParentClick: (id: string) => void
+}
+
+function NavRow(props: NavRowProps) {
+  const { mod } = props
+  if (mod.children && mod.children.length > 0) {
+    return <NavGroup {...props} />
+  }
+  return <NavItem mod={props.mod} pathname={props.pathname} collapsed={props.collapsed} />
+}
+
+function NavGroup({
+  mod, pathname, search, collapsed, role,
+  expanded, onToggleGroup, onCollapsedParentClick,
+}: NavRowProps) {
+  const consultasBadge = useConsultasBadge()
+  const badge = mod.id === 'consultas' ? consultasBadge : 0
+
+  const visibleChildren = useMemo(() => {
+    return (mod.children ?? []).filter(c => !c.access || c.access.includes(role))
+  }, [mod.children, role])
+
+  const childActive = visibleChildren.some(c => childMatchesLocation(c, pathname, search))
+  // Parent gets a subtle "contains active" highlight when collapsed so the
+  // user knows where they are even with the accordion shut.
+  const parentHighlight = childActive
+
+  const labelClass = `whitespace-nowrap overflow-hidden transition-opacity duration-200 ${
+    collapsed ? "w-0 opacity-0" : "opacity-100 delay-150"
+  }`
+
+  const baseClass = `relative flex items-center rounded-xl text-sm font-medium overflow-hidden cursor-pointer transition-[background-color,color,padding] duration-200 ${
+    collapsed ? "w-10 h-10 justify-center mx-auto gap-0 px-0" : "h-10 px-3 gap-3 w-full"
+  }`
+
+  const handleClick = () => {
+    if (collapsed) {
+      onCollapsedParentClick(mod.id)
+    } else {
+      onToggleGroup(mod.id)
+    }
+  }
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={handleClick}
+        aria-expanded={expanded}
+        aria-controls={`navgroup-${mod.id}`}
+        title={collapsed ? mod.label : undefined}
+        className={`group ${baseClass} ${
+          parentHighlight
+            ? "text-shell-accent bg-shell-accent-muted/60 font-semibold"
+            : "text-text-muted hover:text-text-primary hover:bg-surface-2"
+        }`}
+      >
+        {parentHighlight && !collapsed && (
+          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[60%] bg-shell-accent rounded-r-full shadow-[0_0_8px_var(--color-shell-accent)]" />
+        )}
+        {getIcon(mod.icon, 20)}
+        <span style={{ transitionTimingFunction: EASE }} className={labelClass}>
+          {mod.label}
+        </span>
+        {badge > 0 && (
+          <span
+            className={`shrink-0 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-amber-500 text-xs md:text-[10px] font-bold text-zinc-950 ${
+              collapsed
+                ? 'absolute top-1 right-1 transform scale-75'
+                : 'ml-2'
+            }`}
+          >
+            {badge > 99 ? '99+' : badge}
+          </span>
+        )}
+        {!collapsed && (
+          <ChevronRight
+            size={14}
+            strokeWidth={2}
+            className="ml-auto shrink-0 text-text-muted transition-transform duration-300"
+            style={{ transform: expanded ? "rotate(90deg)" : "rotate(0deg)" }}
+          />
+        )}
+      </button>
+
+      <AnimatePresence initial={false}>
+        {expanded && !collapsed && (
+          <motion.ul
+            id={`navgroup-${mod.id}`}
+            role="group"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            style={{ overflow: "hidden" }}
+            className="mt-0.5 space-y-0.5"
+          >
+            {visibleChildren.map(child => {
+              const active = childMatchesLocation(child, pathname, search)
+              return (
+                <li key={child.id}>
+                  <Link
+                    href={child.href}
+                    scroll={false}
+                    className={`flex items-center pl-11 pr-3 h-9 rounded-lg text-[13px] font-medium transition-colors ${
+                      active
+                        ? "text-shell-accent bg-shell-accent-muted"
+                        : "text-text-muted hover:text-text-primary hover:bg-surface-2"
+                    }`}
+                  >
+                    {active && (
+                      <span className="absolute left-0 ml-2 w-1 h-1 rounded-full bg-shell-accent" aria-hidden />
+                    )}
+                    <span className="truncate">{child.label}</span>
+                  </Link>
+                </li>
+              )
+            })}
+          </motion.ul>
+        )}
+      </AnimatePresence>
+    </div>
   )
 }
 

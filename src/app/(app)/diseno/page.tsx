@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import PropertyExplorer from "@/components/PropertyExplorer";
 import Dashboard from "@/components/Dashboard";
 import TokkoDescriptionForm from "@/components/TokkoDescriptionForm";
@@ -11,9 +12,19 @@ import { PageHeader } from "@/components/nav/PageHeader";
 type ActiveTab = "properties" | "tokko_description";
 
 export default function DisenoPage() {
+  const searchParams = useSearchParams();
+  const initialTab: ActiveTab = searchParams.get("tab") === "tokko_description" ? "tokko_description" : "properties";
+
   const [property, setProperty] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<ActiveTab>("properties");
+  const [activeTab, setActiveTab] = useState<ActiveTab>(initialTab);
   const [user, setUser] = useState<{ email: string; role: string } | null>(null);
+
+  // Sync activeTab when URL ?tab= changes (sidebar accordion navigation).
+  useEffect(() => {
+    const t = searchParams.get("tab");
+    if (t === "tokko_description") setActiveTab("tokko_description");
+    else if (t === "properties") setActiveTab("properties");
+  }, [searchParams]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);

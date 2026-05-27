@@ -1,5 +1,12 @@
 import type { UserRole } from './session'
 
+export interface SubModuleDefinition {
+  id: string
+  label: string
+  href: string
+  access?: UserRole[]   // if absent, inherits parent's access
+}
+
 export interface ModuleDefinition {
   id: string
   label: string
@@ -8,6 +15,12 @@ export interface ModuleDefinition {
   access: UserRole[]
   description: string
   enabled: boolean
+  /**
+   * If present, sidebar renders this module as an accordion. Children are
+   * the deepest navigable items (sub-routes or tab queries) that the user
+   * can land on. Parent row toggles expand/collapse (no navigation).
+   */
+  children?: SubModuleDefinition[]
 }
 
 export const modules: ModuleDefinition[] = [
@@ -23,11 +36,18 @@ export const modules: ModuleDefinition[] = [
   {
     id: 'productividad',
     label: 'Productividad',
-    href: '/productividad',
+    href: '/productividad/tareas',
     icon: 'TaskSquare',
     access: ['admin', 'asesor'],
     description: 'Tareas, negocios, equipo y contactos',
     enabled: true,
+    children: [
+      { id: 'tareas',     label: 'Tareas',     href: '/productividad/tareas' },
+      { id: 'negocios',   label: 'Negocios',   href: '/productividad/negocios' },
+      { id: 'contactos',  label: 'Contactos',  href: '/productividad/contactos' },
+      { id: 'calendario', label: 'Calendario', href: '/productividad/calendario' },
+      { id: 'equipo',     label: 'Equipo',     href: '/productividad/equipo', access: ['admin'] },
+    ],
   },
   {
     id: 'diseno',
@@ -37,6 +57,10 @@ export const modules: ModuleDefinition[] = [
     access: ['admin', 'asesor'],
     description: 'Placas, copy, PDFs y videos',
     enabled: true,
+    children: [
+      { id: 'properties',        label: 'Propiedades publicadas',  href: '/diseno?tab=properties' },
+      { id: 'tokko_description', label: 'Descripción Tokko',       href: '/diseno?tab=tokko_description' },
+    ],
   },
   {
     id: 'consultas',
@@ -46,6 +70,10 @@ export const modules: ModuleDefinition[] = [
     access: ['admin', 'asesor'],
     description: 'Consultas de propiedades + matching engine',
     enabled: true,
+    children: [
+      { id: 'consultas',     label: 'Todas las consultas', href: '/consultas' },
+      { id: 'mis-consultas', label: 'Mis consultas',        href: '/consultas/mis-consultas' },
+    ],
   },
   {
     id: 'procedimientos',
@@ -91,15 +119,27 @@ export const modules: ModuleDefinition[] = [
     access: ['admin'],
     description: 'Operaciones y comisiones',
     enabled: true,
+    children: [
+      { id: 'produccion', label: 'Producción',    href: '/ventas?tab=produccion' },
+      { id: 'actividad',  label: 'Actividad',     href: '/ventas?tab=actividad' },
+      { id: 'balance',    label: 'Balance Anual', href: '/ventas?tab=balance' },
+    ],
   },
   {
     id: 'servicios',
     label: 'Servicios',
-    href: '/servicios',
+    href: '/servicios/dashboard',
     icon: 'Receipt1',
     access: ['admin'],
     description: 'Gastos y vencimientos',
     enabled: true,
+    children: [
+      { id: 'dashboard',   label: 'Dashboard',   href: '/servicios/dashboard' },
+      { id: 'gastos',      label: 'Gastos',      href: '/servicios/gastos' },
+      { id: 'categorias',  label: 'Categorías',  href: '/servicios/categorias' },
+      { id: 'proveedores', label: 'Proveedores', href: '/servicios/proveedores' },
+      { id: 'graficos',    label: 'Gráficos',    href: '/servicios/graficos' },
+    ],
   },
   {
     id: 'correo',
