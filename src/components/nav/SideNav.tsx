@@ -156,24 +156,25 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
       }`}
     >
       {/* Logo block — fixed height (matches PageHeader + TabNav).
-       * Expanded: horizontal corporate logo (azul on light, blanco on dark).
-       * Collapsed: square brand mark (favicon) so the w-16 strip stays clean. */}
+       * Expanded: horizontal corporate logo (azul on light, blanco on dark),
+       * centered within the w-64 strip. Collapsed: square brand mark
+       * (favicon-blanco) centered in the w-16 strip. */}
       <Link
         href="/dashboard"
-        className="h-14 border-b border-border-subtle flex items-center shrink-0 cursor-pointer hover:bg-surface-2 transition-colors px-4 gap-2.5"
+        className="h-14 border-b border-border-subtle flex items-center justify-center shrink-0 cursor-pointer hover:bg-surface-2 transition-colors px-3"
       >
         <Image
           src={
             collapsed
-              ? "/favicon.png"
+              ? "/favicon-blanco.png"
               : theme === "light"
                 ? "/logo-azul-app.png"
                 : "/logo-blanco-app.png"
           }
           alt="Freire Propiedades"
-          width={collapsed ? 28 : 130}
-          height={collapsed ? 28 : 32}
-          className="object-contain shrink-0 max-h-[32px] w-auto"
+          width={collapsed ? 28 : 150}
+          height={collapsed ? 28 : 36}
+          className="object-contain shrink-0 max-h-[36px] w-auto"
           priority
         />
       </Link>
