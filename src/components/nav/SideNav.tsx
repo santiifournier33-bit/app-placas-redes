@@ -78,32 +78,27 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
         collapsed ? "w-16" : "w-64"
       }`}
     >
-      {/* Logo block — fixed height (matches PageHeader + TabNav) */}
+      {/* Logo block — fixed height (matches PageHeader + TabNav).
+       * Expanded: horizontal corporate logo (azul on light, blanco on dark).
+       * Collapsed: square brand mark (favicon) so the w-16 strip stays clean. */}
       <Link
-        href="/diseno"
+        href="/dashboard"
         className="h-14 border-b border-border-subtle flex items-center shrink-0 cursor-pointer hover:bg-surface-2 transition-colors px-4 gap-2.5"
       >
         <Image
           src={
-            theme === "light"
-              ? "/logo-pequeno.png"
-              : collapsed
+            collapsed
               ? "/favicon.png"
-              : "/logo-blanco-oficial.png"
+              : theme === "light"
+                ? "/logo-azul-app.png"
+                : "/logo-blanco-app.png"
           }
           alt="Freire Propiedades"
-          width={theme === "light" || collapsed ? 28 : 100}
-          height={28}
-          className="object-contain shrink-0 max-h-[28px]"
+          width={collapsed ? 28 : 130}
+          height={collapsed ? 28 : 32}
+          className="object-contain shrink-0 max-h-[32px] w-auto"
+          priority
         />
-        {theme === "light" && (
-          <span
-            style={{ transitionTimingFunction: EASE }}
-            className={`text-[13px] font-bold tracking-wide text-text-primary ${fadeClass}`}
-          >
-            FREIRE
-          </span>
-        )}
       </Link>
 
       {/* Navigation */}
