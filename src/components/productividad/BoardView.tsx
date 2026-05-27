@@ -12,9 +12,11 @@ interface BoardViewProps {
   showCompleted: boolean
   onSelectTask: (t: Task) => void
   onToggleTask?: (id: string) => void
+  onMobileAdd?: (sectionId: string | null) => void
+  isMobile?: boolean
 }
 
-export function BoardView({ tasks, sections, showCompleted, onSelectTask, onToggleTask }: BoardViewProps) {
+export function BoardView({ tasks, sections, showCompleted, onSelectTask, onToggleTask, onMobileAdd, isMobile }: BoardViewProps) {
   const { addSection, updateTask } = useTaskStore()
   const [showAddSection, setShowAddSection] = useState(false)
   const [newSectionName, setNewSectionName] = useState("")
@@ -37,9 +39,12 @@ export function BoardView({ tasks, sections, showCompleted, onSelectTask, onTogg
   }
 
   return (
-    <div className="flex items-start gap-3 overflow-x-auto px-4 pt-4 pb-6 min-h-[60vh]" style={{ scrollSnapType: "x proximity" }}>
+    <div 
+      className="flex items-start gap-3 overflow-x-auto pt-4 pb-6 min-h-[60vh] lg:px-4 snap-container" 
+      style={{ scrollSnapType: "x mandatory", paddingLeft: "calc((100vw - 92vw) / 2)", paddingRight: "calc((100vw - 92vw) / 2)" }}
+    >
       {/* (Sin sección) column */}
-      <div style={{ scrollSnapAlign: "start" }}>
+      <div className="snap-center shrink-0">
         <BoardColumn
           title="Sin sección"
           sectionId={null}
@@ -50,6 +55,8 @@ export function BoardView({ tasks, sections, showCompleted, onSelectTask, onTogg
           onDragStart={setDraggedTaskId}
           onDrop={handleDrop}
           onToggleTask={onToggleTask}
+          onMobileAdd={onMobileAdd}
+          isMobile={isMobile}
         />
       </div>
 
@@ -57,7 +64,7 @@ export function BoardView({ tasks, sections, showCompleted, onSelectTask, onTogg
       {sortedSections.map((sec) => {
         const sectionTasks = tasks.filter((t) => t.section_id === sec.id)
         return (
-          <div key={sec.id} style={{ scrollSnapAlign: "start" }}>
+          <div key={sec.id} className="snap-center shrink-0">
             <BoardColumn
               title={sec.name}
               sectionId={sec.id}
@@ -68,13 +75,15 @@ export function BoardView({ tasks, sections, showCompleted, onSelectTask, onTogg
               onDragStart={setDraggedTaskId}
               onDrop={handleDrop}
               onToggleTask={onToggleTask}
+              onMobileAdd={onMobileAdd}
+              isMobile={isMobile}
             />
           </div>
         )
       })}
 
       {/* Add section button / form */}
-      <div className="shrink-0 flex items-start" style={{ scrollSnapAlign: "start" }}>
+      <div className="shrink-0 flex items-start snap-center">
         {showAddSection ? (
           <div className="w-64 rounded-2xl border border-border-default bg-surface-overlay p-3 space-y-3">
             <input

@@ -2,7 +2,7 @@
 
 import { format, isPast, isToday } from "date-fns"
 import { es } from "date-fns/locale"
-import { ChevronRight, Flag, Check } from "lucide-react"
+import { ChevronRight, Flag, Check, CornerDownRight } from "lucide-react"
 import { motion, useMotionValue, useTransform } from "framer-motion"
 import type { Task } from "@/lib/stores/taskStore"
 import { useTaskStore } from "@/lib/stores/taskStore"
@@ -71,7 +71,7 @@ export function TaskItem({ task, subtaskCount = 0, subtaskDone = 0, onTap, inden
         dragMomentum={false}
         onDragEnd={handleDragEnd}
         style={{ x }}
-        className="relative group flex items-start gap-3 px-4 py-3 bg-shell-bg hover:bg-surface-overlay transition-colors cursor-pointer touch-pan-y"
+        className="relative group flex items-start gap-2.5 px-4 py-2.5 bg-shell-bg hover:bg-surface-overlay transition-colors cursor-pointer touch-pan-y"
         onClick={onTap}
       >
         <button
@@ -95,7 +95,13 @@ export function TaskItem({ task, subtaskCount = 0, subtaskDone = 0, onTap, inden
             {task.title}
           </p>
 
-          <div className="flex items-center gap-3 mt-1 flex-wrap">
+          {task.description && (
+            <p className="text-xs text-text-muted truncate mt-0.5 max-w-[90%]">
+              {task.description}
+            </p>
+          )}
+
+          <div className="flex items-center gap-3 mt-0.5 flex-wrap">
             {task.due_date && (
               <span
                 className={`text-xs md:text-[11px] flex items-center gap-1 ${overdue ? "text-red-400" : "text-text-muted"}`}
@@ -106,9 +112,7 @@ export function TaskItem({ task, subtaskCount = 0, subtaskDone = 0, onTap, inden
 
             {subtaskCount > 0 && (
               <span className="text-xs md:text-[11px] text-text-muted flex items-center gap-1">
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                  <path d="M4 8h8M8 4v8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+                <CornerDownRight size={11} className="shrink-0" />
                 {subtaskDone}/{subtaskCount}
               </span>
             )}

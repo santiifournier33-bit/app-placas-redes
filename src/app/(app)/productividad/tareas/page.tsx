@@ -17,6 +17,8 @@ import { TaskItem } from "@/components/productividad/TaskItem"
 import { TaskDetail } from "@/components/productividad/TaskDetail"
 import { SectionHeader } from "@/components/productividad/SectionHeader"
 import { BoardView } from "@/components/productividad/BoardView"
+import { MobileAddTaskSheet } from "@/components/productividad/MobileAddTaskSheet"
+import { useIsMobile } from "@/lib/hooks/useIsMobile"
 import { isToday, isPast, format } from "date-fns"
 import { es } from "date-fns/locale"
 import type { Task } from "@/lib/stores/taskStore"
@@ -46,8 +48,10 @@ export default function TareasPage() {
   const [mounted, setMounted] = useState(false)
   const [toast, setToast] = useState<{ count: number; undoIds: string[] } | null>(null)
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [fabOpen, setFabOpen] = useState(false)
-  const [fabText, setFabText] = useState("")
+  
+  const [mobileAddOpen, setMobileAddOpen] = useState(false)
+  const [mobileAddSectionId, setMobileAddSectionId] = useState<string | null>(null)
+  const isMobile = useIsMobile()
 
   const formatMenuRef = useRef<HTMLDivElement>(null)
 
@@ -70,22 +74,7 @@ export default function TareasPage() {
     return () => document.removeEventListener("mousedown", handler)
   }, [])
 
-  // ContextualFAB on mobile dispatches `fab:new-task` from the bottom-right
-  // FAB; we open a Sheet with a quick-create input. Keyboard auto-focuses
-  // via Radix Sheet's initial focus, no manual ref needed.
-  useEffect(() => {
-    const open = () => setFabOpen(true)
-    window.addEventListener("fab:new-task", open)
-    return () => window.removeEventListener("fab:new-task", open)
-  }, [])
-
-  const handleFabSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!fabText.trim()) return
-    addTask(fabText.trim(), null)
-    setFabText("")
-    setFabOpen(false)
-  }
+  // Cleanup old fab listeners if any
 
   const handleToggleTask = useCallback((id: string) => {
     const currentTasks = useTaskStore.getState().tasks
@@ -241,6 +230,11 @@ export default function TareasPage() {
               showCompleted={showCompleted}
               onSelectTask={setSelectedTask}
               onToggleTask={handleToggleTask}
+              onMobileAdd={(secId) => {
+                setMobileAddSectionId(secId)
+                setMobileAddOpen(true)
+              }}
+              isMobile={isMobile}
             />
           )}
 
@@ -298,36 +292,21 @@ export default function TareasPage() {
         />
       )}
 
-      {/* Quick-add Sheet (triggered by mobile FAB fab:new-task) */}
-      <Sheet open={fabOpen} onOpenChange={setFabOpen}>
-        <SheetContent side="bottom" className="rounded-t-2xl">
-          <SheetHeader>
-            <SheetTitle>Nueva tarea</SheetTitle>
-            <SheetDescription>Se agrega a la bandeja sin sección.</SheetDescription>
-          </SheetHeader>
-          <form onSubmit={handleFabSubmit} className="px-6 pb-6 flex flex-col gap-3">
-            <Input
-              autoFocus
-              value={fabText}
-              onChange={(e) => setFabText(e.target.value)}
-              placeholder="¿Qué hay que hacer?"
-              className="text-base"
-            />
-            <div className="flex gap-2 justify-end">
-              <Button type="button" variant="ghost" onClick={() => setFabOpen(false)}>
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={!fabText.trim()}>
-                Crear
-              </Button>
-            </div>
-          </form>
-        </SheetContent>
-      </Sheet>
+      {/* Mobile Add Task Bottom Sheet */}
+      {isMobile && (
+        <MobileAddTaskSheet 
+          open={mobileAddOpen} 
+          onOpenChange={setMobileAddOpen} 
+          initialSectionId={mobileAddSectionId} 
+        />
+      )}
 
       {/* Completion toast */}
       {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 bg-[#1e1e2c] border border-border-default rounded-2xl px-4 py-3 shadow-2xl animate-in slide-in-from-bottom-4 duration-300 whitespace-nowrap">
+        <div 
+          className="fixed left-1/2 -translate-x-1/2 z-[200] flex items-center gap-3 bg-[#1e1e2c] border border-border-default rounded-2xl px-4 py-3 shadow-2xl animate-in slide-in-from-bottom-4 duration-300 whitespace-nowrap lg:bottom-6"
+          style={{ bottom: "calc(72px + env(safe-area-inset-bottom) + 12px)" }}
+        >
           <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
             <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
               <path d="M1 5L4 8L11 1" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

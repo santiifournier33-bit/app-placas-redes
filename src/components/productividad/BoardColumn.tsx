@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, MoreHorizontal, Pencil, Trash2, CheckSquare, MapPin, Phone, Users, PenLine, Coffee, Gift, Megaphone } from "lucide-react"
+import { Plus, MoreHorizontal, Pencil, Trash2, CheckSquare, MapPin, Phone, Users, PenLine, Coffee, Gift, Megaphone, CornerDownRight } from "lucide-react"
 import { format, isPast, isToday } from "date-fns"
 import { es } from "date-fns/locale"
 import { useTaskStore, TASK_TYPES, type TaskType } from "@/lib/stores/taskStore"
@@ -43,11 +43,14 @@ interface BoardColumnProps {
   onDragStart: (id: string) => void
   onDrop: (sectionId: string | null) => void
   onToggleTask?: (id: string) => void
+  onMobileAdd?: (sectionId: string | null) => void
+  isMobile?: boolean
 }
 
 export function BoardColumn({
   title, sectionId, tasks, showCompleted, onSelectTask,
   draggedTaskId, onDragStart, onDrop, onToggleTask,
+  onMobileAdd, isMobile,
 }: BoardColumnProps) {
   const { renameSection, deleteSection, toggleTask, tasks: allTasks } = useTaskStore()
   const doToggle = (id: string) => onToggleTask ? onToggleTask(id) : toggleTask(id)
@@ -83,7 +86,7 @@ export function BoardColumn({
 
   return (
     <div
-      className={`flex flex-col self-start shrink-0 w-72 rounded-2xl border transition-colors ${
+      className={`flex flex-col self-start shrink-0 w-[92vw] lg:w-72 rounded-2xl border transition-colors ${
         isDragOver
           ? "bg-blue-500/[0.04] border-blue-500/30"
           : "bg-surface-overlay border-border-subtle"
@@ -189,13 +192,19 @@ export function BoardColumn({
         )}
       </div>
 
-      {/* Footer add button */}
+      {/* Footer add button (inline Add Task) */}
       {!showQuickAdd && (
         <button
-          onClick={() => setShowQuickAdd(true)}
-          className="flex items-center gap-1.5 px-3 py-2.5 text-xs text-text-muted hover:text-text-secondary hover:bg-surface-overlay rounded-b-2xl transition-colors cursor-pointer border-t border-border-subtle"
+          onClick={() => {
+            if (isMobile && onMobileAdd) {
+              onMobileAdd(sectionId)
+            } else {
+              setShowQuickAdd(true)
+            }
+          }}
+          className="flex items-center gap-2.5 px-3 py-2.5 mx-2 mb-2 rounded-xl text-sm text-text-muted hover:bg-surface-overlay transition-colors cursor-pointer border border-dashed border-border-subtle hover:border-border-default"
         >
-          <Plus size={14} />
+          <Plus size={18} className="text-text-muted" />
           Añadir tarea
         </button>
       )}
@@ -256,9 +265,15 @@ function TaskCard({ task, subtaskCount, subtaskDone, onTap, onToggle, onDragStar
             {task.title}
           </p>
 
+          {task.description && (
+            <p className="text-xs text-text-muted truncate mt-0.5 max-w-[95%]">
+              {task.description}
+            </p>
+          )}
+
           {/* Meta row */}
           {(task.due_date || subtaskCount > 0 || effectiveType !== "tarea") && (
-            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
               {task.due_date && (
                 <span className={`text-xs md:text-[10px] ${overdue ? "text-red-400" : "text-text-muted"}`}>
                   {format(new Date(task.due_date), "d MMM", { locale: es })}
@@ -266,9 +281,7 @@ function TaskCard({ task, subtaskCount, subtaskDone, onTap, onToggle, onDragStar
               )}
               {subtaskCount > 0 && (
                 <span className="text-xs md:text-[10px] text-text-muted flex items-center gap-0.5">
-                  <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
-                    <path d="M3 8h10M8 3v10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-                  </svg>
+                  <CornerDownRight size={10} className="shrink-0" />
                   {subtaskDone}/{subtaskCount}
                 </span>
               )}

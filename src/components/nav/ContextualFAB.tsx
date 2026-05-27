@@ -20,12 +20,6 @@ interface FabAction {
 
 const FAB_ACTIONS: FabAction[] = [
   {
-    match: (p) => p.startsWith("/productividad/tareas"),
-    label: "Nueva tarea",
-    Icon: Plus,
-    eventName: "fab:new-task",
-  },
-  {
     match: (p) => p.startsWith("/productividad/contactos") && !p.includes("/contactos/"),
     label: "Nuevo contacto",
     Icon: Plus,
