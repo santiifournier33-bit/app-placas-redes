@@ -43,13 +43,14 @@ docker exec -it <n8n-container-name> sh
 
 ## n8n
 
-- **URL editor:** `http://144.22.45.201:5678/` (derivado de `.mcp.json`)
+- **URL editor (permanente):** `https://footpath-overtone-affidavit.ngrok-free.dev`
 - **URL MCP server:** `http://144.22.45.201:5678/mcp-server/http` (registrado en `.mcp.json` workspace)
 - **JWT MCP auth:** almacenado en `.mcp.json` workspace root (no en este repo)
 - **Login editor:**
   - User: `santiifournier33@gmail.com`
-  - Password: **ver password manager (1Password/Bitwarden/etc) — no documentado en repo por seguridad**
+  - Password: **ver password manager — no documentado en repo por seguridad**
 - **Versión actual:** `2.22.5` (actualizado 2026-05-31 desde 2.18.5 — ver `docs/runbooks/n8n-update.md`)
+- **Tunnel:** ngrok static domain, systemd service `ngrok-n8n` (auto-arranca en reboot)
 
 ### Generar API Key (necesaria para deployar workflows automáticamente)
 
