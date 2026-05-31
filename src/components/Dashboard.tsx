@@ -6,15 +6,14 @@ import {
   Building, Magicpen, Video, Image as ImageIcon, Copy, TickCircle,
   CloseCircle, ArrowLeft, DocumentDownload, Music, PlayCircle, PauseCircle, Send, Global
 } from "iconsax-react";
-import { Player } from "@remotion/player";
-import { PropertyComposition } from "../remotion/PropertyComposition";
-import { StoryPlacaComposition } from "../remotion/StoryPlacaComposition";
+import dynamic from "next/dynamic";
+const PropertyPlayer = dynamic(() => import("./remotion/PropertyPlayer"), { ssr: false });
+const StoryPlayer = dynamic(() => import("./remotion/StoryPlayer"), { ssr: false });
 import { pdf } from '@react-pdf/renderer';
 import { PdfVertical } from '../pdf/PdfVertical';
 import { PdfHorizontal } from '../pdf/PdfHorizontal';
 import { SocialPublisherForm } from "./SocialPublisherForm";
 import * as htmlToImage from 'html-to-image';
-import { renderMediaOnWeb } from "@remotion/web-renderer";
 
 type CopyVariant = { title: string; subtitle: string; content: string };
 type CopyVariants = { descriptivo: CopyVariant; emocional: CopyVariant; urgencia: CopyVariant };
@@ -222,6 +221,11 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
   };
 
   const renderVideoToBlob = async (onProgress?: (p: number) => void): Promise<Blob | null> => {
+    const [{ renderMediaOnWeb }, { PropertyComposition }] = await Promise.all([
+      import("@remotion/web-renderer"),
+      import("../remotion/PropertyComposition"),
+    ]);
+
     const videoProps = {
       property: {
         ...property,
@@ -258,7 +262,7 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
         container: "mp4",
         onProgress: ({ progress }: { progress: number }) => onProgress?.(Math.floor(progress * 100)),
       });
-    } catch (h264Error: any) {
+    } catch (h264Error: unknown) {
       console.warn("H264 render failed, falling back to vp8/webm:", h264Error);
       renderResult = await renderMediaOnWeb({
         composition: compositionConfig,
@@ -1284,33 +1288,23 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
               {videoStep === "preview" ? (
                 <>
                   <div className="bg-black p-3 aspect-[9/16]">
-                    <Player
-                      component={PropertyComposition}
-                      inputProps={{
-                        property: {
-                          ...property,
-                          address: parsedLocation?.title || property.address || "Propiedad Exclusiva",
-                          price: property.price || "Consultar",
-                          type: property.type || "Propiedad",
-                          operation_type: property.operation_type || "Venta",
-                          location: parsedLocation?.subtitle || property.location || "",
-                          rooms: property.rooms || 0,
-                          bedrooms: property.bedrooms || 0,
-                          bathrooms: property.bathrooms || 0,
-                          surface_total: property.surface_total || 0,
-                          surface_covered: property.surface_covered || 0,
-                          photos: currentVideoPhotos,
-                        },
-                        audioUrl: selectedAudio || undefined,
+                    <PropertyPlayer
+                      property={{
+                        ...property,
+                        address: parsedLocation?.title || property.address || "Propiedad Exclusiva",
+                        price: property.price || "Consultar",
+                        type: property.type || "Propiedad",
+                        operation_type: property.operation_type || "Venta",
+                        location: parsedLocation?.subtitle || property.location || "",
+                        rooms: property.rooms || 0,
+                        bedrooms: property.bedrooms || 0,
+                        bathrooms: property.bathrooms || 0,
+                        surface_total: property.surface_total || 0,
+                        surface_covered: property.surface_covered || 0,
+                        photos: currentVideoPhotos,
                       }}
+                      audioUrl={selectedAudio || undefined}
                       durationInFrames={(Math.max(1, currentVideoPhotos.length) + 1) * 90}
-                      compositionWidth={1080}
-                      compositionHeight={1920}
-                      fps={30}
-                      style={{ width: "100%", height: "100%", borderRadius: "8px" }}
-                      controls
-                      autoPlay
-                      loop
                     />
                   </div>
                   <div className="p-4 flex flex-col gap-2">
@@ -1519,11 +1513,9 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
                 <>
                   <div className={`bg-black p-3 ${placaFormat === 'story' ? 'aspect-[9/16]' : 'aspect-square'}`}>
                     <div id="placa-capture-node" className="w-full h-full relative overflow-hidden bg-white rounded-lg">
-                      <Player
-                      component={StoryPlacaComposition}
-                      inputProps={{
-                        format: placaFormat || 'story',
-                        property: {
+                      <StoryPlayer
+                      format={(placaFormat as 'story' | 'square') || 'story'}
+                      property={{
                           ...property,
                           address: parsedLocation?.title || property.address || "Propiedad Exclusiva",
                           price: property.price || "Consultar",
@@ -1536,15 +1528,7 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
                           surface_total: property.surface_total || 0,
                           surface_covered: property.surface_covered || 0,
                           photos: selectedPlacaPhotos,
-                        },
-                      }}
-                      durationInFrames={1}
-                      compositionWidth={1080}
-                      compositionHeight={placaFormat === 'story' ? 1920 : 1080}
-                      fps={30}
-                      style={{ width: "100%", height: "100%", borderRadius: "8px" }}
-                      autoPlay={false}
-                      loop={false}
+                        }}
                     />
                     </div>
                   </div>

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { getSession } from "@/lib/auth/session"
 import { AppShell } from "@/components/nav/AppShell"
+import { ErrorBoundary } from "@/components/ui/error-boundary"
 
 export default async function AppLayout({
   children,
@@ -12,7 +13,9 @@ export default async function AppLayout({
 
   return (
     <AppShell role={session.role} email={session.email}>
-      {children}
+      <ErrorBoundary>
+        {children}
+      </ErrorBoundary>
     </AppShell>
   )
 }

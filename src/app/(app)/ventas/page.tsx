@@ -1,5 +1,6 @@
 import { DollarSign } from "lucide-react"
 import VentasModule from "@/components/ventas/VentasModule"
+import { ErrorBoundary } from "@/components/ui/error-boundary"
 
 export default function VentasPage() {
   return (
@@ -11,8 +12,10 @@ export default function VentasPage() {
       <p className="text-text-muted text-sm mb-8">
         Operaciones, comisiones, facturación y balance del equipo.
       </p>
-      
-      <VentasModule />
+
+      <ErrorBoundary fallbackTitle="Error en módulo de ventas" fallbackDescription="No se pudieron cargar las operaciones. Intentá de nuevo.">
+        <VentasModule />
+      </ErrorBoundary>
     </div>
   )
 }

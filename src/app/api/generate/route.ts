@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 async function callGeminiNative(systemPrompt: string, userText: string, apiKey: string) {
   const model = "gemini-2.5-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
   const payload = {
     contents: [
@@ -15,7 +16,7 @@ async function callGeminiNative(systemPrompt: string, userText: string, apiKey: 
 
   const response = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
     body: JSON.stringify(payload)
   });
 
@@ -28,7 +29,15 @@ async function callGeminiNative(systemPrompt: string, userText: string, apiKey: 
   return data.candidates[0].content.parts[0].text;
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const ip = getClientIp(request)
+  if (!rateLimit(`generate:${ip}`, 20, 60 * 1000)) {
+    return NextResponse.json(
+      { error: "Demasiadas solicitudes. Esperá un momento.", code: "RATE_LIMITED" },
+      { status: 429 }
+    );
+  }
+
   try {
     const { property, type } = await request.json();
 
@@ -279,6 +288,6 @@ Reglas:
     if (isRateLimit) {
       return NextResponse.json({ error: "La API de Gemini está temporalmente limitada. Esperá unos segundos e intentá de nuevo." }, { status: 429 });
     }
-    return NextResponse.json({ error: `Error de API: ${error?.message || error}` }, { status: 500 });
+    return NextResponse.json({ error: "Error al generar contenido. Intentá de nuevo." }, { status: 500 });
   }
 }

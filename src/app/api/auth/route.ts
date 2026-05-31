@@ -3,9 +3,18 @@ import { createServerClient } from '@supabase/ssr'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getUserRole, encrypt } from '@/lib/auth/session'
 import { validateTokkoCredentials } from '@/lib/tokko/client'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
 import type { Database } from '@/lib/supabase/types'
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request)
+  if (!rateLimit(`auth:${ip}`, 10, 15 * 60 * 1000)) {
+    return NextResponse.json(
+      { error: 'Demasiados intentos. Esperá 15 minutos.', code: 'RATE_LIMITED' },
+      { status: 429 }
+    )
+  }
+
   try {
     const { email, password } = await request.json()
 
