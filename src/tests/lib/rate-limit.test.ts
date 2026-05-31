@@ -47,21 +47,35 @@ describe('rateLimit', () => {
 })
 
 describe('getClientIp', () => {
-  it('reads x-forwarded-for header', () => {
+  it('prefers x-nf-client-connection-ip (Netlify, not spoofable)', () => {
     const req = new Request('http://localhost', {
-      headers: { 'x-forwarded-for': '1.2.3.4, 5.6.7.8' },
+      headers: {
+        'x-nf-client-connection-ip': '1.1.1.1',
+        'x-forwarded-for': '9.9.9.9, 2.2.2.2',
+      },
     })
-    expect(getClientIp(req)).toBe('1.2.3.4')
+    expect(getClientIp(req)).toBe('1.1.1.1')
   })
 
-  it('falls back to x-real-ip', () => {
+  it('prefers cf-connecting-ip over x-forwarded-for (Cloudflare, not spoofable)', () => {
     const req = new Request('http://localhost', {
-      headers: { 'x-real-ip': '9.9.9.9' },
+      headers: {
+        'cf-connecting-ip': '3.3.3.3',
+        'x-forwarded-for': '9.9.9.9, 4.4.4.4',
+      },
     })
-    expect(getClientIp(req)).toBe('9.9.9.9')
+    expect(getClientIp(req)).toBe('3.3.3.3')
   })
 
-  it('returns unknown when no headers', () => {
+  it('uses rightmost x-forwarded-for entry (proxy-appended, not client-spoofable)', () => {
+    const req = new Request('http://localhost', {
+      headers: { 'x-forwarded-for': '9.9.9.9, 5.5.5.5, 6.6.6.6' },
+    })
+    // rightmost = 6.6.6.6 (appended by trusted proxy)
+    expect(getClientIp(req)).toBe('6.6.6.6')
+  })
+
+  it('returns unknown when no headers present', () => {
     const req = new Request('http://localhost')
     expect(getClientIp(req)).toBe('unknown')
   })

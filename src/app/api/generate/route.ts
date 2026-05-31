@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { getSession } from "@/lib/auth/session";
 
 async function callGeminiNative(systemPrompt: string, userText: string, apiKey: string) {
   const model = "gemini-2.5-flash";
@@ -30,8 +31,16 @@ async function callGeminiNative(systemPrompt: string, userText: string, apiKey: 
 }
 
 export async function POST(request: NextRequest) {
+  // Auth gate — prevents unauthenticated cost-driving requests
+  const session = await getSession()
+  if (!session) {
+    return NextResponse.json({ error: "No autorizado", code: "UNAUTHORIZED" }, { status: 401 })
+  }
+
+  // Secondary rate limit keyed on user email (not just IP)
   const ip = getClientIp(request)
-  if (!rateLimit(`generate:${ip}`, 20, 60 * 1000)) {
+  const rateLimitKey = `generate:${session.email}:${ip}`
+  if (!rateLimit(rateLimitKey, 20, 60 * 1000)) {
     return NextResponse.json(
       { error: "Demasiadas solicitudes. Esperá un momento.", code: "RATE_LIMITED" },
       { status: 429 }

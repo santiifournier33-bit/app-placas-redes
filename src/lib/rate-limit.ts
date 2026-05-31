@@ -25,9 +25,23 @@ export function rateLimit(key: string, limit: number, windowMs: number): boolean
 }
 
 export function getClientIp(request: Request): string {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    request.headers.get('x-real-ip') ??
-    'unknown'
-  )
+  // Netlify injects the real client IP here (not spoofable)
+  const netlifyIp = request.headers.get('x-nf-client-connection-ip')
+  if (netlifyIp) return netlifyIp
+
+  // Cloudflare injects the real client IP here (not spoofable)
+  const cfIp = request.headers.get('cf-connecting-ip')
+  if (cfIp) return cfIp
+
+  // Rightmost X-Forwarded-For entry is appended by the trusted proxy, not the client
+  const xff = request.headers.get('x-forwarded-for')
+  if (xff) {
+    const parts = xff.split(',').map(s => s.trim()).filter(Boolean)
+    const rightmost = parts[parts.length - 1]
+    if (rightmost) return rightmost
+  }
+
+  // No trusted IP source — treat as shared bucket ('unknown') so these
+  // requests share the same rate-limit pool rather than getting a free pass
+  return 'unknown'
 }
