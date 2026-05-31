@@ -7,7 +7,7 @@ import { PortalDropdown } from '@/components/ui/PortalDropdown'
 export type ChipColor =
   | 'zinc' | 'violet' | 'blue' | 'cyan' | 'emerald' | 'amber' | 'red' | 'pink'
 
-const COLOR_CLASS: Record<ChipColor, string> = {
+export const COLOR_CLASS: Record<ChipColor, string> = {
   zinc:    'bg-zinc-500/15 text-text-secondary',
   violet:  'bg-violet-500/15 text-violet-300',
   blue:    'bg-blue-500/15 text-blue-300',
@@ -18,7 +18,7 @@ const COLOR_CLASS: Record<ChipColor, string> = {
   pink:    'bg-pink-500/15 text-pink-300',
 }
 
-const COLOR_HOVER: Record<ChipColor, string> = {
+export const COLOR_HOVER: Record<ChipColor, string> = {
   zinc:    'hover:bg-zinc-500/25',
   violet:  'hover:bg-violet-500/25',
   blue:    'hover:bg-blue-500/25',

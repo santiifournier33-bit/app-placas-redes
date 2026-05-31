@@ -1,8 +1,10 @@
 'use client'
 
+import { useMemo } from 'react'
 import { useContactStore, type Contact } from '@/lib/stores/contactStore'
 import { EditableCell } from './EditableCell'
 import { InlineSelectChip, type ChipColor } from './InlineSelectChip'
+import { InlineCreatableCombobox } from './InlineCreatableCombobox'
 import {
   SOURCE_OPTIONS,
   CIRCLE_OPTIONS,
@@ -48,8 +50,17 @@ const FIELDS: FieldDef[] = [
   { key: 'es_mentor',         label: '¿Mentor?',        type: 'boolean' },
 ]
 
+const CREATABLE_FIELDS = ['rol', 'contexto', 'ubicacion'] as const
+type CreatableKey = typeof CREATABLE_FIELDS[number]
+
 export function ContactDataTab({ contact }: ContactDataTabProps) {
-  const { updateContact } = useContactStore()
+  const { updateContact, contacts } = useContactStore()
+
+  const creatableSuggestions = useMemo(() => ({
+    rol:       [...new Set(contacts.map(c => c.rol).filter(Boolean) as string[])].sort(),
+    contexto:  [...new Set(contacts.map(c => c.contexto).filter(Boolean) as string[])].sort(),
+    ubicacion: [...new Set(contacts.map(c => c.ubicacion).filter(Boolean) as string[])].sort(),
+  }), [contacts])
 
   const handleSave = (key: keyof Contact, value: string | number | boolean | null) => {
     updateContact(contact.id, { [key]: value } as Partial<Contact>)
@@ -78,6 +89,23 @@ export function ContactDataTab({ contact }: ContactDataTabProps) {
                         handleSave(field.key, val)
                       }
                     }}
+                  />
+                </div>
+              </div>
+            )
+          }
+
+          if (CREATABLE_FIELDS.includes(field.key as CreatableKey)) {
+            const stringVal = raw != null ? String(raw) : null
+            return (
+              <div key={field.key} className="flex items-center gap-3">
+                <span className="text-xs md:text-[11px] text-text-muted w-28 shrink-0">{field.label}</span>
+                <div className="flex-1">
+                  <InlineCreatableCombobox
+                    value={stringVal}
+                    fieldKey={field.key}
+                    suggestions={creatableSuggestions[field.key as CreatableKey]}
+                    onChange={val => handleSave(field.key, val)}
                   />
                 </div>
               </div>
