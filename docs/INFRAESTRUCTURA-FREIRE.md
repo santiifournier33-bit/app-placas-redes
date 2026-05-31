@@ -6,7 +6,11 @@
 
 - **Provider:** Oracle Cloud Infrastructure (OCI)
 - **Servicios alojados:** n8n (workflow automation), posiblemente otros containers Docker
-- **Acceso SSH:** _Pendiente: completar IP/dominio + ruta de la key SSH_
+- **Public IP:** `144.22.45.201` (derivado de `.mcp.json` workspace)
+- **SSH key path:** `C:\Users\santi\OneDrive\Desktop\ORACLE KEY\private-freire.key`
+- **SSH user:** `ubuntu` (default Oracle Cloud Ubuntu image)
+
+> **Aviso de seguridad:** la key está en OneDrive (sincronizada a la nube de Microsoft). Si el servidor maneja data sensible, considerar moverla a `~/.ssh/` con permisos `600` y fuera de OneDrive.
 
 ### Cómo entrar al server
 
@@ -39,9 +43,13 @@ docker exec -it <n8n-container-name> sh
 
 ## n8n
 
-- **URL editor:** _Pendiente: completar_ (probable `http://<PUBLIC_IP>:5678/` o subdominio custom)
-- **Login:** _Pendiente: completar usuario + contraseña_
-- **Versión:** _Pendiente: verificar Help → About en el editor_
+- **URL editor:** `http://144.22.45.201:5678/` (derivado de `.mcp.json`)
+- **URL MCP server:** `http://144.22.45.201:5678/mcp-server/http` (registrado en `.mcp.json` workspace)
+- **JWT MCP auth:** almacenado en `.mcp.json` workspace root (no en este repo)
+- **Login editor:**
+  - User: `santiifournier33@gmail.com`
+  - Password: **ver password manager (1Password/Bitwarden/etc) — no documentado en repo por seguridad**
+- **Versión actual:** `2.22.5` (actualizado 2026-05-31 desde 2.18.5 — ver `docs/runbooks/n8n-update.md`)
 
 ### Generar API Key (necesaria para deployar workflows automáticamente)
 

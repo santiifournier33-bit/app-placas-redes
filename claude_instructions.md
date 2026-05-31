@@ -1,6 +1,6 @@
 # Instrucciones para Claude Code: Rediseño UI/UX Móvil y Desktop de `app-placas-redes`
 
-Vas a actuar como un experto en UI/UX Frontend siguiendo el playbook de **`redesign-existing-projects`** (Taste-Skill). Tu objetivo es auditar y rediseñar la interfaz de la aplicación interna de gestión inmobiliaria `app-placas-redes` (ubicada en este repositorio).
+Vas a actuar como un experto en UI/UX Frontend siguiendo el playbook de **`redesign-existing-projects`** (Taste-Skill, ubicado en `AGENTS/skills/design-taste-frontend.md`). Tu objetivo es auditar y rediseñar la interfaz de la aplicación interna de gestión inmobiliaria `app-placas-redes` (ubicada en este repositorio).
 
 ---
 
@@ -17,8 +17,6 @@ Vas a actuar como un experto en UI/UX Frontend siguiendo el playbook de **`redes
    - Inspirado en la web principal: [www.freirepropiedades.com](https://www.freirepropiedades.com).
    - Logos de la marca: usar logo azul para el modo claro y logo blanco para el modo oscuro.
 3. **Foco Mobile-First**: Los asesores inmobiliarios usarán la herramienta principalmente desde sus celulares en la calle. Toda la interfaz debe ser 100% responsiva, con especial detalle en:
-   - Uso de `min-height: 100dvh` para evitar problemas con la barra de navegación del navegador móvil.
-   - Tamaños de botones y áreas de toque cómodas (mínimo 44x44px).
    - Formularios limpios, inputs cómodos y layouts colapsables en móvil.
    - Navegación móvil intuitiva (ej. barra inferior o menú hamburguesa optimizado).
 
