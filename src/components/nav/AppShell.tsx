@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { SideNav } from "./SideNav"
 import { MobileNav } from "./MobileNav"
+import { ModuleGuard } from "./ModuleGuard"
 import { ContextualFAB } from "./ContextualFAB"
 import { PushBanner } from "@/components/push/PushBanner"
 import { SidebarProvider } from "./SidebarContext"
@@ -69,7 +70,9 @@ export function AppShell({ role, email, children }: AppShellProps) {
           }`}
         >
           <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/[0.03] via-transparent to-violet-500/[0.02] pointer-events-none" />
-          <div className="relative z-10">{children}</div>
+          <div className="relative z-10">
+            <ModuleGuard role={role}>{children}</ModuleGuard>
+          </div>
         </main>
         {/* Bottom nav + FAB slide off-screen when the on-screen keyboard is
             open so they don't cover the focused input. transform on this

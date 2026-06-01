@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,8 +16,23 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const REMEMBER_KEY = "freire:rememberEmail";
+
+  // Prefill the saved email so the user doesn't retype it. We never store the
+  // password — only the email. The browser password manager handles the rest.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(REMEMBER_KEY);
+      if (saved) {
+        setEmail(saved);
+        setRemember(true);
+      }
+    } catch {}
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +48,7 @@ export default function LoginPage() {
       const res = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password, remember })
       });
 
       const data = await res.json();
@@ -41,6 +56,11 @@ export default function LoginPage() {
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Credenciales incorrectas.");
       }
+
+      try {
+        if (remember) localStorage.setItem(REMEMBER_KEY, email);
+        else localStorage.removeItem(REMEMBER_KEY);
+      } catch {}
 
       resetAllStores()
       router.push("/dashboard");
@@ -138,6 +158,18 @@ export default function LoginPage() {
               </div>
             </div>
 
+            <label className="flex items-center gap-2.5 cursor-pointer select-none pl-1">
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+                className="h-4 w-4 rounded border-border-subtle bg-shell-bg/40 accent-brand-gold cursor-pointer"
+              />
+              <span className="text-xs font-medium text-text-muted">
+                Recordar mi cuenta en este dispositivo
+              </span>
+            </label>
+
             <button
               type="submit"
               disabled={isLoading}
@@ -157,7 +189,7 @@ export default function LoginPage() {
 
           <div className="px-5 sm:px-8 pb-5 sm:pb-8 text-center">
             <p className="text-[10px] font-semibold text-text-muted/70 leading-normal">
-              Tus credenciales se validan directamente con Tokko Broker de forma segura y nunca son almacenadas.
+              Tu contraseña se valida directamente con Tokko Broker y nunca se almacena. Si activás &quot;recordar&quot;, solo se guarda tu email en este dispositivo.
             </p>
           </div>
         </motion.div>

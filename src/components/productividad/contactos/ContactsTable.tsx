@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useDeferredValue } from 'react'
 import { ChevronUp, ChevronDown, ExternalLink, Phone, MessageSquare, Check, Copy } from 'lucide-react'
 import {
   useContactStore,
@@ -48,6 +48,10 @@ const ALL_COLUMNS: Column[] = [
   { key: 'source', label: 'Origen', width: 'w-24' },
   { key: 'tags', label: 'Tags', width: 'w-32' },
 ]
+
+// Columns that can never be hidden — the contact's name is the primary
+// reference, so it stays pinned regardless of the picker.
+const LOCKED_COLS = new Set<string>(['full_name'])
 
 interface ContactsTableProps {
   contacts: Contact[]
@@ -170,12 +174,21 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
   const [sortDir, setSortDir] = useState<SortDir>('asc')
   const [hiddenCols, setHiddenCols] = useState<Set<string>>(() => {
     const stored = typeof window !== 'undefined' ? localStorage.getItem('contacts-hidden-cols') : null
-    return stored ? new Set(JSON.parse(stored)) : new Set<string>()
+    const raw: string[] = stored ? JSON.parse(stored) : []
+    // Drop any locked column persisted by an older config so it can't stay hidden.
+    return new Set(raw.filter(k => !LOCKED_COLS.has(k)))
   })
   const [showColPicker, setShowColPicker] = useState(false)
   const colPickerBtnRef = useRef<HTMLButtonElement>(null)
 
-  const visibleCols = ALL_COLUMNS.filter(c => !hiddenCols.has(c.key))
+  // Defer the heavy table re-render so toggling a column checkbox feels instant:
+  // the picker reads `hiddenCols` (live) while the 1000-row table reads the
+  // deferred value, letting React commit the table update in a non-blocking pass.
+  const deferredHidden = useDeferredValue(hiddenCols)
+  const visibleCols = useMemo(
+    () => ALL_COLUMNS.filter(c => !deferredHidden.has(c.key)),
+    [deferredHidden],
+  )
 
   const sorted = useMemo(() => {
     if (!sortKey) return contacts
@@ -204,6 +217,7 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
   }
 
   const toggleCol = (key: string) => {
+    if (LOCKED_COLS.has(key)) return
     setHiddenCols(prev => {
       const next = new Set(prev)
       if (next.has(key)) next.delete(key)
@@ -252,17 +266,26 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
           className="bg-[#1e1e2c] border border-border-default rounded-xl shadow-2xl p-3 max-h-80 overflow-y-auto"
           minWidth={208}
         >
-          {ALL_COLUMNS.map(col => (
-            <label key={col.key} className="flex items-center gap-2 py-1 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={!hiddenCols.has(col.key)}
-                onChange={() => toggleCol(col.key)}
-                className="accent-blue-500"
-              />
-              <span className="text-xs text-text-secondary">{col.label}</span>
-            </label>
-          ))}
+          {ALL_COLUMNS.map(col => {
+            const locked = LOCKED_COLS.has(col.key)
+            return (
+              <label
+                key={col.key}
+                className={`flex items-center gap-2 py-1 ${locked ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={locked || !hiddenCols.has(col.key)}
+                  disabled={locked}
+                  onChange={() => toggleCol(col.key)}
+                  className="accent-blue-500 disabled:opacity-60"
+                />
+                <span className={`text-xs ${locked ? 'text-text-muted' : 'text-text-secondary'}`}>
+                  {col.label}{locked && ' (fija)'}
+                </span>
+              </label>
+            )
+          })}
         </PortalDropdown>
       </div>
 

@@ -6,13 +6,14 @@ import { useTaskStore } from "@/lib/stores/taskStore"
 import { useContactStore } from "@/lib/stores/contactStore"
 import { useFunnelStore } from "@/lib/stores/funnelStore"
 import {
-  Users, CheckSquare, AlertTriangle, UserPlus, ClipboardList, Briefcase,
-  BarChart3, Clock, Target,
+  Users, CheckSquare, AlertTriangle, UserPlus, ClipboardList, Palette,
+  Clock, Target,
 } from "lucide-react"
 import Link from "next/link"
 import { startOfWeek, isAfter, isBefore, format } from "date-fns"
 import { es } from "date-fns/locale"
 import { FunnelRingsGrid } from "@/components/embudo/FunnelRingsGrid"
+import { DailyActions } from "@/components/embudo/DailyActions"
 import { Leaderboard } from "@/components/embudo/Leaderboard"
 import { PageHeader } from "@/components/nav/PageHeader"
 import type { FunnelStage } from "@/lib/embudo/funnel"
@@ -108,6 +109,9 @@ export default function DashboardPage() {
         />
       </div>
 
+      {/* Daily actions — what to do today + carryover */}
+      <DailyActions />
+
       {/* Sales funnel summary */}
       <div className="rounded-2xl border border-border-subtle bg-surface-1/50 backdrop-blur-xl p-5 space-y-4 shadow-sm">
         <div className="flex items-center justify-between">
@@ -127,7 +131,7 @@ export default function DashboardPage() {
       {/* Quick Actions */}
       <div>
         <p className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-[0.15em] mb-3 px-1">Acciones rápidas</p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-2xl mx-auto">
           <QuickAction
             icon={<UserPlus size={20} strokeWidth={1.8} />}
             label="Nuevo contacto"
@@ -141,16 +145,10 @@ export default function DashboardPage() {
             onClick={() => router.push("/productividad/tareas?new=1")}
           />
           <QuickAction
-            icon={<Briefcase size={20} strokeWidth={1.8} />}
-            label="Ver pipeline"
+            icon={<Palette size={20} strokeWidth={1.8} />}
+            label="Crear diseño"
             color="emerald"
-            onClick={() => router.push("/productividad/negocios")}
-          />
-          <QuickAction
-            icon={<BarChart3 size={20} strokeWidth={1.8} />}
-            label="Métricas"
-            color="amber"
-            onClick={() => router.push("/productividad/equipo")}
+            onClick={() => router.push("/diseno?tab=properties")}
           />
         </div>
       </div>

@@ -87,7 +87,7 @@ interface ContactState {
   addToPipeline: (contactId: string, pipelineId: string, stageId: string) => Promise<void>
   removeFromPipeline: (contactPipelineId: string) => Promise<void>
 
-  markContacted: (id: string) => Promise<void>
+  markContacted: (id: string, date?: string) => Promise<void>
   findDuplicate: (phone: string, email: string) => Contact | undefined
 }
 
@@ -267,10 +267,12 @@ export const useContactStore = create<ContactState>((set, get) => ({
     await supabase.from('contact_pipelines').delete().eq('id', contactPipelineId)
   },
 
-  markContacted: async (id) => {
+  markContacted: async (id, date) => {
+    // `date` (yyyy-MM-dd) lets the caller record the real contact date via the
+    // confirmation step; falls back to today for backward-compatible callers.
     const now = new Date().toISOString()
     await get().updateContact(id, {
-      last_contact_date: now.slice(0, 10),
+      last_contact_date: date ?? now.slice(0, 10),
       last_activity_at: now,
     })
   },

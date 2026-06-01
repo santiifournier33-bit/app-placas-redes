@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import {
-  ArrowLeft, Trash2, Phone, Mail, MessageSquare, Check, Copy,
+  ArrowLeft, Trash2, Phone, Mail, Check, Copy,
 } from 'lucide-react'
+import { WhatsAppIcon } from '@/components/productividad/contactos/WhatsAppIcon'
 import {
   useContactStore,
   SOURCE_LABELS,
@@ -16,16 +17,18 @@ import { ContactDataTab } from '@/components/productividad/contactos/ContactData
 import { ContactNotesTab } from '@/components/productividad/contactos/ContactNotesTab'
 import { ContactHistoryTab } from '@/components/productividad/contactos/ContactHistoryTab'
 import { ContactTasksCard } from '@/components/productividad/contactos/ContactTasksCard'
+import { MarkContactedModal } from '@/components/productividad/contactos/MarkContactedModal'
 
 export default function ContactDetailPage() {
   const router = useRouter()
   const params = useParams<{ id: string }>()
   const contactId = params.id
 
-  const { contacts, init, deleteContact, markContacted } = useContactStore()
+  const { contacts, init, deleteContact } = useContactStore()
   const pipelinesStore = usePipelinesStore()
   const taskStore = useTaskStore()
   const [copied, setCopied] = useState<string | null>(null)
+  const [showContacted, setShowContacted] = useState(false)
 
   useEffect(() => {
     init()
@@ -103,7 +106,7 @@ export default function ContactDetailPage() {
           </span>
         </div>
         <button
-          onClick={() => markContacted(contact.id)}
+          onClick={() => setShowContacted(true)}
           className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-medium hover:bg-emerald-500/20 cursor-pointer"
         >
           <Check size={13} /> Contactado
@@ -117,28 +120,28 @@ export default function ContactDetailPage() {
         </button>
       </div>
 
-      {/* Chips bar */}
-      <div className="flex flex-wrap items-center gap-2 px-4 py-2.5 border-b border-border-subtle shrink-0">
+      {/* Chips bar — phone + email on a single row; email truncates gracefully */}
+      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border-subtle shrink-0">
         {contact.primary_phone && (
           <>
             <button
               onClick={() => copyToClipboard(contact.primary_phone!, 'phone')}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-overlay border border-border-subtle hover:bg-surface-overlay-hover cursor-pointer group"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-overlay border border-border-subtle hover:bg-surface-overlay-hover cursor-pointer group shrink-0"
             >
-              <Phone size={12} className="text-text-muted" />
-              <span className="text-xs text-text-secondary">{contact.primary_phone}</span>
+              <Phone size={12} className="text-text-muted shrink-0" />
+              <span className="text-xs text-text-secondary whitespace-nowrap">{contact.primary_phone}</span>
               {copied === 'phone'
-                ? <Check size={11} className="text-emerald-400" />
-                : <Copy size={11} className="text-text-muted group-hover:text-text-secondary" />}
+                ? <Check size={11} className="text-emerald-400 shrink-0" />
+                : <Copy size={11} className="text-text-muted group-hover:text-text-secondary shrink-0" />}
             </button>
             <a
               href={`https://wa.me/${contact.primary_phone.replace(/\D/g, '')}`}
               target="_blank"
               rel="noopener"
-              className="p-1.5 rounded-lg hover:bg-surface-overlay-hover"
+              className="p-1.5 rounded-lg hover:bg-surface-overlay-hover shrink-0"
               title="WhatsApp"
             >
-              <MessageSquare size={14} className="text-text-secondary" />
+              <WhatsAppIcon size={17} className="text-[#25D366]" />
             </a>
           </>
         )}
@@ -146,17 +149,17 @@ export default function ContactDetailPage() {
           <>
             <button
               onClick={() => copyToClipboard(contact.primary_email!, 'email')}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-overlay border border-border-subtle hover:bg-surface-overlay-hover cursor-pointer group"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-overlay border border-border-subtle hover:bg-surface-overlay-hover cursor-pointer group min-w-0"
             >
-              <Mail size={12} className="text-text-muted" />
-              <span className="text-xs text-text-secondary truncate max-w-[220px]">{contact.primary_email}</span>
+              <Mail size={12} className="text-text-muted shrink-0" />
+              <span className="text-xs text-text-secondary truncate">{contact.primary_email}</span>
               {copied === 'email'
-                ? <Check size={11} className="text-emerald-400" />
-                : <Copy size={11} className="text-text-muted group-hover:text-text-secondary" />}
+                ? <Check size={11} className="text-emerald-400 shrink-0" />
+                : <Copy size={11} className="text-text-muted group-hover:text-text-secondary shrink-0" />}
             </button>
             <a
               href={`mailto:${contact.primary_email}`}
-              className="p-1.5 rounded-lg hover:bg-surface-overlay-hover"
+              className="p-1.5 rounded-lg hover:bg-surface-overlay-hover shrink-0"
               title="Email"
             >
               <Mail size={14} className="text-text-secondary" />
@@ -191,6 +194,14 @@ export default function ContactDetailPage() {
           </div>
         </div>
       </div>
+
+      {showContacted && (
+        <MarkContactedModal
+          contactId={contact.id}
+          contactName={fullName || undefined}
+          onClose={() => setShowContacted(false)}
+        />
+      )}
     </div>
   )
 }

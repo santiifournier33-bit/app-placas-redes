@@ -3,12 +3,14 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
-import { getModulesForRole, type ModuleDefinition, type SubModuleDefinition } from "@/lib/auth/modules"
+import { getModulesForRole, isModuleLocked, isSubLocked, type ModuleDefinition, type SubModuleDefinition } from "@/lib/auth/modules"
 import type { UserRole } from "@/lib/auth/session"
 import {
   LayoutDashboard, Paintbrush, ListTodo, MessageCircleQuestion, BookOpen,
   FolderOpen, BarChart3, DollarSign, Receipt, Mail,
-  LogOut, Lock, PenLine, ChevronRight, Target
+  LogOut, Lock, PenLine, ChevronRight, Target,
+  Activity, Calendar, Trophy, Flag, CheckSquare, Briefcase, Users, UsersRound,
+  Building2, FileText, Inbox, UserCheck, TrendingUp, Scale, Tags, Truck, PieChart,
 } from "lucide-react"
 import { ReactNode, useState, useEffect, useMemo } from "react"
 import { AnimatePresence, motion } from "framer-motion"
@@ -34,6 +36,25 @@ function getIcon(iconName: string, size: number): ReactNode {
     case 'Receipt1': return <Receipt {...props} />
     case 'Sms': return <Mail {...props} />
     case 'Signature': return <PenLine {...props} />
+    // Sub-section icons
+    case 'Activity': return <Activity {...props} />
+    case 'Calendar': return <Calendar {...props} />
+    case 'Trophy': return <Trophy {...props} />
+    case 'Flag': return <Flag {...props} />
+    case 'CheckSquare': return <CheckSquare {...props} />
+    case 'Briefcase': return <Briefcase {...props} />
+    case 'Users': return <Users {...props} />
+    case 'UsersRound': return <UsersRound {...props} />
+    case 'Building2': return <Building2 {...props} />
+    case 'FileText': return <FileText {...props} />
+    case 'Inbox': return <Inbox {...props} />
+    case 'UserCheck': return <UserCheck {...props} />
+    case 'TrendingUp': return <TrendingUp {...props} />
+    case 'Scale': return <Scale {...props} />
+    case 'LayoutDashboard': return <LayoutDashboard {...props} />
+    case 'Tags': return <Tags {...props} />
+    case 'Truck': return <Truck {...props} />
+    case 'PieChart': return <PieChart {...props} />
     default: return null
   }
 }
@@ -103,25 +124,19 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const toggleGroup = (id: string) => {
-    setExpanded(prev => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
-      try { localStorage.setItem(EXPANDED_STORAGE_KEY, JSON.stringify([...next])) } catch {}
-      return next
-    })
-  }
-
-  // Click on a parent module while sidebar is collapsed:
-  // expand the sidebar AND open the accordion in the same tick (Opción A).
-  const handleParentClickCollapsed = (id: string) => {
+  // Click on a parent module (accordion). Single-open behavior:
+  //   1. navigate to its first enabled sub-section,
+  //   2. open this group,
+  //   3. close every other group (exclusive set).
+  // If the sidebar is collapsed, also expand it first.
+  const openGroupExclusive = (id: string, firstHref?: string) => {
     if (collapsed) toggleSidebar()
-    setExpanded(prev => {
-      const next = new Set(prev)
-      next.add(id)
+    setExpanded(() => {
+      const next = new Set<string>([id])
       try { localStorage.setItem(EXPANDED_STORAGE_KEY, JSON.stringify([...next])) } catch {}
       return next
     })
+    if (firstHref) router.push(firstHref)
   }
 
   useEffect(() => {
@@ -191,8 +206,7 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
             collapsed={collapsed}
             role={role}
             expanded={expanded.has(mod.id)}
-            onToggleGroup={toggleGroup}
-            onCollapsedParentClick={handleParentClickCollapsed}
+            onOpenGroup={openGroupExclusive}
           />
         ))}
 
@@ -220,8 +234,7 @@ export function SideNav({ role, email, collapsed = false }: SideNavProps) {
             collapsed={collapsed}
             role={role}
             expanded={expanded.has(mod.id)}
-            onToggleGroup={toggleGroup}
-            onCollapsedParentClick={handleParentClickCollapsed}
+            onOpenGroup={openGroupExclusive}
           />
             ))}
           </>
@@ -276,12 +289,16 @@ interface NavRowProps {
   collapsed: boolean
   role: UserRole
   expanded: boolean
-  onToggleGroup: (id: string) => void
-  onCollapsedParentClick: (id: string) => void
+  onOpenGroup: (id: string, firstHref?: string) => void
 }
 
 function NavRow(props: NavRowProps) {
-  const { mod } = props
+  const { mod, role } = props
+  // Phase-locked module: render a single disabled "Próximamente" row, even if
+  // it has children (no accordion, no navigation).
+  if (isModuleLocked(mod, role)) {
+    return <NavItem mod={mod} pathname={props.pathname} collapsed={props.collapsed} locked />
+  }
   if (mod.children && mod.children.length > 0) {
     return <NavGroup {...props} />
   }
@@ -290,7 +307,7 @@ function NavRow(props: NavRowProps) {
 
 function NavGroup({
   mod, pathname, search, collapsed, role,
-  expanded, onToggleGroup, onCollapsedParentClick,
+  expanded, onOpenGroup,
 }: NavRowProps) {
   const consultasBadge = useConsultasBadge()
   const badge = mod.id === 'consultas' ? consultasBadge : 0
@@ -304,6 +321,10 @@ function NavGroup({
   // user knows where they are even with the accordion shut.
   const parentHighlight = childActive
 
+  // Clicking the group navigates to its first *navigable* child — phase-locked
+  // sub-sections are shown but never landed on.
+  const firstOpenable = visibleChildren.find(c => !isSubLocked(c, role))
+
   const labelClass = `whitespace-nowrap overflow-hidden transition-opacity duration-200 ${
     collapsed ? "w-0 opacity-0" : "opacity-100 delay-150"
   }`
@@ -313,11 +334,7 @@ function NavGroup({
   }`
 
   const handleClick = () => {
-    if (collapsed) {
-      onCollapsedParentClick(mod.id)
-    } else {
-      onToggleGroup(mod.id)
-    }
+    onOpenGroup(mod.id, firstOpenable?.href)
   }
 
   return (
@@ -375,21 +392,38 @@ function NavGroup({
             className="mt-0.5 space-y-0.5"
           >
             {visibleChildren.map(child => {
+              const locked = isSubLocked(child, role)
+              if (locked) {
+                return (
+                  <li key={child.id}>
+                    <div
+                      title={`${child.label} — Próximamente`}
+                      className="flex items-center gap-2.5 pl-7 pr-2 h-9 rounded-lg text-[13px] font-medium text-zinc-500 cursor-not-allowed"
+                    >
+                      <span className="shrink-0 opacity-50">{getIcon(child.icon ?? "", 17)}</span>
+                      <span className="truncate">{child.label}</span>
+                      <span className="ml-auto shrink-0 text-[9px] font-semibold uppercase tracking-wide text-text-muted bg-surface-2 px-1.5 py-0.5 rounded">
+                        Próximamente
+                      </span>
+                    </div>
+                  </li>
+                )
+              }
               const active = childMatchesLocation(child, pathname, search)
               return (
                 <li key={child.id}>
                   <Link
                     href={child.href}
                     scroll={false}
-                    className={`flex items-center pl-11 pr-3 h-9 rounded-lg text-[13px] font-medium transition-colors ${
+                    className={`flex items-center gap-2.5 pl-7 pr-3 h-9 rounded-lg text-[13px] font-medium transition-colors ${
                       active
                         ? "text-shell-accent bg-shell-accent-muted"
                         : "text-text-muted hover:text-text-primary hover:bg-surface-2"
                     }`}
                   >
-                    {active && (
-                      <span className="absolute left-0 ml-2 w-1 h-1 rounded-full bg-shell-accent" aria-hidden />
-                    )}
+                    <span className={`shrink-0 ${active ? "opacity-100" : "opacity-70"}`}>
+                      {getIcon(child.icon ?? "", 17)}
+                    </span>
                     <span className="truncate">{child.label}</span>
                   </Link>
                 </li>
@@ -402,9 +436,9 @@ function NavGroup({
   )
 }
 
-function NavItem({ mod, pathname, collapsed }: { mod: ModuleDefinition; pathname: string; collapsed: boolean }) {
+function NavItem({ mod, pathname, collapsed, locked = false }: { mod: ModuleDefinition; pathname: string; collapsed: boolean; locked?: boolean }) {
   const active = pathname === mod.href || pathname.startsWith(mod.href + '/')
-  const disabled = !mod.enabled
+  const disabled = !mod.enabled || locked
   const consultasBadge = useConsultasBadge()
   const badge = mod.id === 'consultas' ? consultasBadge : 0
 
@@ -419,22 +453,32 @@ function NavItem({ mod, pathname, collapsed }: { mod: ModuleDefinition; pathname
   }`
 
   if (disabled) {
+    // Phase-locked (lockedFor) reads as roadmap → "Próximamente" pill.
+    // Not-in-production (enabled:false) keeps the bare lock.
     return (
       <div
-        title={mod.label}
-        className={`${baseClass} text-zinc-700 cursor-not-allowed`}
+        title={locked ? `${mod.label} — Próximamente` : mod.label}
+        className={`${baseClass} text-zinc-500 cursor-not-allowed`}
       >
         {getIcon(mod.icon, 20)}
         <span style={{ transitionTimingFunction: EASE }} className={labelClass}>
           {mod.label}
         </span>
-        <Lock
-          size={12}
-          strokeWidth={2}
-          className={`text-zinc-700 overflow-hidden transition-opacity duration-200 ${
-            collapsed ? "w-0 opacity-0 ml-0" : "opacity-100 ml-auto"
-          }`}
-        />
+        {locked ? (
+          !collapsed && (
+            <span className="ml-auto shrink-0 text-[9px] font-semibold uppercase tracking-wide text-text-muted bg-surface-2 px-1.5 py-0.5 rounded">
+              Próximamente
+            </span>
+          )
+        ) : (
+          <Lock
+            size={12}
+            strokeWidth={2}
+            className={`text-zinc-700 overflow-hidden transition-opacity duration-200 ${
+              collapsed ? "w-0 opacity-0 ml-0" : "opacity-100 ml-auto"
+            }`}
+          />
+        )}
       </div>
     )
   }

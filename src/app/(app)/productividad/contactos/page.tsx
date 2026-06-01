@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Search, ChevronDown, Download, Upload, Table2, LayoutGrid } from 'lucide-react'
+import { Plus, Search, ChevronDown, Download, Upload, Table2, LayoutGrid, MoreHorizontal, Check } from 'lucide-react'
+import { PortalDropdown } from '@/components/ui/PortalDropdown'
 import {
   useContactStore,
   SOURCE_OPTIONS, SOURCE_LABELS,
@@ -25,6 +26,8 @@ export default function ContactosPage() {
   const [filterCirculo, setFilterCirculo] = useState<string>('all')
   const [showForm, setShowForm] = useState(false)
   const [showImport, setShowImport] = useState(false)
+  const [showMore, setShowMore] = useState(false)
+  const moreBtnRef = useRef<HTMLButtonElement>(null)
 
   const openContact = (c: Contact) => router.push(`/productividad/contactos/${c.id}`)
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -88,14 +91,14 @@ export default function ContactosPage() {
       {/* Toolbar */}
       <div className="px-4 py-3 border-b border-border-subtle space-y-2 shrink-0">
         {/* Top row: count + actions */}
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
           <span className="text-xs text-text-muted mr-auto">
             {filtered.length} contacto{filtered.length !== 1 ? 's' : ''}
             {filtered.length !== contacts.length && ` de ${contacts.length}`}
           </span>
 
-          {/* View toggle (mobile only show both, desktop default table) */}
-          <div className="flex items-center bg-surface-overlay rounded-lg p-0.5">
+          {/* View toggle — desktop only (mobile is cards-only) */}
+          <div className="hidden md:flex items-center bg-surface-overlay rounded-lg p-0.5">
             <button
               onClick={() => setViewMode('table')}
               className={`p-1.5 rounded cursor-pointer ${viewMode === 'table' ? 'bg-surface-overlay-hover text-text-secondary' : 'text-text-muted'}`}
@@ -112,40 +115,73 @@ export default function ContactosPage() {
             </button>
           </div>
 
+          {/* Desktop inline actions */}
           <button
             onClick={() => setShowImport(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-text-secondary hover:text-text-secondary hover:bg-surface-overlay-hover cursor-pointer"
+            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-text-secondary hover:text-text-secondary hover:bg-surface-overlay-hover cursor-pointer"
             title="Importar CSV"
           >
             <Upload size={13} /> Importar
           </button>
           <button
             onClick={() => exportContactsCSV(filtered)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-text-secondary hover:text-text-secondary hover:bg-surface-overlay-hover cursor-pointer"
+            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-text-secondary hover:text-text-secondary hover:bg-surface-overlay-hover cursor-pointer"
             title="Exportar CSV"
           >
             <Download size={13} /> Exportar
           </button>
           <button
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 cursor-pointer"
+            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 cursor-pointer"
           >
             <Plus size={13} /> Nuevo
           </button>
+
+          {/* Mobile overflow — secondary actions (alta = FAB) */}
+          <button
+            ref={moreBtnRef}
+            onClick={() => setShowMore(o => !o)}
+            className="md:hidden p-2 rounded-lg text-text-secondary hover:bg-surface-overlay-hover cursor-pointer"
+            aria-label="Más acciones"
+          >
+            <MoreHorizontal size={18} />
+          </button>
+          <PortalDropdown
+            anchorRef={moreBtnRef}
+            open={showMore}
+            onClose={() => setShowMore(false)}
+            placement="bottom-end"
+            className="bg-[#1e1e2c] border border-border-default rounded-xl shadow-2xl p-1.5"
+            minWidth={168}
+          >
+            <button
+              onClick={() => { setShowImport(true); setShowMore(false) }}
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md text-sm text-text-secondary hover:bg-surface-overlay cursor-pointer text-left"
+            >
+              <Upload size={15} /> Importar CSV
+            </button>
+            <button
+              onClick={() => { exportContactsCSV(filtered); setShowMore(false) }}
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md text-sm text-text-secondary hover:bg-surface-overlay cursor-pointer text-left"
+            >
+              <Download size={15} /> Exportar CSV
+            </button>
+          </PortalDropdown>
         </div>
 
-        {/* Search + filters */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 bg-surface-overlay rounded-xl px-3 py-2 border border-border-subtle flex-1 min-w-0">
-            <Search size={14} className="text-text-muted shrink-0" />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Buscar nombre, teléfono, email, rol, contexto..."
-              className="flex-1 bg-transparent text-xs text-text-primary placeholder:text-zinc-700 outline-none"
-            />
-          </div>
-          <div className="flex gap-1.5 overflow-x-auto scroll-x-affordance shrink-0">
+        {/* Search — own full-width row */}
+        <div className="flex items-center gap-2 bg-surface-overlay rounded-xl px-3 h-11 border border-border-subtle min-w-0">
+          <Search size={15} className="text-text-muted shrink-0" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Buscar nombre, teléfono, email, rol..."
+            className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-muted/50 outline-none"
+          />
+        </div>
+
+        {/* Filters — own row */}
+        <div className="flex gap-1.5 overflow-x-auto scroll-x-affordance">
             <FilterChip
               label="Origen"
               value={filterSource}
@@ -173,7 +209,6 @@ export default function ContactosPage() {
               ]}
               onChange={v => setFilterCirculo(v)}
             />
-          </div>
         </div>
       </div>
 
@@ -215,23 +250,45 @@ function FilterChip({ label, value, options, onChange }: {
   options: { value: string; label: string }[]
   onChange: (v: string) => void
 }) {
+  const [open, setOpen] = useState(false)
+  const btnRef = useRef<HTMLButtonElement>(null)
   const active = value !== 'all'
+  const current = options.find(o => o.value === value)
+
   return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        className={`appearance-none text-xs md:text-[11px] font-medium px-2.5 py-1.5 pr-6 rounded-lg border cursor-pointer outline-none transition-all [color-scheme:dark] ${
+    <>
+      <button
+        ref={btnRef}
+        onClick={() => setOpen(o => !o)}
+        className={`flex items-center gap-1 text-xs font-medium px-3 py-2 rounded-lg border cursor-pointer whitespace-nowrap shrink-0 transition-colors ${
           active
             ? 'border-blue-500/30 bg-blue-500/10 text-blue-400'
             : 'border-border-subtle bg-surface-overlay text-text-secondary'
         }`}
       >
+        <span>{active ? current?.label ?? label : label}</span>
+        <ChevronDown size={12} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      <PortalDropdown
+        anchorRef={btnRef}
+        open={open}
+        onClose={() => setOpen(false)}
+        className="bg-[#1e1e2c] border border-border-default rounded-xl shadow-2xl p-1.5 max-h-72 overflow-y-auto"
+        minWidth={168}
+      >
         {options.map(opt => (
-          <option key={opt.value} value={opt.value}>{label}: {opt.label}</option>
+          <button
+            key={opt.value}
+            onClick={() => { onChange(opt.value); setOpen(false) }}
+            className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-md cursor-pointer text-left transition-colors ${
+              opt.value === value ? 'bg-surface-overlay-hover' : 'hover:bg-surface-overlay'
+            }`}
+          >
+            <span className="text-xs text-text-secondary flex-1">{opt.label}</span>
+            {opt.value === value && <Check size={13} className="text-blue-400 shrink-0" />}
+          </button>
         ))}
-      </select>
-      <ChevronDown size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
-    </div>
+      </PortalDropdown>
+    </>
   )
 }

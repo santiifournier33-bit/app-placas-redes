@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Check, Save } from "lucide-react"
 import {
-  FUNNEL_STAGES, STAGE_META, displayTarget, type FunnelStage,
+  FUNNEL_STAGES, STAGE_META, periodGoal, type FunnelStage,
 } from "@/lib/embudo/funnel"
 
 export function GoalsConfig() {
@@ -74,14 +74,15 @@ export function GoalsConfig() {
         {FUNNEL_STAGES.map(s => {
           const meta = STAGE_META[s]
           const monthly = Number(targets[s]) || 0
-          const weekly = displayTarget(monthly, "week")
+          const { denom, cadence } = periodGoal(monthly, "week")
+          const weeklyText = monthly <= 0 ? "sin meta" : cadence ?? `${denom}/sem`
           return (
             <div key={s} className="flex items-center gap-3 px-4 py-3">
               <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: meta.color }} />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-text-primary">{meta.label}</p>
                 <p className="text-[11px] text-text-muted">
-                  Semanal: {weekly === null ? "sin meta semanal" : `${weekly}/sem`}
+                  Semanal: {weeklyText}
                 </p>
               </div>
               <div className="flex items-center gap-1.5">

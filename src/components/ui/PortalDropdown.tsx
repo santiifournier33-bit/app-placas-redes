@@ -99,7 +99,12 @@ export function PortalDropdown({
         onClose()
       }
     }
-    const handleScroll = () => onClose()
+    const handleScroll = (e: Event) => {
+      // Scrolling inside the panel itself (e.g. a long, scrollable list) must
+      // not close it — only reposition/close on ancestor or window scroll.
+      if (panelRef.current && e.target instanceof Node && panelRef.current.contains(e.target)) return
+      onClose()
+    }
     const handleResize = () => onClose()
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()

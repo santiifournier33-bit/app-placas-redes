@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { createServiceClient } from '@/lib/supabase/service'
-import { getUserRole, encrypt } from '@/lib/auth/session'
+import { getUserRole, encrypt, SESSION_MAX_AGE_DEFAULT, SESSION_MAX_AGE_REMEMBER } from '@/lib/auth/session'
 import { validateTokkoCredentials } from '@/lib/tokko/client'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
 import type { Database } from '@/lib/supabase/types'
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { email, password } = await request.json()
+    const { email, password, remember } = await request.json()
 
     if (!email || !password) {
       return NextResponse.json(
@@ -75,9 +75,11 @@ export async function POST(request: NextRequest) {
       }, { onConflict: 'id' })
     }
 
-    // Build response first so Supabase cookies go directly onto it
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-    const sessionToken = await encrypt({ email: normalizedEmail, role, expiresAt })
+    // Build response first so Supabase cookies go directly onto it.
+    // "Recordar cuenta" extends the session window from 7 to 30 days.
+    const maxAgeSeconds = remember ? SESSION_MAX_AGE_REMEMBER : SESSION_MAX_AGE_DEFAULT
+    const expiresAt = new Date(Date.now() + maxAgeSeconds * 1000)
+    const sessionToken = await encrypt({ email: normalizedEmail, role, expiresAt }, maxAgeSeconds)
 
     const response = NextResponse.json({ success: true, user: { email: normalizedEmail, role } })
 

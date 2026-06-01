@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { Plus } from "lucide-react"
 import {
-  FUNNEL_STAGES, STAGE_META, sumByStage, displayTarget, pct, type FunnelStage,
+  FUNNEL_STAGES, STAGE_META, sumByStage, periodGoal, pct, type FunnelStage,
 } from "@/lib/embudo/funnel"
 import { useFunnelStore } from "@/lib/stores/funnelStore"
 import { ProgressRing } from "@/components/ui/progress-ring"
@@ -49,7 +49,7 @@ export function FunnelRingsGrid({ variant = "full", onRingClick }: FunnelRingsGr
           const meta = STAGE_META[stage]
           const actual = totals[stage]
           const monthly = goalFor(stage)
-          const denom = displayTarget(monthly, period)
+          const { denom, cadence } = periodGoal(monthly, period)
           const percent = denom === null ? (actual > 0 ? 100 : 0) : pct(actual, monthly, period)
           return (
             <button
@@ -62,7 +62,7 @@ export function FunnelRingsGrid({ variant = "full", onRingClick }: FunnelRingsGr
                 color={meta.color}
                 size={ringSize}
                 centerLabel={denom === null ? `${actual}` : `${actual}/${denom}`}
-                centerSubLabel={denom === null ? "Sin meta" : undefined}
+                centerSubLabel={denom === null ? "Sin meta" : (cadence ?? undefined)}
               />
               <span className="text-xs font-semibold text-text-primary">{meta.label}</span>
             </button>

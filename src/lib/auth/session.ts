@@ -19,11 +19,17 @@ export function getUserRole(email: string): UserRole {
   return ADMIN_EMAILS.includes(email.toLowerCase()) ? 'admin' : 'asesor'
 }
 
-export async function encrypt(payload: SessionPayload): Promise<string> {
+export const SESSION_MAX_AGE_DEFAULT = 7 * 24 * 60 * 60   // 7 días
+export const SESSION_MAX_AGE_REMEMBER = 30 * 24 * 60 * 60 // 30 días ("recordar cuenta")
+
+export async function encrypt(
+  payload: SessionPayload,
+  maxAgeSeconds: number = SESSION_MAX_AGE_DEFAULT,
+): Promise<string> {
   return new SignJWT({ ...payload, expiresAt: payload.expiresAt.toISOString() })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('7d')
+    .setExpirationTime(`${maxAgeSeconds}s`)
     .sign(encodedKey)
 }
 

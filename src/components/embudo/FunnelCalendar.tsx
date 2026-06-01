@@ -1,6 +1,7 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { ChevronDown, MoreVertical, Pencil, Trash2, Eye, Plus } from "lucide-react"
@@ -152,8 +153,18 @@ function EntryRow({ item, onEdit, onDelete }: {
   onDelete: (id: string) => void
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null)
   const [detail, setDetail] = useState(false)
+  const btnRef = useRef<HTMLButtonElement>(null)
   const meta = STAGE_META[item.stage]
+
+  // Menu is rendered in a portal (fixed position) so it is never clipped by the
+  // StageSection's `overflow-hidden` or by sibling sections stacked below it.
+  const openMenu = () => {
+    const r = btnRef.current?.getBoundingClientRect()
+    if (r) setMenuPos({ top: r.bottom + 4, left: r.right - 176 }) // 176 = w-44
+    setMenuOpen(true)
+  }
 
   const chips: string[] = []
   if (meta.hasQuantity) chips.push(`${item.quantity} ${item.quantity === 1 ? "evento" : "eventos"}`)
@@ -168,19 +179,23 @@ function EntryRow({ item, onEdit, onDelete }: {
           <p className="text-sm text-text-primary truncate">{item.address_or_name || "Sin dirección"}</p>
           {chips.length > 0 && <p className="text-[11px] text-text-muted truncate">{chips.join(" · ")}</p>}
         </div>
-        <div className="relative shrink-0">
-          <button onClick={() => setMenuOpen(o => !o)} className="p-1.5 rounded-lg hover:bg-surface-overlay-hover text-text-muted cursor-pointer" aria-label="Opciones">
+        <div className="shrink-0">
+          <button ref={btnRef} onClick={() => (menuOpen ? setMenuOpen(false) : openMenu())} className="p-1.5 rounded-lg hover:bg-surface-overlay-hover text-text-muted cursor-pointer" aria-label="Opciones">
             <MoreVertical size={16} />
           </button>
-          {menuOpen && (
+          {menuOpen && menuPos && createPortal(
             <>
-              <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-              <div className="absolute right-0 top-full mt-1 z-20 w-44 rounded-xl border border-border-subtle bg-surface-2 shadow-[var(--shadow-modal)] py-1">
+              <div className="fixed inset-0 z-[60]" onClick={() => setMenuOpen(false)} />
+              <div
+                style={{ position: "fixed", top: menuPos.top, left: menuPos.left }}
+                className="z-[61] w-44 rounded-xl border border-border-subtle bg-surface-2 shadow-[var(--shadow-modal)] py-1"
+              >
                 <MenuItem icon={<Eye size={15} />} label="Mostrar detalle" onClick={() => { setDetail(d => !d); setMenuOpen(false) }} />
                 <MenuItem icon={<Pencil size={15} />} label="Editar" onClick={() => { onEdit(item); setMenuOpen(false) }} />
                 <MenuItem icon={<Trash2 size={15} />} label="Eliminar" danger onClick={() => { onDelete(item.id); setMenuOpen(false) }} />
               </div>
-            </>
+            </>,
+            document.body
           )}
         </div>
       </div>

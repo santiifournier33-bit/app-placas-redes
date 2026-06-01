@@ -147,7 +147,7 @@ export default function TemplateSender({ onSent }: { onSent: () => void }) {
         </div>
         <h3 className="text-lg font-medium text-[var(--text-primary)]">No hay plantillas</h3>
         <p className="text-sm text-[var(--text-muted)] max-w-md mx-auto mt-2">
-          Todavía no creaste ninguna plantilla en DocuSeal. Ingresá al panel de administrador en <a href="http://144.22.45.201:3001" target="_blank" className="text-violet-400 hover:underline">144.22.45.201:3001</a> para subir tus PDFs estándar (Autorizaciones, Reservas) y colocar los campos de firma.
+          Todavía no creaste ninguna plantilla en DocuSeal. Ingresá al panel de administrador en <a href={process.env.NEXT_PUBLIC_DOCUSEAL_URL ?? 'http://144.22.45.201:3001'} target="_blank" className="text-violet-400 hover:underline">{(process.env.NEXT_PUBLIC_DOCUSEAL_URL ?? 'http://144.22.45.201:3001').replace('http://', '')}</a> para subir tus PDFs estándar (Autorizaciones, Reservas) y colocar los campos de firma.
         </p>
       </div>
     )

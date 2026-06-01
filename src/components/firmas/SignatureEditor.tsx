@@ -220,7 +220,7 @@ export default function SignatureEditor({ onSent }: { onSent: () => void }) {
 
   const boxesOnCurrentPage = boxes.filter(b => b.page === currentPage)
 
-  const DOCUSEAL_URL = 'http://144.22.45.201:3001'
+  const DOCUSEAL_URL = process.env.NEXT_PUBLIC_DOCUSEAL_URL ?? 'http://144.22.45.201:3001'
 
   const handleSubmit = () => {
     setError('')

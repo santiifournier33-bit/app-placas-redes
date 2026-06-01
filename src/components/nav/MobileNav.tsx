@@ -7,8 +7,8 @@ import { useEffect, useState } from "react"
 import type { UserRole } from "@/lib/auth/session"
 import {
   ListChecks, Users, Search, Palette, MoreHorizontal,
-  FileText, DollarSign, Wallet,
-  LayoutDashboard, MessageCircleQuestion, BookOpen, PenLine,
+  FileText, DollarSign, Wallet, Calendar,
+  LayoutDashboard, BookOpen, PenLine,
   Mail, BarChart3, Target,
   Sun, Moon, LogOut, ChevronRight,
 } from "lucide-react"
@@ -19,6 +19,7 @@ import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { resetAllStores } from "@/lib/stores/resetAllStores"
 import { getTheme, toggleTheme } from "@/lib/theme"
+import { isPathLocked } from "@/lib/auth/modules"
 
 interface MobileNavProps {
   role: UserRole
@@ -31,51 +32,48 @@ interface NavItem {
   Icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>
 }
 
-const NAV_ASESOR: NavItem[] = [
+// Bottom bar: primary 4 items ranked by field usage.
+// Same order for both roles — admin accesses Correo/admin modules via "Más".
+const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard",                label: "Home",      Icon: LayoutDashboard },
-  { href: "/productividad/tareas",     label: "Tareas",    Icon: ListChecks },
+  { href: "/embudo",                   label: "Embudo",    Icon: Target },
+  { href: "/productividad/contactos",  label: "Contactos", Icon: Users },
   { href: "/diseno",                   label: "Diseño",    Icon: Palette },
-  { href: "/correo",                   label: "Correo",    Icon: Mail },
 ]
 
-const NAV_ADMIN: NavItem[] = [
-  { href: "/dashboard",                label: "Home",      Icon: LayoutDashboard },
-  { href: "/productividad/tareas",     label: "Tareas",    Icon: ListChecks },
-  { href: "/diseno",                   label: "Diseño",    Icon: Palette },
-  { href: "/correo",                   label: "Correo",    Icon: Mail },
-]
-
-// "Más" sheet: rest of modules grouped by category. Disabled items kept visible
-// but greyed (consistent with sidebar).
+// "Más" sheet: full module directory grouped by function.
+// Items in the bottom bar are intentionally excluded (1 tap away already).
+// Lock state is evaluated at render time via isPathLocked so modules.ts is
+// the single source of truth — no manual enabled flags needed here.
 interface MoreItem extends NavItem {
-  enabled?: boolean
+  enabled?: boolean   // false = module not in production (Marketing)
   adminOnly?: boolean
 }
 const MORE_ITEMS: { section: string; items: MoreItem[] }[] = [
   {
-    section: "Atajos",
+    section: "Productividad",
     items: [
-      { href: "/embudo",                  label: "Embudo",          Icon: Target },
-      { href: "/productividad/contactos", label: "Contactos",       Icon: Users },
-      { href: "/productividad/negocios",  label: "Negocios",        Icon: BarChart3 },
-      { href: "/productividad/calendario",label: "Calendario",      Icon: BookOpen },
+      { href: "/productividad/tareas",     label: "Tareas",     Icon: ListChecks },
+      { href: "/productividad/negocios",   label: "Negocios",   Icon: BarChart3 },
+      { href: "/productividad/calendario", label: "Calendario", Icon: Calendar },
     ],
   },
   {
     section: "Operación",
     items: [
-      { href: "/consultas",               label: "Consultas",       Icon: Search },
-      { href: "/firmas",                  label: "Firmas",          Icon: PenLine },
-      { href: "/procedimientos",          label: "Procedimientos",  Icon: BookOpen },
+      { href: "/consultas",     label: "Consultas",      Icon: Search },
+      { href: "/firmas",        label: "Firmas",         Icon: PenLine },
+      { href: "/procedimientos",label: "Procedimientos", Icon: BookOpen },
+      { href: "/correo",        label: "Correo",         Icon: Mail },
     ],
   },
   {
     section: "Administración",
     items: [
-      { href: "/documentacion",           label: "Documentación",   Icon: FileText,       adminOnly: true },
-      { href: "/ventas",                  label: "Ventas",          Icon: DollarSign,     adminOnly: true },
-      { href: "/servicios",               label: "Servicios",       Icon: Wallet,         adminOnly: true },
-      { href: "/marketing",               label: "Marketing",       Icon: MessageCircleQuestion, adminOnly: true, enabled: false },
+      { href: "/documentacion",        label: "Documentación", Icon: FileText,  adminOnly: true },
+      { href: "/ventas",               label: "Ventas",        Icon: DollarSign, adminOnly: true },
+      { href: "/servicios/dashboard",  label: "Servicios",     Icon: Wallet,     adminOnly: true },
+      { href: "/marketing",            label: "Marketing",     Icon: BarChart3,  adminOnly: true, enabled: false },
     ],
   },
 ]
@@ -98,8 +96,6 @@ export function MobileNav({ role, email }: MobileNavProps) {
     return () => window.removeEventListener("theme-change", handler)
   }, [])
 
-  const items = role === "admin" ? NAV_ADMIN : NAV_ASESOR
-
   async function handleLogout() {
     resetAllStores()
     setMoreOpen(false)
@@ -114,7 +110,7 @@ export function MobileNav({ role, email }: MobileNavProps) {
         className="fixed bottom-0 left-0 right-0 bg-surface-1/95 backdrop-blur-xl border-t border-border-subtle z-50 lg:hidden"
       >
         <div className="flex items-stretch">
-          {items.map(({ href, label, Icon }) => {
+          {NAV_ITEMS.map(({ href, label, Icon }) => {
             const active = isActive(pathname, href)
             return (
               <Link
@@ -137,7 +133,7 @@ export function MobileNav({ role, email }: MobileNavProps) {
             )
           })}
 
-          {/* Más trigger */}
+          {/* Más — full module directory */}
           <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
             <SheetTrigger asChild>
               <button
@@ -158,15 +154,14 @@ export function MobileNav({ role, email }: MobileNavProps) {
             </SheetTrigger>
 
             <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh] overflow-y-auto p-0">
-              {/* Hidden title for a11y */}
-              <SheetTitle className="sr-only">Más opciones</SheetTitle>
+              <SheetTitle className="sr-only">Módulos</SheetTitle>
 
               {/* Handle */}
               <div className="flex justify-center pt-3 pb-2">
                 <div className="w-12 h-1.5 rounded-full bg-border-strong/40" />
               </div>
 
-              {/* Header con logo + identidad */}
+              {/* Identity header */}
               <div className="flex items-center gap-3 px-5 pb-4">
                 <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-brand-navy flex items-center justify-center shrink-0">
                   <Image
@@ -185,8 +180,8 @@ export function MobileNav({ role, email }: MobileNavProps) {
 
               <Separator />
 
-              {/* Secciones */}
-              <div className="px-5 py-4 space-y-6">
+              {/* Module directory */}
+              <div className="px-5 py-4 space-y-5">
                 {MORE_ITEMS.map((section) => {
                   const visibleItems = section.items.filter(
                     (it) => !it.adminOnly || role === "admin",
@@ -194,25 +189,40 @@ export function MobileNav({ role, email }: MobileNavProps) {
                   if (visibleItems.length === 0) return null
                   return (
                     <div key={section.section}>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-text-muted mb-2 px-1">
+                      <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-text-muted mb-1.5 px-1">
                         {section.section}
                       </p>
-                      <div className="grid grid-cols-1 gap-1">
+                      <div className="grid grid-cols-1 gap-0.5">
                         {visibleItems.map(({ href, label, Icon, enabled = true }) => {
                           const active = isActive(pathname, href)
-                          const disabled = !enabled
+                          // Phase-locked for this role OR not in production → disabled.
+                          // enabled:false = dev stub ("En desarrollo").
+                          // isPathLocked = phase rollout ("Próximamente").
+                          const phaseLocked = isPathLocked(href, role)
+                          const disabled = !enabled || phaseLocked
+
                           if (disabled) {
                             return (
                               <div
                                 key={href}
-                                className="flex items-center gap-3 px-3 py-3 rounded-lg opacity-40 cursor-not-allowed"
+                                className="flex items-center gap-3 px-3 py-2.5 rounded-lg opacity-45 cursor-not-allowed"
                               >
-                                <Icon size={18} strokeWidth={1.8} className="text-text-muted" />
+                                <Icon size={18} strokeWidth={1.8} className="text-text-muted shrink-0" />
                                 <span className="text-sm text-text-muted flex-1">{label}</span>
-                                <span className="text-[10px] text-text-muted">próx.</span>
+                                <span
+                                  className={cn(
+                                    "shrink-0 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded",
+                                    phaseLocked
+                                      ? "text-amber-400 bg-amber-500/10"
+                                      : "text-text-muted bg-surface-2",
+                                  )}
+                                >
+                                  {phaseLocked ? "Próximamente" : "En desarrollo"}
+                                </span>
                               </div>
                             )
                           }
+
                           return (
                             <Link
                               key={href}
@@ -220,7 +230,7 @@ export function MobileNav({ role, email }: MobileNavProps) {
                               scroll={false}
                               onClick={() => setMoreOpen(false)}
                               className={cn(
-                                "flex items-center gap-3 px-3 py-3 rounded-lg transition-colors",
+                                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
                                 active
                                   ? "bg-brand-navy/15 text-brand-gold"
                                   : "text-text-primary hover:bg-surface-overlay-hover",
@@ -229,10 +239,10 @@ export function MobileNav({ role, email }: MobileNavProps) {
                               <Icon
                                 size={18}
                                 strokeWidth={active ? 2 : 1.8}
-                                className={active ? "text-brand-gold" : "text-text-secondary"}
+                                className={cn("shrink-0", active ? "text-brand-gold" : "text-text-secondary")}
                               />
                               <span className="text-sm font-medium flex-1">{label}</span>
-                              <ChevronRight size={16} className="text-text-muted" />
+                              <ChevronRight size={16} className="text-text-muted shrink-0" />
                             </Link>
                           )
                         })}
@@ -244,7 +254,7 @@ export function MobileNav({ role, email }: MobileNavProps) {
 
               <Separator />
 
-              {/* Configuración */}
+              {/* Settings */}
               <div className="px-5 py-4 space-y-1 pb-8">
                 <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-text-muted mb-2 px-1">
                   Configuración
