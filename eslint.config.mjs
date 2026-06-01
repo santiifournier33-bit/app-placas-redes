@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Netlify Deno plugin generated/vendor files:
+    ".netlify/**",
   ]),
 ]);
 
