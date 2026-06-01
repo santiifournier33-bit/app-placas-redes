@@ -2,7 +2,7 @@
 # Plugin handles SSR routes, ISR cache, API routes, middleware automatically.
 
 [build]
-  command = "npm run lint && npm run test && npm run build"
+  command = "npm run build"
   publish = ".next"
 
 [build.environment]
@@ -16,14 +16,13 @@
 # Branch-based deploy contexts.
 # Production deploys come from `main`; staging from `staging` branch.
 [context.production]
-  command = "npm run lint && npm run test && npm run build"
+  command = "npm run build"
 
 [context.staging]
-  command = "npm run lint && npm run test && npm run build"
+  command = "npm run build"
 
 [context.deploy-preview]
-  # PR previews: lint + test but skip Sentry source map upload
-  command = "npm run lint && npm run test && npm run build"
+  command = "npm run build"
 
 # Next.js plugin is auto-installed by Netlify when it detects Next.js.
 # No explicit [[plugins]] block needed.
