@@ -34,6 +34,21 @@ export const modules: ModuleDefinition[] = [
     enabled: true,
   },
   {
+    id: 'embudo',
+    label: 'Embudo',
+    href: '/embudo',
+    icon: 'Target',
+    access: ['admin', 'asesor'],
+    description: 'Tracker de actividad y embudo de ventas',
+    enabled: true,
+    children: [
+      { id: 'tracker',     label: 'Tracker',     href: '/embudo?tab=tracker' },
+      { id: 'calendario',  label: 'Calendario',  href: '/embudo?tab=calendario' },
+      { id: 'leaderboard', label: 'Leaderboard', href: '/embudo?tab=leaderboard' },
+      { id: 'metas',       label: 'Metas',       href: '/embudo?tab=metas', access: ['admin'] },
+    ],
+  },
+  {
     id: 'productividad',
     label: 'Productividad',
     href: '/productividad/tareas',

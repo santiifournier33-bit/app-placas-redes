@@ -9,7 +9,7 @@ import {
   ListChecks, Users, Search, Palette, MoreHorizontal,
   FileText, DollarSign, Wallet,
   LayoutDashboard, MessageCircleQuestion, BookOpen, PenLine,
-  Mail, BarChart3,
+  Mail, BarChart3, Target,
   Sun, Moon, LogOut, ChevronRight,
 } from "lucide-react"
 import {
@@ -55,6 +55,7 @@ const MORE_ITEMS: { section: string; items: MoreItem[] }[] = [
   {
     section: "Atajos",
     items: [
+      { href: "/embudo",                  label: "Embudo",          Icon: Target },
       { href: "/productividad/contactos", label: "Contactos",       Icon: Users },
       { href: "/productividad/negocios",  label: "Negocios",        Icon: BarChart3 },
       { href: "/productividad/calendario",label: "Calendario",      Icon: BookOpen },

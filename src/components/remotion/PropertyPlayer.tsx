@@ -1,5 +1,6 @@
 'use client'
 
+import type { ComponentProps } from 'react'
 import { Player } from '@remotion/player'
 import { PropertyComposition } from '@/remotion/PropertyComposition'
 
@@ -13,7 +14,7 @@ export default function PropertyPlayer({ property, audioUrl, durationInFrames }:
   return (
     <Player
       component={PropertyComposition}
-      inputProps={{ property, audioUrl }}
+      inputProps={{ property, audioUrl } as unknown as ComponentProps<typeof PropertyComposition>}
       durationInFrames={durationInFrames}
       compositionWidth={1080}
       compositionHeight={1920}

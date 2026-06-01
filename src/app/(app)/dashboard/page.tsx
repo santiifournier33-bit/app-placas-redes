@@ -4,29 +4,31 @@ import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { useTaskStore } from "@/lib/stores/taskStore"
 import { useContactStore } from "@/lib/stores/contactStore"
-import { usePipelinesStore } from "@/lib/stores/pipelinesStore"
+import { useFunnelStore } from "@/lib/stores/funnelStore"
 import {
   Users, CheckSquare, AlertTriangle, UserPlus, ClipboardList, Briefcase,
-  BarChart3, Clock,
+  BarChart3, Clock, Target,
 } from "lucide-react"
 import Link from "next/link"
 import { startOfWeek, isAfter, isBefore, format } from "date-fns"
 import { es } from "date-fns/locale"
-import { WeeklyTrackerWidget } from "@/components/productividad/WeeklyTrackerWidget"
+import { FunnelRingsGrid } from "@/components/embudo/FunnelRingsGrid"
+import { Leaderboard } from "@/components/embudo/Leaderboard"
 import { PageHeader } from "@/components/nav/PageHeader"
+import type { FunnelStage } from "@/lib/embudo/funnel"
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
   const { tasks, init: initTasks } = useTaskStore()
   const { contacts, init: initContacts } = useContactStore()
-  const { pipelines, init: initPipelines } = usePipelinesStore()
+  const initFunnel = useFunnelStore(s => s.init)
 
   useEffect(() => {
     setMounted(true)
     initTasks()
     initContacts()
-    initPipelines()
+    initFunnel()
   }, [])
 
   const now = new Date()
@@ -47,15 +49,8 @@ export default function DashboardPage() {
       .filter(t => !t.completed && t.due_date && !t.parent_id)
       .sort((a, b) => new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime())
       .slice(0, 5)
-    const unhealthyLeads = contacts
-      .filter(c => {
-        if (!c.last_activity_at) return true
-        const daysSince = Math.floor((now.getTime() - new Date(c.last_activity_at).getTime()) / 86400000)
-        return daysSince >= 14
-      })
-      .slice(0, 5)
 
-    return { pendingTasks, completedThisWeek, contactsThisWeek, overdueTasks, urgentTasks, unhealthyLeads }
+    return { pendingTasks, completedThisWeek, contactsThisWeek, overdueTasks, urgentTasks }
   }, [tasks, contacts, now.toDateString()])
 
   if (!mounted) {
@@ -113,40 +108,20 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Two-column layout: tracker + pipeline */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Weekly Tracker */}
-        <WeeklyTrackerWidget />
-
-        {/* Pipeline Distribution */}
-        <div className="rounded-2xl border border-border-subtle bg-surface-1/50 backdrop-blur-xl p-5 space-y-4 shadow-sm">
-          <h3 className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-[0.15em]">Pipelines</h3>
-          {pipelines.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-6 text-center text-text-muted">
-              <Briefcase size={20} className="stroke-[1.5] mb-2 opacity-50" />
-              <p className="text-xs font-medium">Sin pipelines configurados</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {pipelines.map(p => {
-                const stageCount = p.stages?.length ?? 0
-                return (
-                  <Link
-                    key={p.id}
-                    href="/productividad/negocios"
-                    className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-surface-2/80 transition-colors border border-transparent hover:border-border-subtle"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-sm shrink-0">{p.emoji}</span>
-                      <span className="text-xs font-semibold text-text-primary truncate">{p.name}</span>
-                    </div>
-                    <span className="text-xs md:text-[10px] text-brand-accent bg-brand-accent/10 px-2 py-0.5 rounded-full font-bold">{stageCount} etapas</span>
-                  </Link>
-                )
-              })}
-            </div>
-          )}
+      {/* Sales funnel summary */}
+      <div className="rounded-2xl border border-border-subtle bg-surface-1/50 backdrop-blur-xl p-5 space-y-4 shadow-sm">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-[0.15em] flex items-center gap-1.5">
+            <Target size={13} className="text-shell-accent" /> Tu embudo
+          </h3>
+          <Link href="/embudo?tab=tracker" className="text-xs md:text-[10px] text-brand-accent hover:underline font-bold uppercase tracking-wider">
+            Ver módulo
+          </Link>
         </div>
+        <FunnelRingsGrid
+          variant="summary"
+          onRingClick={(stage: FunnelStage) => router.push(`/embudo?tab=tracker&stage=${stage}`)}
+        />
       </div>
 
       {/* Quick Actions */}
@@ -180,8 +155,11 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Two-column: urgent tasks + unhealthy leads */}
+      {/* Two-column: mini leaderboard + urgent tasks */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Mini leaderboard */}
+        <Leaderboard variant="mini" />
+
         {/* Top 5 urgent tasks */}
         <div className="rounded-2xl border border-border-subtle bg-surface-1/50 backdrop-blur-xl p-5 space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
@@ -209,47 +187,6 @@ export default function DashboardPage() {
                     <span className="text-xs text-text-primary flex-1 truncate font-medium">{task.title}</span>
                     <span className={`text-xs md:text-[10px] shrink-0 font-semibold px-2 py-0.5 rounded-full ${overdue ? "text-red-400 bg-red-400/10" : "text-text-muted bg-surface-2"}`}>
                       {format(new Date(task.due_date!), "d MMM", { locale: es })}
-                    </span>
-                  </Link>
-                )
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Top 5 unhealthy contacts */}
-        <div className="rounded-2xl border border-border-subtle bg-surface-1/50 backdrop-blur-xl p-5 space-y-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs md:text-[11px] font-bold text-text-muted uppercase tracking-[0.15em]">Contactos sin actividad</h3>
-            <Link href="/productividad/contactos" className="text-xs md:text-[10px] text-brand-accent hover:underline font-bold uppercase tracking-wider">
-              Ver todos
-            </Link>
-          </div>
-          {metrics.unhealthyLeads.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-6 text-center text-text-muted">
-              <Users size={20} className="stroke-[1.5] mb-2 opacity-50" />
-              <p className="text-xs font-medium">Todos los contactos al día</p>
-            </div>
-          ) : (
-            <div className="space-y-1.5">
-              {metrics.unhealthyLeads.map(c => {
-                const days = c.last_activity_at
-                  ? Math.floor((now.getTime() - new Date(c.last_activity_at).getTime()) / 86400000)
-                  : null
-                return (
-                  <Link
-                    key={c.id}
-                    href="/productividad/contactos"
-                    className="flex items-center gap-2.5 py-2 px-2.5 rounded-xl hover:bg-surface-2/80 transition-colors border border-transparent hover:border-border-subtle"
-                  >
-                    <div className="w-6 h-6 rounded-full bg-red-500/10 flex items-center justify-center text-xs md:text-[10px] font-bold text-red-400 shrink-0 border border-red-500/20">
-                      {(c.first_name || '?')[0]}
-                    </div>
-                    <span className="text-xs text-text-primary flex-1 truncate font-semibold">
-                      {c.first_name} {c.last_name}
-                    </span>
-                    <span className="text-xs md:text-[10px] text-red-400/90 shrink-0 font-bold bg-red-500/10 px-2 py-0.5 rounded-full">
-                      {days !== null ? `${days} días` : 'nunca'}
                     </span>
                   </Link>
                 )

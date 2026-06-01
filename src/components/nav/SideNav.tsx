@@ -8,7 +8,7 @@ import type { UserRole } from "@/lib/auth/session"
 import {
   LayoutDashboard, Paintbrush, ListTodo, MessageCircleQuestion, BookOpen,
   FolderOpen, BarChart3, DollarSign, Receipt, Mail,
-  LogOut, Lock, PenLine, ChevronRight
+  LogOut, Lock, PenLine, ChevronRight, Target
 } from "lucide-react"
 import { ReactNode, useState, useEffect, useMemo } from "react"
 import { AnimatePresence, motion } from "framer-motion"
@@ -23,6 +23,7 @@ function getIcon(iconName: string, size: number): ReactNode {
   const props = { size, strokeWidth: 1.8 }
   switch (iconName) {
     case 'Home': return <LayoutDashboard {...props} />
+    case 'Target': return <Target {...props} />
     case 'Brush2': return <Paintbrush {...props} />
     case 'TaskSquare': return <ListTodo {...props} />
     case 'MessageQuestion': return <MessageCircleQuestion {...props} />

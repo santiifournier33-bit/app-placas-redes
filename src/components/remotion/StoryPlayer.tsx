@@ -1,5 +1,6 @@
 'use client'
 
+import type { ComponentProps } from 'react'
 import { Player } from '@remotion/player'
 import { StoryPlacaComposition } from '@/remotion/StoryPlacaComposition'
 
@@ -12,7 +13,7 @@ export default function StoryPlayer({ property, format }: Props) {
   return (
     <Player
       component={StoryPlacaComposition}
-      inputProps={{ property, format }}
+      inputProps={{ property, format } as unknown as ComponentProps<typeof StoryPlacaComposition>}
       durationInFrames={1}
       compositionWidth={1080}
       compositionHeight={format === 'story' ? 1920 : 1080}
