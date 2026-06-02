@@ -111,15 +111,38 @@ export const useContactStore = create<ContactState>((set, get) => ({
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { set({ loading: false }); return }
 
-    const { data } = await supabase
-      .from('contacts')
-      .select('*')
-      .eq('owner_id', user.id)
-      .is('deleted_at', null)
-      .order('last_activity_at', { ascending: false })
+    // Keyset pagination over the unique `id`: a plain select caps at Supabase's
+    // 1000-row default, silently dropping contacts beyond that. Page through in
+    // 1000-row chunks (cursor = last id seen) until exhausted. The UI does
+    // client-side search/sort/filter over the full set, so we need all of them.
+    const PAGE = 1000
+    const all: Contact[] = []
+    let cursor: string | null = null
+    for (;;) {
+      let q = supabase
+        .from('contacts')
+        .select('*')
+        .eq('owner_id', user.id)
+        .is('deleted_at', null)
+        .order('id', { ascending: true })
+        .limit(PAGE)
+      if (cursor) q = q.gt('id', cursor)
+      const { data: page, error } = await q
+      if (error || !page || page.length === 0) break
+      all.push(...page)
+      if (page.length < PAGE) break
+      cursor = page[page.length - 1].id
+    }
+
+    // Preserve the previous default ordering (most recent activity first).
+    all.sort((a, b) => {
+      const av = a.last_activity_at ? new Date(a.last_activity_at).getTime() : 0
+      const bv = b.last_activity_at ? new Date(b.last_activity_at).getTime() : 0
+      return bv - av
+    })
 
     set({
-      contacts: data ?? [],
+      contacts: all,
       loading: false,
     })
 

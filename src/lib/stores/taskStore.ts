@@ -66,13 +66,35 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    const [tasksRes, sectionsRes] = await Promise.all([
-      supabase
-        .from('tasks')
-        .select('*')
-        .eq('owner_id', user.id)
-        .is('deleted_at', null)
-        .order('position', { ascending: true }),
+    // Keyset-paginate tasks (cursor = unique id) so accounts with >1000 tasks
+    // aren't silently truncated at Supabase's default cap. Sections stay a
+    // single query (always few). Both run in parallel.
+    const loadAllTasks = async (): Promise<Task[]> => {
+      const PAGE = 1000
+      const all: Task[] = []
+      let cursor: string | null = null
+      for (;;) {
+        let q = supabase
+          .from('tasks')
+          .select('*')
+          .eq('owner_id', user.id)
+          .is('deleted_at', null)
+          .order('id', { ascending: true })
+          .limit(PAGE)
+        if (cursor) q = q.gt('id', cursor)
+        const { data: page, error } = await q
+        if (error || !page || page.length === 0) break
+        all.push(...page)
+        if (page.length < PAGE) break
+        cursor = page[page.length - 1].id
+      }
+      // Restore the display ordering (position asc) the UI expects.
+      all.sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+      return all
+    }
+
+    const [allTasks, sectionsRes] = await Promise.all([
+      loadAllTasks(),
       supabase
         .from('task_sections')
         .select('*')
@@ -82,7 +104,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
     ])
 
     set({
-      tasks: tasksRes.data ?? [],
+      tasks: allTasks,
       sections: sectionsRes.data ?? [],
     })
 

@@ -170,7 +170,8 @@ export default function TemplateSender({ onSent }: { onSent: () => void }) {
             >
               <div className="w-12 h-16 bg-zinc-800 rounded flex-shrink-0 overflow-hidden shadow-sm border border-zinc-700">
                 {tpl.documents[0]?.preview ? (
-                  <img src={tpl.documents[0].preview} alt="" className="w-full h-full object-cover opacity-80" />
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={tpl.documents[0].preview} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover opacity-80" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-text-muted">PDF</div>
                 )}

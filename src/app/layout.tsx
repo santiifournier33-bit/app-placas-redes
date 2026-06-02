@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import ReactScan from "@/components/dev/ReactScan";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -51,7 +52,10 @@ export default function RootLayout({
       lang="es"
       className={`${inter.variable} ${playfair.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {process.env.NODE_ENV === "development" && <ReactScan />}
+        {children}
+      </body>
     </html>
   );
 }

@@ -267,8 +267,10 @@ export function ColegaFicha({ property, media }: { property: ColegaProperty; med
           >
             {staticMap ? (
               <a href={mapsLink!} target="_blank" rel="noopener noreferrer" className="block rounded-2xl overflow-hidden border border-[#eceff3]">
+                {/* Static map from Google (size=640x320). Plain img + intrinsic
+                    dims reserves the 2:1 box (no CLS) and lazy-loads below the fold. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={staticMap} alt="Mapa de ubicación" className="w-full h-auto" />
+                <img src={staticMap} alt="Mapa de ubicación" width={640} height={320} loading="lazy" decoding="async" className="w-full h-auto" />
               </a>
             ) : (
               <div className="rounded-2xl border border-[#eceff3] bg-[#F7F9FB] h-40 flex items-center justify-center text-sm text-[#9aa7b2]">

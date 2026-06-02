@@ -675,7 +675,7 @@ export function SocialPublisherForm({
                   <p className="text-xs md:text-[10px] text-on-surface-variant truncate">Se incluirá en todas las publicaciones.</p>
                 </div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={mediaThumb} alt="Preview" className="w-10 h-10 object-cover rounded-md shrink-0" />
+                <img src={mediaThumb} alt="Preview" loading="lazy" decoding="async" className="w-10 h-10 object-cover rounded-md shrink-0" />
               </div>
             )}
           </div>
