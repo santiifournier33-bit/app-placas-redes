@@ -36,6 +36,7 @@
     "@remotion/web-renderer": "4.0.469",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.4",
+    "@tanstack/react-virtual": "^3.14.2",
     "@zernio/node": "^0.2.42",
     "animejs": "^4.3.6",
     "aws-sdk": "^2.1693.0",

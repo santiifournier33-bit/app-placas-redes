@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useMemo, useRef, useDeferredValue } from 'react'
+import { useState, useMemo, useRef, useCallback, useDeferredValue } from 'react'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { ChevronUp, ChevronDown, ExternalLink, Phone, MessageSquare, Check, Copy } from 'lucide-react'
 import {
   useContactStore,
   type Contact,
+  type KanbanContact,
 } from '@/lib/stores/contactStore'
-import { usePipelinesStore } from '@/lib/stores/pipelinesStore'
+import { usePipelinesStore, type PipelineStage } from '@/lib/stores/pipelinesStore'
 import { EditableCell } from './EditableCell'
 import { InlineSelectChip } from './InlineSelectChip'
 import { PortalDropdown } from '@/components/ui/PortalDropdown'
@@ -86,35 +88,29 @@ function CopyChip({ value, kind }: { value: string; kind: 'phone' | 'email' }) {
   )
 }
 
+// Presentational only: stages + current stage come from the parent (read once
+// from the stores), so 1000s of rows don't each subscribe two zustand stores.
 function PipelineStageCell({
-  contact,
+  hasPipeline,
+  stages,
+  currentStage,
+  onSelectStage,
 }: {
-  contact: Contact
-  onSelect: () => void
+  hasPipeline: boolean
+  stages: PipelineStage[]
+  currentStage: PipelineStage | undefined
+  onSelectStage: (stageId: string) => void
 }) {
-  const { activePipelineId, pipelines } = usePipelinesStore()
-  const { kanbanContacts, moveToStage, addToPipeline, fetchKanban } = useContactStore()
   const [open, setOpen] = useState(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
 
-  const pipeline = pipelines.find(p => p.id === activePipelineId)
-  const stages = pipeline ? [...pipeline.stages].sort((a, b) => a.position - b.position) : []
-  const kanbanEntry = kanbanContacts.find(k => k.id === contact.id && k.pipelineId === activePipelineId)
-  const currentStage = stages.find(s => s.id === kanbanEntry?.stageId)
-
-  const handleSelect = async (stageId: string, e: React.MouseEvent) => {
+  const handleSelect = (stageId: string, e: React.MouseEvent) => {
     e.stopPropagation()
     setOpen(false)
-    if (!activePipelineId) return
-    if (kanbanEntry) {
-      await moveToStage(kanbanEntry.contactPipelineId, stageId)
-    } else {
-      await addToPipeline(contact.id, activePipelineId, stageId)
-      await fetchKanban(activePipelineId)
-    }
+    onSelectStage(stageId)
   }
 
-  if (!pipeline) {
+  if (!hasPipeline) {
     return <span className="text-xs md:text-[11px] text-zinc-700 px-1">—</span>
   }
 
@@ -169,7 +165,38 @@ function PipelineStageCell({
 }
 
 export function ContactsTable({ contacts, onSelectContact, selectedId }: ContactsTableProps) {
-  const { updateContact } = useContactStore()
+  const { updateContact, kanbanContacts, moveToStage, addToPipeline, fetchKanban } = useContactStore()
+  const { activePipelineId, pipelines } = usePipelinesStore()
+
+  // Pipeline data read ONCE here (not per row). Build the stage list and a
+  // contactId -> kanban entry map so each row is a cheap O(1) lookup with no
+  // store subscription of its own — critical for smooth virtualized scroll.
+  const activePipeline = pipelines.find(p => p.id === activePipelineId)
+  const pipelineStages = useMemo(
+    () => (activePipeline ? [...activePipeline.stages].sort((a, b) => a.position - b.position) : []),
+    [activePipeline],
+  )
+  const kanbanByContact = useMemo(() => {
+    const m = new Map<string, KanbanContact>()
+    for (const k of kanbanContacts) {
+      if (k.pipelineId === activePipelineId) m.set(k.id, k)
+    }
+    return m
+  }, [kanbanContacts, activePipelineId])
+  const handleStageSelect = useCallback(
+    async (contactId: string, stageId: string) => {
+      if (!activePipelineId) return
+      const entry = kanbanByContact.get(contactId)
+      if (entry) {
+        await moveToStage(entry.contactPipelineId, stageId)
+      } else {
+        await addToPipeline(contactId, activePipelineId, stageId)
+        await fetchKanban(activePipelineId)
+      }
+    },
+    [activePipelineId, kanbanByContact, moveToStage, addToPipeline, fetchKanban],
+  )
+
   const [sortKey, setSortKey] = useState<SortKey>('full_name' as unknown as SortKey)
   const [sortDir, setSortDir] = useState<SortDir>('asc')
   const [hiddenCols, setHiddenCols] = useState<Set<string>>(() => {
@@ -206,6 +233,26 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
       return sortDir === 'asc' ? cmp : -cmp
     })
   }, [contacts, sortKey, sortDir])
+
+  // Row virtualization: only the rows in view (+overscan) are mounted, so the
+  // table stays at 60fps regardless of how many thousands of contacts load.
+  // Scroll happens in our own bounded container (scrollRef) for deterministic
+  // measurement independent of the parent layout.
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const rowVirtualizer = useVirtualizer({
+    count: sorted.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => 33,
+    overscan: 12,
+    // Keyed by contact id so re-sorts/filters don't scramble measured sizes.
+    getItemKey: (index) => sorted[index]?.id ?? index,
+  })
+  const virtualRows = rowVirtualizer.getVirtualItems()
+  const paddingTop = virtualRows.length > 0 ? virtualRows[0].start : 0
+  const paddingBottom =
+    virtualRows.length > 0
+      ? rowVirtualizer.getTotalSize() - virtualRows[virtualRows.length - 1].end
+      : 0
 
   const toggleSort = (key: string) => {
     if (sortKey === key) {
@@ -289,8 +336,9 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
         </PortalDropdown>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
+      {/* Table — own bounded scroll container so row virtualization is
+          deterministic and the sticky header sticks within it. */}
+      <div ref={scrollRef} className="overflow-auto h-[calc(100dvh-12rem)]">
         <table className="w-full text-xs">
           <thead className="sticky top-0 z-10 bg-[#12121a]">
             <tr className="border-b border-border-subtle">
@@ -316,9 +364,16 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
             </tr>
           </thead>
           <tbody>
-            {sorted.map(contact => (
+            {paddingTop > 0 && (
+              <tr aria-hidden="true"><td colSpan={visibleCols.length + 1} style={{ height: paddingTop }} /></tr>
+            )}
+            {virtualRows.map(vr => {
+              const contact = sorted[vr.index]
+              return (
               <tr
                 key={contact.id}
+                data-index={vr.index}
+                style={{ height: 33 }}
                 onClick={() => onSelectContact(contact)}
                 className={`border-b border-white/[0.03] hover:bg-surface-overlay transition-colors group cursor-pointer ${
                   selectedId === contact.id ? 'bg-blue-500/[0.06] border-l-2 border-l-blue-500/50' : ''
@@ -341,7 +396,12 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
                       </div>
                     ) : col.key === 'pipeline_stage' ? (
                       <div className="px-1">
-                        <PipelineStageCell contact={contact} onSelect={() => onSelectContact(contact)} />
+                        <PipelineStageCell
+                          hasPipeline={!!activePipeline}
+                          stages={pipelineStages}
+                          currentStage={pipelineStages.find(s => s.id === kanbanByContact.get(contact.id)?.stageId)}
+                          onSelectStage={(stageId) => handleStageSelect(contact.id, stageId)}
+                        />
                       </div>
                     ) : col.key === 'primary_phone' && contact.primary_phone ? (
                       <div className="px-1"><CopyChip value={contact.primary_phone} kind="phone" /></div>
@@ -425,7 +485,11 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
                   </div>
                 </td>
               </tr>
-            ))}
+              )
+            })}
+            {paddingBottom > 0 && (
+              <tr aria-hidden="true"><td colSpan={visibleCols.length + 1} style={{ height: paddingBottom }} /></tr>
+            )}
           </tbody>
         </table>
 
