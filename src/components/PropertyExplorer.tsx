@@ -1,8 +1,14 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
 import { SearchNormal1, Location, Building, Ruler, Drop, Lamp } from "iconsax-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+// Render the grid in chunks: search/sort still run over ALL properties, but only
+// this many cards are mounted at once. Keeps the DOM, image count, and main-thread
+// work bounded so the grid stays at 60fps even with hundreds of listings.
+const PAGE_SIZE = 24;
 
 type PropertyListing = {
   id: number;
@@ -95,6 +101,12 @@ export default function PropertyExplorer({ onSelectProperty }: { onSelectPropert
       }
     });
   }, [allProperties, searchQuery, sortBy]);
+
+  // Windowed slice actually rendered. Reset to the first page whenever the
+  // result set changes (new search/sort) so we don't show a stale tall list.
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [searchQuery, sortBy]);
+  const visibleProperties = filteredProperties.slice(0, visibleCount);
 
   // Handle direct property load (by ID or URL)
   const handleDirectLoad = async () => {
@@ -295,22 +307,22 @@ export default function PropertyExplorer({ onSelectProperty }: { onSelectPropert
           transition={{ delay: 0.1 }}
           className="grid grid-cols-1 lg:grid-cols-2 gap-4"
         >
-          {filteredProperties.map((property, index) => (
-            <motion.button
+          {visibleProperties.map((property) => (
+            <button
               key={property.id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: Math.min(index * 0.03, 0.5), duration: 0.35 }}
               onClick={() => handleCardClick(property)}
               className="group flex bg-white rounded-xl border border-outline-variant overflow-hidden hover:shadow-hover hover:border-secondary/20 transition-all duration-300 text-left h-[180px] cursor-pointer"
             >
               {/* Photo */}
               <div className="relative w-[200px] shrink-0 overflow-hidden bg-surface-dim">
                 {property.thumbnail ? (
-                  <img
+                  <Image
                     src={property.thumbnail}
                     alt={property.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    fill
+                    loading="lazy"
+                    sizes="200px"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
@@ -386,8 +398,21 @@ export default function PropertyExplorer({ onSelectProperty }: { onSelectPropert
                   </span>
                 </div>
               </div>
-            </motion.button>
+            </button>
           ))}
+
+          {/* Load more — reveals the next page without re-running search/sort */}
+          {visibleCount < filteredProperties.length && (
+            <div className="col-span-full flex justify-center pt-2">
+              <button
+                type="button"
+                onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+                className="px-5 py-2.5 rounded-xl border border-outline-variant bg-white text-sm font-semibold text-primary hover:border-secondary/30 hover:shadow-sm transition-all cursor-pointer"
+              >
+                Cargar más ({filteredProperties.length - visibleCount} restantes)
+              </button>
+            </div>
+          )}
 
           {/* No results */}
           {filteredProperties.length === 0 && !isLoading && (

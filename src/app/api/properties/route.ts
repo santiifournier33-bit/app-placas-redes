@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
 
-// In-memory cache (survives across requests while server is running)
+// Durable revalidation window for the Tokko fetches (Next Data Cache). Unlike the
+// in-memory map below, this persists across serverless invocations/deploys, so a
+// cold function doesn't re-fetch every batch from Tokko on each request.
+const REVALIDATE_SECONDS = 300; // 5 minutes
+export const revalidate = 300;
+
+// In-memory L1 cache — best effort within a warm instance, ignored on cold start.
 let cachedProperties: any[] | null = null;
 let cacheTimestamp = 0;
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -21,7 +27,7 @@ export async function GET() {
     const baseUrl = `https://tokkobroker.com/api/v1/property/?key=${apiKey}&format=json&lang=es_ar&limit=20`;
 
     // First, get the total count
-    const firstRes = await fetch(`${baseUrl}&offset=0`);
+    const firstRes = await fetch(`${baseUrl}&offset=0`, { next: { revalidate: REVALIDATE_SECONDS } });
     if (!firstRes.ok) {
       return NextResponse.json({ error: 'Error al conectar con Tokko Broker' }, { status: 502 });
     }
@@ -42,7 +48,7 @@ export async function GET() {
     }
 
     const batchPromises = offsets.map(offset =>
-      fetch(`${baseUrl}&offset=${offset}`)
+      fetch(`${baseUrl}&offset=${offset}`, { next: { revalidate: REVALIDATE_SECONDS } })
         .then(r => r.json())
         .then(d => (d.objects || []).map(parseListing))
         .catch(() => [])
