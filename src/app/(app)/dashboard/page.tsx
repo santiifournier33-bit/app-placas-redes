@@ -55,14 +55,24 @@ export default function DashboardPage() {
   }, [tasks, contacts, now.toDateString()])
 
   if (!mounted) {
+    // Skeleton mirrors the full page footprint (KPIs + daily actions + funnel +
+    // quick actions + two-column) so the mount swap doesn't reflow the layout
+    // and inflate CLS. Heights match the real blocks below.
     return (
-      <div className="p-6 max-w-4xl mx-auto">
-        <div className="animate-pulse space-y-4">
+      <div className="p-4 lg:p-6 max-w-4xl mx-auto w-full">
+        <div className="animate-pulse space-y-6">
           <div className="h-8 w-48 bg-surface-overlay rounded-xl" />
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {[1, 2, 3, 4].map(i => (
               <div key={i} className="h-28 bg-surface-overlay rounded-2xl" />
             ))}
+          </div>
+          <div className="h-40 bg-surface-overlay rounded-2xl" />
+          <div className="h-48 bg-surface-overlay rounded-2xl" />
+          <div className="h-32 bg-surface-overlay rounded-2xl" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="h-56 bg-surface-overlay rounded-2xl" />
+            <div className="h-56 bg-surface-overlay rounded-2xl" />
           </div>
         </div>
       </div>
