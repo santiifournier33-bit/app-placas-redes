@@ -37,19 +37,25 @@ Chunks más pesados (objetivos de code-split):
 
 Rutas con más peso de datos en el analizador (mayor superficie de código): `servicios`, `productividad`, `consultas`, `diseno`.
 
-## Core Web Vitals (pendiente de captura logueada)
+## Core Web Vitals (captura en vivo, MCP chrome-devtools)
 
-> Requiere sesión Supabase activa. Ejecutar con MCP `chrome-devtools` navegando logueado a cada ruta y pegar resultados aquí.
+> ⚠️ Medido sobre `npm run dev` (Turbopack, sin minificar, compilación on-demand).
+> Los tiempos (LCP/render delay) están **inflados vs producción**; sirven como
+> dirección, no como número absoluto. **CLS sí es representativo** (inestabilidad
+> de layout persiste en prod). Re-medir en build de prod para baseline final.
 
-| Ruta | LCP | TBT | CLS | FCP | Perf score |
-|---|---|---|---|---|---|
-| /login | _TBD_ | | | | |
-| /dashboard | _TBD_ | | | | |
-| /productividad/contactos | _TBD_ | | | | |
-| /consultas | _TBD_ | | | | |
-| /diseno | _TBD_ | | | | |
+| Ruta | LCP | TTFB | CLS | Notas |
+|---|---|---|---|---|
+| /login (logout) | 1006 ms | 33 ms | 0.00 | render delay 949ms = compilación dev. a11y 94 / BP 92 / SEO 92 |
+| /dashboard (ADMIN) | 758 ms | 341 ms | **0.18 ⚠️** | CLS malo: cluster @943ms (score 0.155) |
 
 Objetivos: Perf ≥ 0.8 · LCP < 2.5s · TBT < 300ms · CLS < 0.1.
+
+### Hallazgo accionable — CLS 0.18 en /dashboard
+Layout shift grande (~943ms) al poblarse las secciones que cargan datos por
+fetch client-side (stat cards, anillos de embudo, ranking) + banner de push.
+**Fix:** reservar altura / skeletons en esas secciones para que no reflowen al
+llegar los datos. Verificable en vivo re-midiendo CLS.
 
 ## Re-renders (React Scan) — pendiente
 

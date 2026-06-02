@@ -9,11 +9,14 @@ import {
 import dynamic from "next/dynamic";
 const PropertyPlayer = dynamic(() => import("./remotion/PropertyPlayer"), { ssr: false });
 const StoryPlayer = dynamic(() => import("./remotion/StoryPlayer"), { ssr: false });
-import { pdf } from '@react-pdf/renderer';
-import { PdfVertical } from '../pdf/PdfVertical';
-import { PdfHorizontal } from '../pdf/PdfHorizontal';
-import { SocialPublisherForm } from "./SocialPublisherForm";
-import * as htmlToImage from 'html-to-image';
+// Heavy publisher (704 lines + framer-motion) — only rendered in the video/story
+// panels, so load it on demand instead of in the dashboard's initial chunk.
+const SocialPublisherForm = dynamic(
+  () => import("./SocialPublisherForm").then((m) => m.SocialPublisherForm),
+  { ssr: false },
+);
+// @react-pdf/renderer (PDF engine) and html-to-image are large and only needed
+// inside their click handlers, so they're imported dynamically there.
 
 type CopyVariant = { title: string; subtitle: string; content: string };
 type CopyVariants = { descriptivo: CopyVariant; emocional: CopyVariant; urgencia: CopyVariant };
@@ -160,6 +163,7 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
     setIsCapturing(true);
     try {
       await new Promise(r => setTimeout(r, 300));
+      const htmlToImage = await import('html-to-image');
       const dataUrl = await htmlToImage.toJpeg(node, { quality: 1, pixelRatio: 3 });
       setCapturedPlacaUrl(dataUrl);
       return dataUrl;
@@ -496,6 +500,11 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
       const parsedLoc = parsedLocation?.subtitle || property.location || "";
       const propForPdf = { ...property, address: parsedAddr, location: parsedLoc };
       
+      const [{ pdf }, { PdfVertical }, { PdfHorizontal }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('../pdf/PdfVertical'),
+        import('../pdf/PdfHorizontal'),
+      ]);
       const doc = format === 'vertical' ? <PdfVertical property={propForPdf} /> : <PdfHorizontal property={propForPdf} />;
       const asPdf = pdf();
       asPdf.updateContainer(doc);
