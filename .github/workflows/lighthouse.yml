@@ -1,0 +1,45 @@
+name: Lighthouse CI
+
+# Gate de performance en PRs. Construye la app y corre Lighthouse CI sobre las
+# rutas públicas definidas en lighthouserc.js (por defecto /login), comparando
+# contra los budgets (perf>=0.8, LCP<2.5s, TBT<300ms, CLS<0.1, JS<600KB).
+#
+# Las rutas autenticadas no se auditan aquí (requieren sesión Supabase); para
+# esas usar el MCP chrome-devtools `lighthouse_audit` desde un navegador logueado.
+#
+# Los assertions están en modo "warn": reportan sin bloquear el merge. Cambiar a
+# "error" en lighthouserc.js cuando se quiera convertir en gate duro.
+
+on:
+  pull_request:
+    branches: [main, staging]
+  workflow_dispatch: {}
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        env:
+          NODE_OPTIONS: '--max-old-space-size=8192'
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: npm run build
+
+      - name: Run Lighthouse CI
+        run: npx lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
