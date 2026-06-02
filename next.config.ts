@@ -46,7 +46,18 @@ const nextConfig: NextConfig = {
     'cheerio',
     '@google/generative-ai',
   ],
+  experimental: {
+    // Tree-shake barrel imports of heavy icon/chart/util libs into per-icon chunks
+    optimizePackageImports: [
+      'lucide-react',
+      'iconsax-react',
+      'recharts',
+      'date-fns',
+      'framer-motion',
+    ],
+  },
   images: {
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       { protocol: 'https', hostname: 'static.tokkobroker.com' },
       { protocol: 'https', hostname: 'static.freirepropiedades.com' },
