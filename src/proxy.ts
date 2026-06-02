@@ -45,7 +45,13 @@ export async function proxy(request: NextRequest) {
         },
       }
     )
-    await supabase.auth.getUser()
+    // getClaims() verifies the JWT locally using the project's asymmetric
+    // signing keys (ES256) — no network round-trip per request when the token is
+    // valid — while the setAll cookie callback above still writes refreshed
+    // tokens. getUser() always hit the Auth server, adding ~100-200ms to every
+    // protected navigation. (Do not insert code between createServerClient and
+    // this call — see Supabase SSR guidance.)
+    await supabase.auth.getClaims()
   }
 
   // App session JWT check
