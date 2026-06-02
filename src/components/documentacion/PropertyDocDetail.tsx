@@ -197,9 +197,12 @@ export function PropertyDocDetail({ property: p, onClose }: PropertyDocDetailPro
               <Loader2 size={24} className="animate-spin text-text-muted" />
             </div>
             {previewFile.mimeType.startsWith("image/") ? (
-              <img 
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
                 src={`/api/docs/property/${p.id}/file?fileId=${previewFile.id}&action=preview`}
                 alt={previewFile.name}
+                loading="lazy"
+                decoding="async"
                 className="max-w-full max-h-full object-contain"
               />
             ) : (

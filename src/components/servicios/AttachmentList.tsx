@@ -57,7 +57,8 @@ export function AttachmentList({ attachments, onChange, readonly = false }: Atta
           <div className="shrink-0">{fileIcon(att.type)}</div>
           {att.type === "image" ? (
             <a href={att.dataUrl} target="_blank" rel="noreferrer" className="flex-1 min-w-0">
-              <img src={att.dataUrl} alt={att.name} className="h-8 w-auto rounded object-cover max-w-[80px]" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={att.dataUrl} alt={att.name} loading="lazy" decoding="async" className="h-8 w-auto rounded object-cover max-w-[80px]" />
             </a>
           ) : (
             <a href={att.dataUrl} target="_blank" rel="noreferrer" className="flex-1 min-w-0 text-xs text-text-secondary hover:text-text-primary truncate">

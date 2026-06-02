@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import Image from "next/image";
 import type { MediaItem, NormalizedMedia } from "@/lib/colega/media";
 
 // Galería + visor multimedia estilo ficha.info (Tokko):
@@ -10,6 +11,19 @@ import type { MediaItem, NormalizedMedia } from "@/lib/colega/media";
 // Recibe sólo fotos + media ya depurados (sin branding/datos del asesor).
 
 type Tab = "videos" | "tours" | "photos";
+
+/** Pill que abre el modal en un tab. Declarado fuera del render para no recrearse. */
+function Pill({ t, label, onOpen }: { t: Tab; label: string; onOpen: (t: Tab) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={(e) => { e.stopPropagation(); onOpen(t); }}
+      className="text-xs font-semibold rounded-full px-3.5 py-1.5 bg-black/55 text-white backdrop-blur hover:bg-black/70 transition-colors"
+    >
+      {label}
+    </button>
+  );
+}
 
 /** Embed directo (sin façade); link externo si el proveedor no es embebible. */
 function MediaFrame({ item }: { item: MediaItem }) {
@@ -98,24 +112,20 @@ export function ColegaGallery({ photos, alt, media }: { photos: string[]; alt: s
   const thumbs = imgs.slice(1, 5);
   const extra = imgs.length - 5;
 
-  const Pill = ({ t, label }: { t: Tab; label: string }) => (
-    <button
-      type="button"
-      onClick={(e) => { e.stopPropagation(); openModal(t); }}
-      className="text-xs font-semibold rounded-full px-3.5 py-1.5 bg-black/55 text-white backdrop-blur hover:bg-black/70 transition-colors"
-    >
-      {label}
-    </button>
-  );
-
   return (
     <>
       {/* ── Vista inline ── */}
       <div className="relative grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-2 md:h-[26rem]">
-        <button type="button" onClick={() => openModal("photos", 0)} className="md:col-span-2 md:row-span-2 relative group overflow-hidden rounded-xl bg-[#F3F6F8]">
+        <button type="button" onClick={() => openModal("photos", 0)} className="md:col-span-2 md:row-span-2 relative group overflow-hidden rounded-xl bg-[#F3F6F8] h-64 md:h-full">
           {main ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={main} alt={alt} className="w-full h-64 md:h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
+            <Image
+              src={main}
+              alt={alt}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            />
           ) : (
             <span className="flex items-center justify-center w-full h-64 md:h-full text-[#9aa7b2] text-sm">Sin fotos</span>
           )}
@@ -125,8 +135,14 @@ export function ColegaGallery({ photos, alt, media }: { photos: string[]; alt: s
           const isLast = i === thumbs.length - 1 && extra > 0;
           return (
             <button key={i} type="button" onClick={() => openModal("photos", i + 1)} className="relative group overflow-hidden rounded-xl bg-[#F3F6F8] hidden md:block">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={src} alt={`${alt} ${i + 2}`} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
+              <Image
+                src={src}
+                alt={`${alt} ${i + 2}`}
+                fill
+                loading="lazy"
+                sizes="25vw"
+                className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+              />
               {isLast && <span className="absolute inset-0 bg-black/55 text-white flex items-center justify-center text-lg font-semibold">+{extra + 1}</span>}
             </button>
           );
@@ -134,9 +150,9 @@ export function ColegaGallery({ photos, alt, media }: { photos: string[]; alt: s
 
         {/* Pills sobre la imagen principal (abajo-derecha) */}
         <div className="absolute left-2 bottom-2 md:left-3 md:bottom-3 flex gap-2 z-10">
-          {videos.length > 0 && <Pill t="videos" label="Videos" />}
-          {tours.length > 0 && <Pill t="tours" label="Videos 360°" />}
-          <Pill t="photos" label="Fotos" />
+          {videos.length > 0 && <Pill t="videos" label="Videos" onOpen={openModal} />}
+          {tours.length > 0 && <Pill t="tours" label="Videos 360°" onOpen={openModal} />}
+          <Pill t="photos" label="Fotos" onOpen={openModal} />
         </div>
       </div>
 
@@ -144,9 +160,8 @@ export function ColegaGallery({ photos, alt, media }: { photos: string[]; alt: s
       {imgs.length > 1 && (
         <div className="flex md:hidden gap-2 mt-2 overflow-x-auto pb-1">
           {imgs.slice(1).map((src, i) => (
-            <button key={i} type="button" onClick={() => openModal("photos", i + 1)} className="shrink-0 w-24 h-20 rounded-lg overflow-hidden bg-[#F3F6F8]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={src} alt={`${alt} ${i + 2}`} className="w-full h-full object-cover" />
+            <button key={i} type="button" onClick={() => openModal("photos", i + 1)} className="relative shrink-0 w-24 h-20 rounded-lg overflow-hidden bg-[#F3F6F8]">
+              <Image src={src} alt={`${alt} ${i + 2}`} fill loading="lazy" sizes="96px" className="object-cover" />
             </button>
           ))}
         </div>
@@ -182,8 +197,10 @@ export function ColegaGallery({ photos, alt, media }: { photos: string[]; alt: s
 
             {tab === "photos" ? (
               imgs[index] ? (
+                // Full-res viewer image: shown only on user interaction, sizing is
+                // intrinsic (object-contain), so a plain img is the right fit here.
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={imgs[index]} alt={`${alt} ${index + 1}`} className="max-h-full max-w-full object-contain rounded-lg" />
+                <img src={imgs[index]} alt={`${alt} ${index + 1}`} loading="lazy" decoding="async" className="max-h-full max-w-full object-contain rounded-lg" />
               ) : null
             ) : (
               <div className="relative w-full max-w-5xl aspect-video rounded-lg overflow-hidden">
