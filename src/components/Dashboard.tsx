@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Building, Magicpen, Video, Image as ImageIcon, Copy, TickCircle,
-  CloseCircle, ArrowLeft, DocumentDownload, Music, PlayCircle, PauseCircle, Send, Global
+  CloseCircle, ArrowLeft, DocumentDownload, Music, PlayCircle, PauseCircle, Link21, Profile2User
 } from "iconsax-react";
 import dynamic from "next/dynamic";
 const PropertyPlayer = dynamic(() => import("./remotion/PropertyPlayer"), { ssr: false });
@@ -90,6 +90,40 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
     setToastMessage(message);
     clearTimeout(toastTimeout);
     toastTimeout = setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  // ── Share links (header) ──
+  const [isGeneratingColega, setIsGeneratingColega] = useState(false);
+
+  const handleCopyPublicLink = async () => {
+    const url = `https://www.freirepropiedades.com/p/${property.id}-prop`;
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast("Link copiado");
+    } catch {
+      showToast("No se pudo copiar el link");
+    }
+  };
+
+  const handleCopyColegaLink = async () => {
+    if (isGeneratingColega) return;
+    setIsGeneratingColega(true);
+    try {
+      const res = await fetch("/api/property/colega-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: property.id }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error || "Error generando el link");
+      await navigator.clipboard.writeText(data.url);
+      showToast("Link para colegas copiado");
+    } catch (e: any) {
+      console.error("Error generando link para colegas:", e);
+      showToast("No se pudo generar el link para colegas");
+    } finally {
+      setIsGeneratingColega(false);
+    }
   };
 
   // ═══════════════════════════════════════
@@ -669,11 +703,36 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
 
           {/* Info */}
           <div className="lg:w-3/5 p-6 lg:p-8 flex flex-col justify-center">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-sm font-bold text-secondary uppercase tracking-widest">
+            <div className="flex justify-between items-center mb-4 gap-3">
+              <span className="text-sm font-bold text-secondary uppercase tracking-widest shrink-0">
                 {property.type}
               </span>
-              
+
+              {/* Right group: share links + agent */}
+              <div className="flex items-center gap-3 flex-wrap justify-end">
+              {/* Share Links */}
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                <button
+                  type="button"
+                  onClick={handleCopyPublicLink}
+                  title="Copiar link público de la propiedad (sitio web)"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-primary bg-surface hover:bg-surface-container-low border border-outline-variant rounded-full py-1.5 px-3 transition-colors shadow-sm"
+                >
+                  <Link21 size={15} variant="Bulk" color="var(--color-primary)" />
+                  Copiar link web
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCopyColegaLink}
+                  disabled={isGeneratingColega}
+                  title="Copiar link para colegas (ficha sin datos del asesor/inmobiliaria)"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-primary bg-surface hover:bg-surface-container-low border border-outline-variant rounded-full py-1.5 px-3 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <Profile2User size={15} variant="Bulk" color="var(--color-secondary)" />
+                  {isGeneratingColega ? "Generando…" : "Ficha para colegas"}
+                </button>
+              </div>
+
               {/* Agent Info */}
               {(property.producer || property.branch) && (
                 <div className="flex items-center gap-2 bg-surface py-1.5 px-3 rounded-full border border-outline-variant shadow-sm">
@@ -698,6 +757,7 @@ export default function Dashboard({ property, user, onBack }: { property: any; u
                   </div>
                 </div>
               )}
+              </div>
             </div>
 
             <h2 className="font-heading text-2xl lg:text-3xl font-bold text-primary mb-2 tracking-tight pr-2">
