@@ -1,9 +1,23 @@
 "use client"
 
+import dynamic from "next/dynamic"
 import { useMail } from "@/lib/mail/MailContext"
 import { MailLogin } from "@/components/mail/MailLogin"
-import { MailApp } from "@/components/mail/MailApp"
 import { Loader2 } from "lucide-react"
+
+// Full IMAP client (~694 lines). Only loaded once the user is authenticated,
+// so it never weighs on the login view or other routes.
+const MailApp = dynamic(
+  () => import("@/components/mail/MailApp").then((m) => m.MailApp),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-text-muted" />
+      </div>
+    ),
+  },
+)
 
 export function MailGate() {
   const { credentials, isLoading } = useMail()

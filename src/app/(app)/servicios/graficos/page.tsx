@@ -1,10 +1,26 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import dynamic from "next/dynamic"
 import { PeriodSelector, type Period } from "@/components/servicios/charts/PeriodSelector"
-import { GeneralChart } from "@/components/servicios/charts/GeneralChart"
-import { GastosChart } from "@/components/servicios/charts/GastosChart"
-import { IngresosChart } from "@/components/servicios/charts/IngresosChart"
+
+// Charts pull in recharts (~heavy). Load them only when rendered, never on
+// First Load. ssr:false because recharts needs a DOM to measure.
+const chartLoading = () => (
+  <div className="h-72 w-full animate-pulse rounded-xl bg-surface-overlay-hover" />
+)
+const GeneralChart = dynamic(
+  () => import("@/components/servicios/charts/GeneralChart").then((m) => m.GeneralChart),
+  { ssr: false, loading: chartLoading },
+)
+const GastosChart = dynamic(
+  () => import("@/components/servicios/charts/GastosChart").then((m) => m.GastosChart),
+  { ssr: false, loading: chartLoading },
+)
+const IngresosChart = dynamic(
+  () => import("@/components/servicios/charts/IngresosChart").then((m) => m.IngresosChart),
+  { ssr: false, loading: chartLoading },
+)
 
 type ChartTab = "general" | "gastos" | "ingresos"
 

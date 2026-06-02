@@ -1,9 +1,18 @@
 'use client'
 
 import { useState } from 'react'
-import TemplateSender from './TemplateSender'
-import SignaturesList from './SignaturesList'
+import dynamic from 'next/dynamic'
 import { PageHeader } from '@/components/nav/PageHeader'
+
+// Tab content loaded on demand: TemplateSender carries the heavy signature
+// editor; neither tab is needed until its panel is shown.
+const tabLoading = () => (
+  <div className="p-6">
+    <div className="h-8 w-48 animate-pulse rounded-xl bg-[var(--bg-secondary)]" />
+  </div>
+)
+const TemplateSender = dynamic(() => import('./TemplateSender'), { loading: tabLoading })
+const SignaturesList = dynamic(() => import('./SignaturesList'), { loading: tabLoading })
 
 type Tab = 'nueva' | 'listado'
 
