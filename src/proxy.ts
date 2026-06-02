@@ -7,7 +7,8 @@ const secretKey = process.env.SESSION_SECRET || 'freire-propiedades-secret-key-c
 const encodedKey = new TextEncoder().encode(secretKey)
 
 const ADMIN_ONLY_PATHS = ['/documentacion', '/marketing', '/ventas', '/servicios']
-const PUBLIC_PATHS = ['/login', '/api/auth']
+// '/ficha' = ficha pública "modo colegas" (sin auth, token opaco propio).
+const PUBLIC_PATHS = ['/login', '/api/auth', '/ficha']
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
