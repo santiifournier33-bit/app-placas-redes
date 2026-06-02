@@ -74,7 +74,11 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
+  // Exclude static metadata files (manifest, service worker, web manifest) from
+  // the auth proxy: when fetched without a session (e.g. on /login) they'd be
+  // redirected to the /login HTML, which the browser then fails to parse as JSON
+  // ("Manifest: Syntax error") / fails to register as a service worker.
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|logo-pequeno.png|.*\\.png$|.*\\.jpg$|.*\\.svg$|.*\\.ico$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|logo-pequeno.png|manifest.json|sw.js|.*\\.png$|.*\\.jpg$|.*\\.svg$|.*\\.ico$|.*\\.webmanifest$).*)',
   ],
 }
