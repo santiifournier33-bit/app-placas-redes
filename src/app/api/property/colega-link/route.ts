@@ -25,8 +25,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const origin = new URL(request.url).origin;
-    return NextResponse.json({ url: `${origin}/ficha/${token}` });
+    // Dominio del link: COLEGA_BASE_URL (dominio propio tipo ficha.qzz.io) si está configurado;
+    // si no, el origin de la request (ej. app-interna-freire.netlify.app).
+    const base = (process.env.COLEGA_BASE_URL || new URL(request.url).origin).replace(/\/$/, '');
+    return NextResponse.json({ url: `${base}/ficha/${token}` });
   } catch (error) {
     console.error('Error generando link para colegas:', error);
     return NextResponse.json(
