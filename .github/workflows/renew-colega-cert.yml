@@ -39,16 +39,16 @@ jobs:
       - name: Issue certificate (Let's Encrypt via deSEC DNS-01)
         env:
           DESEC_TOKEN: ${{ secrets.DESEC_TOKEN }}
-          # ns2.desec.org tarda ~2min en propagar; deSEC fuerza TTL minimo 3600,
-          # asi que solo esperamos a los NS autoritativos (disable-rns), no a los
-          # resolvers recursivos (cache negativo de 1h envenenaria reintentos).
-          DESEC_PROPAGATION_TIMEOUT: '600'
-          DESEC_POLLING_INTERVAL: '15'
         run: |
+          # ns2.desec.org tarda ~114s en propagar y deSEC fuerza TTL minimo 3600
+          # (un NXDOMAIN cacheado dura 1h). El chequeo de propagacion de lego cortaba
+          # antes de que ns2 estuviera listo -> LE veia NXDOMAIN. Usamos una espera
+          # fija (240s > 114s) que garantiza propagacion completa a ambos NS antes de
+          # pedirle a LE que valide, evitando el cacheo de un NXDOMAIN prematuro.
           lego run --accept-tos \
             --email "$ACME_EMAIL" \
             --dns desec \
-            --dns.propagation.disable-rns \
+            --dns.propagation.wait 240s \
             --domains "$DOMAIN" \
             --path "$ACME_DIR"
           test -f "${ACME_DIR}/certificates/${DOMAIN}.crt"
