@@ -24,12 +24,16 @@ jobs:
       DOMAIN: ficha.qzz.io
       ACME_EMAIL: freirepropiedadespilar@gmail.com
       NETLIFY_SITE_ID: bfdbe8e4-da88-4db7-806e-f503ae66ad54
+      # Directorio de datos de lego. NO usar "./lego": el binario se extrae como
+      # archivo ./lego en el cwd y colisionaria con el data dir (not a directory).
+      ACME_DIR: ./acme
     steps:
       - name: Install lego
         run: |
           curl -fsSL "https://github.com/go-acme/lego/releases/download/${LEGO_VERSION}/lego_${LEGO_VERSION}_linux_amd64.tar.gz" \
             | tar -xz lego
           sudo install -m 0755 lego /usr/local/bin/lego
+          rm -f ./lego
           lego --version
 
       - name: Issue certificate (Let's Encrypt via deSEC DNS-01)
@@ -46,17 +50,17 @@ jobs:
             --dns desec \
             --dns.propagation.disable-rns \
             --domains "$DOMAIN" \
-            --path ./lego
-          test -f "./lego/certificates/${DOMAIN}.crt"
+            --path "$ACME_DIR"
+          test -f "${ACME_DIR}/certificates/${DOMAIN}.crt"
 
       - name: Upload custom certificate to Netlify
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         run: |
           jq -n \
-            --rawfile c "./lego/certificates/${DOMAIN}.crt" \
-            --rawfile k "./lego/certificates/${DOMAIN}.key" \
-            --rawfile a "./lego/certificates/${DOMAIN}.issuer.crt" \
+            --rawfile c "${ACME_DIR}/certificates/${DOMAIN}.crt" \
+            --rawfile k "${ACME_DIR}/certificates/${DOMAIN}.key" \
+            --rawfile a "${ACME_DIR}/certificates/${DOMAIN}.issuer.crt" \
             '{certificate:$c, key:$k, ca_certificates:$a}' > payload.json
           code=$(curl -sS -o resp.json -w '%{http_code}' -X POST \
             -H "Authorization: Bearer ${NETLIFY_AUTH_TOKEN}" \
