@@ -1,0 +1,74 @@
+name: Renovar cert SSL (ficha colega)
+
+# Re-emite el certificado Let's Encrypt de ficha.qzz.io (dominio de la "Ficha
+# para colegas") via deSEC DNS-01 con lego y lo sube como custom certificate a
+# Netlify. Netlify NO auto-renueva los certs subidos a mano: este workflow lo
+# hace por nosotros. Corre mensual (margen 3x sobre los 90 dias de validez del
+# cert) + dispatch manual para probarlo.
+#
+# Secrets requeridos (repo Settings -> Secrets and variables -> Actions):
+#   DESEC_TOKEN         token API de deSEC (control DNS de ficha.qzz.io). NO revocar.
+#   NETLIFY_AUTH_TOKEN  Personal Access Token de Netlify (sube el cert al sitio).
+
+on:
+  schedule:
+    - cron: '0 6 1 * *'   # dia 1 de cada mes, 06:00 UTC (03:00 ART)
+  workflow_dispatch: {}
+
+jobs:
+  renew:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      LEGO_VERSION: v5.2.2
+      DOMAIN: ficha.qzz.io
+      ACME_EMAIL: freirepropiedadespilar@gmail.com
+      NETLIFY_SITE_ID: bfdbe8e4-da88-4db7-806e-f503ae66ad54
+    steps:
+      - name: Install lego
+        run: |
+          curl -fsSL "https://github.com/go-acme/lego/releases/download/${LEGO_VERSION}/lego_${LEGO_VERSION}_linux_amd64.tar.gz" \
+            | tar -xz lego
+          sudo install -m 0755 lego /usr/local/bin/lego
+          lego --version
+
+      - name: Issue certificate (Let's Encrypt via deSEC DNS-01)
+        env:
+          DESEC_TOKEN: ${{ secrets.DESEC_TOKEN }}
+          # ns2.desec.org tarda ~2min en propagar; deSEC fuerza TTL minimo 3600,
+          # asi que solo esperamos a los NS autoritativos (disable-rns), no a los
+          # resolvers recursivos (cache negativo de 1h envenenaria reintentos).
+          DESEC_PROPAGATION_TIMEOUT: '600'
+          DESEC_POLLING_INTERVAL: '15'
+        run: |
+          lego run --accept-tos \
+            --email "$ACME_EMAIL" \
+            --dns desec \
+            --dns.propagation.disable-rns \
+            --domains "$DOMAIN" \
+            --path ./lego
+          test -f "./lego/certificates/${DOMAIN}.crt"
+
+      - name: Upload custom certificate to Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: |
+          jq -n \
+            --rawfile c "./lego/certificates/${DOMAIN}.crt" \
+            --rawfile k "./lego/certificates/${DOMAIN}.key" \
+            --rawfile a "./lego/certificates/${DOMAIN}.issuer.crt" \
+            '{certificate:$c, key:$k, ca_certificates:$a}' > payload.json
+          code=$(curl -sS -o resp.json -w '%{http_code}' -X POST \
+            -H "Authorization: Bearer ${NETLIFY_AUTH_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data @payload.json \
+            "https://api.netlify.com/api/v1/sites/${NETLIFY_SITE_ID}/ssl")
+          echo "Netlify HTTP ${code}"
+          cat resp.json
+          test "$code" -ge 200 -a "$code" -lt 300
+
+      - name: Verify HTTPS (cert valido)
+        run: |
+          sleep 10
+          echo "HEAD https://${DOMAIN}/"
+          curl -sSI "https://${DOMAIN}/" | head -1
