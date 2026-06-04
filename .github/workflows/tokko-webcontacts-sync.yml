@@ -1,0 +1,65 @@
+name: Tokko Webcontacts Sync
+
+# Ingesta CONTINUA de consultas (webcontacts) desde el panel de Tokko hacia Supabase
+# `inquiries`. Antes la ingesta era un backfill manual de una sola vez → las consultas
+# nuevas no entraban y "consultas directas" daba 0 en propiedades con consultas recientes.
+#
+# Corre cada 3 horas. Pagina los buckets `new` + `assigned` (consultas frescas + las que el
+# agente ya está trabajando). Como el panel lista de más nueva a más vieja (lastId
+# descendente), `--max-pages` acotado capta lo reciente sin re-paginar todo el histórico.
+#
+# Idempotente: upsert por tokko_web_contact_id / (contact_id, tokko_property_id). El
+# merge-snapshot del script preserva operation_type/geo recuperados (no los pisa).
+#
+# Reusa los mismos secrets que tokko-cookie-renew.yml (el script hace login Playwright propio).
+
+on:
+  schedule:
+    - cron: '0 */3 * * *'   # cada 3 horas
+  workflow_dispatch:
+    inputs:
+      buckets:
+        description: 'Buckets a sincronizar (coma-separados)'
+        default: 'new,assigned'
+        required: false
+      max_pages:
+        description: 'Máx páginas por bucket (1 pág ≈ 20 consultas, newest-first)'
+        default: '25'
+        required: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run webcontacts sync
+        env:
+          TOKKO_PANEL_LOGIN_URL: ${{ secrets.TOKKO_PANEL_LOGIN_URL }}
+          TOKKO_PANEL_EMAIL: ${{ secrets.TOKKO_PANEL_EMAIL }}
+          TOKKO_PANEL_PASSWORD: ${{ secrets.TOKKO_PANEL_PASSWORD }}
+          TOKKO_API_KEY: ${{ secrets.TOKKO_API_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          node scripts/tokko-panel-backfill.mjs \
+            --buckets="${{ github.event.inputs.buckets || 'new,assigned' }}" \
+            --max-pages="${{ github.event.inputs.max_pages || '25' }}"
+
+      - name: Notify on failure
+        if: failure()
+        run: echo "::warning::Tokko webcontacts sync failed. Check job logs."

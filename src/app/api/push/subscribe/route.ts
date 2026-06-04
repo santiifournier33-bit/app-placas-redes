@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
+import { getApiUser } from "@/lib/auth/api-auth"
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,8 +13,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getApiUser()
 
     if (!user) {
       return NextResponse.json(
@@ -22,7 +22,8 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const { error } = await supabase.from("push_subscriptions").upsert(
+    const admin = createServiceClient()
+    const { error } = await admin.from("push_subscriptions").upsert(
       {
         owner_id: user.id,
         endpoint,

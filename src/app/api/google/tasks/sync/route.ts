@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { getApiUser } from "@/lib/auth/api-auth"
 import { pushTaskToGoogle, removeTaskFromGoogle } from "@/lib/google/calendar"
 
 export async function POST(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getApiUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   const { taskId, action } = await req.json()

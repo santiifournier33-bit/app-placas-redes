@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { getApiUser } from "@/lib/auth/api-auth"
 import { sendPushToUser } from "@/lib/push/server"
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getApiUser()
 
     if (!user) {
       return NextResponse.json(
