@@ -160,7 +160,10 @@ export async function GET(req: NextRequest) {
     inquiries.forEach((inq, i) => {
       const inquiryAttrs = inquiryAttrsList[i]
       const prefs = (inq.user_preferences as UserPreferences | null) ?? null
-      const inquiryOp = prefs?.operation_type ?? inquiryAttrs.operation_type
+      // Regla de negocio: las preferencias de ZonaProp son SOLO referencia/contexto.
+      // Nunca deben afectar filtro/elegibilidad/score. La operación se evalúa siempre
+      // por el snapshot de la propiedad realmente consultada, no por prefs.operation_type.
+      const inquiryOp = inquiryAttrs.operation_type
       if (!operationsMatch(propAttrs.operation_type, inquiryOp)) return
       const score = computeMatchScoreSmart(propAttrs, inquiryAttrs, prefs)
       if (score.total < 40) return
