@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { X, AlertTriangle, ChevronDown } from 'lucide-react'
 import { useContactStore, type Contact } from '@/lib/stores/contactStore'
 import { usePipelinesStore } from '@/lib/stores/pipelinesStore'
+import { validateContactInput, normalizePhone } from '@/lib/contacts/validation'
 import { InlineSelectChip } from './InlineSelectChip'
 import {
   SOURCE_OPTIONS,
@@ -53,6 +54,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   // Portal a document.body: el modal se renderiza dentro del wrapper z-10 de AppShell,
   // que queda por debajo del nav móvil (contexto de apilamiento). Portalear lo saca afuera
   // para que el z-[70] gane sobre BottomTabs/FAB. Ver AppShell.tsx.
@@ -90,18 +92,29 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
   }, [onClose])
 
   const handleSubmit = async () => {
-    if (!firstName.trim()) {
-      setError('El nombre es obligatorio')
+    // F2: validación en el borde (Zod) — nombre obligatorio, email con formato,
+    // teléfono con mínimo de dígitos. Errores por campo, inline.
+    const validation = validateContactInput({
+      first_name: firstName,
+      last_name: lastName,
+      primary_email: email.trim() || null,
+      primary_phone: phone.trim() || null,
+    })
+    if (!validation.ok) {
+      setFieldErrors(validation.errors)
+      setError(null)
       return
     }
+    setFieldErrors({})
     setSubmitting(true)
     setError(null)
     try {
       const payload = {
         first_name: firstName.trim(),
         last_name: lastName.trim() || null,
-        primary_phone: phone.trim() || null,
-        primary_email: email.trim() || null,
+        // Normaliza a E.164 AR cuando se puede; guarda null si es basura.
+        primary_phone: normalizePhone(phone) ?? (phone.trim() || null),
+        primary_email: email.trim().toLowerCase() || null,
         source,
         circulo,
         category,
@@ -175,7 +188,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
               <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.15em] mb-4">Datos básicos</h3>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3.5">
-                  <Field label="Nombre *">
+                  <Field label="Nombre *" error={fieldErrors.first_name}>
                     <input
                       value={firstName}
                       onChange={e => setFirstName(e.target.value)}
@@ -194,7 +207,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
                   </Field>
                 </div>
 
-                <Field label="Teléfono">
+                <Field label="Teléfono" error={fieldErrors.primary_phone}>
                   <input
                     type="tel" inputMode="tel"
                     value={phone}
@@ -204,7 +217,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
                   />
                 </Field>
 
-                <Field label="Email">
+                <Field label="Email" error={fieldErrors.primary_email}>
                   <input
                     type="email" inputMode="email"
                     value={email}
@@ -364,11 +377,12 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
 
 /* ── Helpers ───────────────────────────────────────────── */
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children, error }: { label: string; children: React.ReactNode; error?: string }) {
   return (
     <div className="space-y-1.5">
       <label className="text-xs md:text-[11px] text-text-muted font-bold block uppercase tracking-wider">{label}</label>
       {children}
+      {error && <p role="alert" className="text-xs text-red-400 font-medium">{error}</p>}
     </div>
   )
 }
