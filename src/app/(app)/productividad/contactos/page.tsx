@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useDeferredValue } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Search, ChevronDown, Download, Upload, Table2, LayoutGrid, MoreHorizontal, Check } from 'lucide-react'
 import { PortalDropdown } from '@/components/ui/PortalDropdown'
@@ -20,10 +20,16 @@ type ViewMode = 'table' | 'cards'
 
 export default function ContactosPage() {
   const router = useRouter()
+  // Filtros persistentes entre sesiones (localStorage). Mismo patrón que columnas en ContactsTable.
+  const persisted = (() => {
+    if (typeof window === 'undefined') return null
+    try { return JSON.parse(localStorage.getItem('contacts-filters') ?? 'null') } catch { return null }
+  })()
   const [search, setSearch] = useState('')
-  const [filterSource, setFilterSource] = useState<Source | 'all'>('all')
-  const [filterCategory, setFilterCategory] = useState<Category | 'all'>('all')
-  const [filterCirculo, setFilterCirculo] = useState<string>('all')
+  const deferredSearch = useDeferredValue(search)
+  const [filterSource, setFilterSource] = useState<Source | 'all'>(persisted?.source ?? 'all')
+  const [filterCategory, setFilterCategory] = useState<Category | 'all'>(persisted?.category ?? 'all')
+  const [filterCirculo, setFilterCirculo] = useState<string>(persisted?.circulo ?? 'all')
   const [showForm, setShowForm] = useState(false)
   const [showImport, setShowImport] = useState(false)
   const [showMore, setShowMore] = useState(false)
@@ -55,11 +61,20 @@ export default function ContactosPage() {
     return () => window.removeEventListener("fab:new-contact", open)
   }, [])
 
+  // Persistir filtros entre sesiones.
+  useEffect(() => {
+    try {
+      localStorage.setItem('contacts-filters', JSON.stringify({
+        source: filterSource, category: filterCategory, circulo: filterCirculo,
+      }))
+    } catch { /* storage lleno/no disponible: no crítico */ }
+  }, [filterSource, filterCategory, filterCirculo])
+
   const filtered = useMemo(() => {
     return contacts
       .filter(c => {
-        if (search) {
-          const q = search.toLowerCase()
+        if (deferredSearch) {
+          const q = deferredSearch.toLowerCase()
           const match =
             `${c.first_name} ${c.last_name ?? ''}`.toLowerCase().includes(q) ||
             (c.primary_phone ?? '').includes(q) ||
@@ -74,7 +89,7 @@ export default function ContactosPage() {
         return true
       })
       .sort((a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime())
-  }, [contacts, search, filterSource, filterCategory, filterCirculo])
+  }, [contacts, deferredSearch, filterSource, filterCategory, filterCirculo])
 
   if (!useContactStore.getState().initialized) {
     return (
@@ -176,7 +191,7 @@ export default function ContactosPage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Buscar nombre, teléfono, email, rol..."
-            className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-muted/50 outline-none"
+            className="flex-1 bg-transparent text-base md:text-sm text-text-primary placeholder:text-text-muted/50 outline-none"
           />
         </div>
 
@@ -214,7 +229,7 @@ export default function ContactosPage() {
 
       {/* Content — clicking a contact navigates to full-page detail */}
       <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto pb-[max(5rem,env(safe-area-inset-bottom))] md:pb-0">
           {viewMode === 'table' ? (
             <ContactsTable
               contacts={filtered}

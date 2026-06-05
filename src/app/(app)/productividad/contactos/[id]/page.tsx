@@ -24,7 +24,7 @@ export default function ContactDetailPage() {
   const params = useParams<{ id: string }>()
   const contactId = params.id
 
-  const { contacts, init, deleteContact } = useContactStore()
+  const { contacts, init, deleteContact, loading } = useContactStore()
   const pipelinesStore = usePipelinesStore()
   const taskStore = useTaskStore()
   const [copied, setCopied] = useState<string | null>(null)
@@ -37,6 +37,18 @@ export default function ContactDetailPage() {
   }, [])
 
   const contact: Contact | undefined = contacts.find(c => c.id === contactId)
+
+  // Loading guard: el store hidrata async (paginación de contactos). Sin esto,
+  // recargar/compartir el link mostraba "Contacto no encontrado" hasta terminar la carga.
+  if (!contact && loading) {
+    return (
+      <div className="p-6 space-y-3">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="animate-pulse h-10 bg-surface-overlay rounded-xl" />
+        ))}
+      </div>
+    )
+  }
 
   if (!contact) {
     return (
@@ -107,7 +119,7 @@ export default function ContactDetailPage() {
         </div>
         <button
           onClick={() => setShowContacted(true)}
-          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-medium hover:bg-emerald-500/20 cursor-pointer"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-medium hover:bg-emerald-500/20 cursor-pointer min-h-9 shrink-0"
         >
           <Check size={13} /> Contactado
         </button>
@@ -172,13 +184,13 @@ export default function ContactDetailPage() {
       <div className="flex-1 overflow-hidden">
         <div className="h-full grid grid-cols-1 xl:grid-cols-3 divide-y xl:divide-y-0 xl:divide-x divide-white/[0.06]">
           {/* Column 1: Data + Tasks */}
-          <div className="overflow-y-auto">
+          <div className="overflow-y-auto pb-[max(5rem,env(safe-area-inset-bottom))] xl:pb-2">
             <ContactDataTab contact={contact} />
             <ContactTasksCard contactId={contact.id} />
           </div>
 
           {/* Column 2: Notas */}
-          <div className="overflow-y-auto">
+          <div className="overflow-y-auto pb-[max(5rem,env(safe-area-inset-bottom))] xl:pb-2">
             <div className="px-5 pt-5">
               <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-wider">Notas</h3>
             </div>
@@ -186,7 +198,7 @@ export default function ContactDetailPage() {
           </div>
 
           {/* Column 3: Historial */}
-          <div className="overflow-y-auto">
+          <div className="overflow-y-auto pb-[max(5rem,env(safe-area-inset-bottom))] xl:pb-2">
             <div className="px-5 pt-5">
               <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-wider">Historial</h3>
             </div>

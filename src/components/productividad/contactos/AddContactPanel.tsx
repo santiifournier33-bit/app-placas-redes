@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { X, AlertTriangle, ChevronDown } from 'lucide-react'
 import { useContactStore, type Contact } from '@/lib/stores/contactStore'
 import { usePipelinesStore } from '@/lib/stores/pipelinesStore'
@@ -52,6 +53,11 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Portal a document.body: el modal se renderiza dentro del wrapper z-10 de AppShell,
+  // que queda por debajo del nav móvil (contexto de apilamiento). Portalear lo saca afuera
+  // para que el z-[70] gane sobre BottomTabs/FAB. Ver AppShell.tsx.
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
   // Duplicate detection
   const duplicate = useMemo(() => {
@@ -127,8 +133,8 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 lg:p-4 animate-fade-in" onClick={onClose}>
+  const modal = (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-0 lg:p-4 animate-fade-in" onClick={onClose}>
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
@@ -175,7 +181,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
                       onChange={e => setFirstName(e.target.value)}
                       autoFocus
                       placeholder="Nombre"
-                      className="w-full h-11 bg-shell-bg/40 border border-border-subtle rounded-xl px-3 text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
+                      className="w-full h-11 bg-shell-bg/40 border border-border-subtle rounded-xl px-3 text-base lg:text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
                     />
                   </Field>
                   <Field label="Apellido">
@@ -183,7 +189,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
                       value={lastName}
                       onChange={e => setLastName(e.target.value)}
                       placeholder="Apellido"
-                      className="w-full h-11 bg-shell-bg/40 border border-border-subtle rounded-xl px-3 text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
+                      className="w-full h-11 bg-shell-bg/40 border border-border-subtle rounded-xl px-3 text-base lg:text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
                     />
                   </Field>
                 </div>
@@ -194,7 +200,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
                     value={phone}
                     onChange={e => setPhone(e.target.value)}
                     placeholder="+54 11 1234-5678"
-                    className="w-full h-11 bg-shell-bg/40 border border-border-subtle rounded-xl px-3 text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
+                    className="w-full h-11 bg-shell-bg/40 border border-border-subtle rounded-xl px-3 text-base lg:text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
                   />
                 </Field>
 
@@ -204,7 +210,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     placeholder="contacto@email.com"
-                    className="w-full h-11 bg-shell-bg/40 border border-border-subtle rounded-xl px-3 text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
+                    className="w-full h-11 bg-shell-bg/40 border border-border-subtle rounded-xl px-3 text-base lg:text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
                   />
                 </Field>
 
@@ -214,7 +220,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
                       value={rol}
                       onChange={e => setRol(e.target.value)}
                       placeholder="Ej: Arquitecto, Inversor..."
-                      className="w-full h-11 bg-shell-bg/40 border border-border-subtle rounded-xl px-3 text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
+                      className="w-full h-11 bg-shell-bg/40 border border-border-subtle rounded-xl px-3 text-base lg:text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
                     />
                   </Field>
                   <Field label="Ubicación">
@@ -222,7 +228,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
                       value={ubicacion}
                       onChange={e => setUbicacion(e.target.value)}
                       placeholder="Ej: Pilar, CABA..."
-                      className="w-full h-11 bg-shell-bg/40 border border-border-subtle rounded-xl px-3 text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
+                      className="w-full h-11 bg-shell-bg/40 border border-border-subtle rounded-xl px-3 text-base lg:text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
                     />
                   </Field>
                 </div>
@@ -237,7 +243,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
                 onChange={e => setContexto(e.target.value)}
                 placeholder="¿Cómo conocés a esta persona? ¿En qué contexto se conocieron?"
                 rows={3}
-                className="w-full bg-shell-bg/40 border border-border-subtle rounded-xl p-3 text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all resize-none"
+                className="w-full bg-shell-bg/40 border border-border-subtle rounded-xl p-3 text-base lg:text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all resize-none"
               />
             </div>
 
@@ -249,7 +255,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
                 onChange={e => setNotes(e.target.value)}
                 placeholder="Información relevante, observaciones, detalles de la primera interacción..."
                 rows={3}
-                className="w-full bg-shell-bg/40 border border-border-subtle rounded-xl p-3 text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all resize-none"
+                className="w-full bg-shell-bg/40 border border-border-subtle rounded-xl p-3 text-base lg:text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all resize-none"
               />
             </div>
           </div>
@@ -352,6 +358,8 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
       </div>
     </div>
   )
+
+  return mounted ? createPortal(modal, document.body) : null
 }
 
 /* ── Helpers ───────────────────────────────────────────── */
