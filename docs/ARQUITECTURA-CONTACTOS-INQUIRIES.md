@@ -1,6 +1,6 @@
 # Arquitectura: Contactos vs Inquiries — Freire Propiedades CRM
 
-> **Estado:** IMPLEMENTADO (Sprint 1 — separación Contacto/Inquiry, jun 2026). Migración `add_contacts_kind_discriminator` aplicada + código en producción de lente/ingesta/promoción. Verificado: Contactos personal=0, leads=2648 en Consultas, paridad de matching idéntica, promoción E2E OK.
+> **Estado:** IMPLEMENTADO (jun 2026). Separación Contacto/Inquiry (migración `add_contacts_kind_discriminator`) + lente/ingesta/promoción, más mejoras UX/robustez/gestión del módulo (ver §12). Verificado en vivo: Contactos personal=0, leads=2648 en Consultas, paridad de matching idéntica, promoción y merge E2E OK. Branch `feat/contactos-inquiry-separation`.
 > **Audiencia:** desarrolladores y agentes/LLMs sin contexto previo.
 > **Última verificación de datos:** proyecto Supabase `APP FREIRE FINAL` (`yahsfzmlijrolyvhxnhw`), junio 2026.
 
@@ -150,11 +150,17 @@ contacts ──────────────┐  (kind: 'personal' | 'lea
 
 ## 12. Estrategia de evolución
 
-1. **Separación (este trabajo):** columna `kind`, backfill, lente Contactos, promoción desde Consultas, paridad de matching verificada.
-2. **Robustez de datos:** validación/normalización de teléfono/email (Zod) en altas y en ingesta; unificar formato de error de API (`{error, code}`).
-3. **Productividad comercial:** exponer salud del lead (`last_activity_at`), filtros por actividad, mejoras UX móviles del detalle (tabs/accordion), virtualización de cards.
-4. **Gestión de base:** merge de duplicados, acciones masivas.
-5. **A futuro (opcional):** si la red personal crece y la convivencia en una sola tabla molesta, evaluar migrar a tabla de identidades separada — pero solo con un plan de migración del matching probado.
+**Hecho (jun 2026, branch `feat/contactos-inquiry-separation`):**
+1. **Separación:** columna `kind`, backfill, lente Contactos, promoción desde Consultas, paridad de matching verificada.
+2. **Quick wins móvil:** botón "Contactado" visible en móvil, loading guard en detalle, safe-area por BottomTabs, modal de alta via portal, inputs ≥16px (anti-zoom iOS), debounce de búsqueda, filtros persistidos, limpieza de código muerto.
+3. **Robustez de datos:** validación Zod + normalización de teléfono/email en alta; alta de tarea atómica (sin race); `.in()` por tandas en matching; formato de error de API unificado (`{error, code}`).
+4. **Productividad:** detalle móvil por tabs (Datos/Tareas/Notas/Historial), teléfono+recencia en cards, alta en 3 pasos en móvil, sistema de toasts global.
+5. **Gestión de base:** merge de duplicados (función SQL `merge_contacts` + `/api/contacts/merge` + modal de detección por teléfono/email), acciones masivas (selección múltiple, exportar/eliminar en lote), columna de acciones sticky en la tabla.
+
+**A futuro (opcional):**
+- Exponer salud del lead / filtros por `last_activity_at` (se difirió: poco valor sobre red personal sin SLA de pipeline).
+- Virtualizar las cards (se difirió: la lista personal es chica tras la separación).
+- Si la red personal crece y la convivencia en una sola tabla molesta, evaluar migrar a tabla de identidades separada — solo con un plan de migración del matching probado.
 
 ---
 
@@ -168,5 +174,9 @@ contacts ──────────────┐  (kind: 'personal' | 'lea
 | Ficha contacto | `src/app/(app)/productividad/contactos/[id]/page.tsx` |
 | Matching | `src/app/api/consultas/matches/route.ts` |
 | Identidad de consulta (PII) | `src/app/api/consultas/contact/[id]/route.ts` |
+| Promover lead→personal | `src/app/api/consultas/contact/[id]/promote/route.ts` |
+| Merge de contactos | `src/app/api/contacts/merge/route.ts` + función SQL `merge_contacts` |
+| Validación/normalización alta | `src/lib/contacts/validation.ts` |
+| Toasts globales | `src/lib/stores/toastStore.ts` + `src/components/ui/Toaster.tsx` |
 | Tipos DB | `src/lib/supabase/types.ts` |
 | Reglas mobile-first | `AGENTS/mobile-first.md` |
