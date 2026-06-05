@@ -15,6 +15,21 @@ import {
 const TOKKO_API_KEY = process.env.TOKKO_API_KEY!
 const TOKKO_BASE = 'https://www.tokkobroker.com/api/v1'
 
+// PostgREST pasa los .in(...) por la URL; con miles de UUIDs se supera el límite
+// de largo (~8KB) y la query falla silenciosa. Paginamos en tandas para evitarlo.
+async function fetchInChunks<T>(
+  ids: string[],
+  run: (chunk: string[]) => PromiseLike<{ data: T[] | null }>,
+  size = 200,
+): Promise<T[]> {
+  const out: T[] = []
+  for (let i = 0; i < ids.length; i += size) {
+    const { data } = await run(ids.slice(i, i + size))
+    if (data) out.push(...data)
+  }
+  return out
+}
+
 interface TokkoOperation {
   type?: number | string
   operation_id?: number
@@ -87,11 +102,11 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const tokkoPropertyId = searchParams.get('property_id')
     if (!tokkoPropertyId) {
-      return NextResponse.json({ error: 'Missing property_id' }, { status: 400 })
+      return NextResponse.json({ error: 'Missing property_id', code: 'BAD_REQUEST' }, { status: 400 })
     }
 
     const user = await getApiUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!user) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 })
     const isAdmin = user.role === 'admin'
 
     // Service client bypasses RLS — inquiries should be visible to all advisors,
@@ -102,7 +117,7 @@ export async function GET(req: NextRequest) {
     const url = `${TOKKO_BASE}/property/${tokkoPropertyId}/?key=${TOKKO_API_KEY}&format=json&lang=es_ar`
     const res = await fetch(url, { signal: AbortSignal.timeout(15_000) })
     if (!res.ok) {
-      return NextResponse.json({ error: 'Tokko property fetch failed' }, { status: 502 })
+      return NextResponse.json({ error: 'Tokko property fetch failed', code: 'TOKKO_FETCH_FAILED' }, { status: 502 })
     }
     const tokkoProp = (await res.json()) as TokkoProperty
     const propAttrs = buildAttrsFromTokko(tokkoProp)
@@ -128,7 +143,7 @@ export async function GET(req: NextRequest) {
       .gte('last_inquired_at', cutoffIso)
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      return NextResponse.json({ error: error.message, code: 'DB_ERROR' }, { status: 500 })
     }
 
     if (!inquiries || inquiries.length === 0) {
@@ -214,21 +229,25 @@ export async function GET(req: NextRequest) {
 
     // 4. Batch fetch contacts (+ emails + phones) only for passing inquiries
     const contactIds = [...new Set(passingDeduped.map((g) => g.best.inq.contact_id))]
-    const [{ data: contacts }, { data: emails }, { data: phones }] = await Promise.all([
-      contactIds.length ? admin.from('contacts').select('id, first_name, last_name, owner_id').in('id', contactIds) : Promise.resolve({ data: [], error: null }),
-      contactIds.length ? admin.from('contact_emails').select('contact_id, email').in('contact_id', contactIds) : Promise.resolve({ data: [], error: null }),
-      contactIds.length ? admin.from('contact_phones').select('contact_id, phone').in('contact_id', contactIds) : Promise.resolve({ data: [], error: null }),
+    // Fetch en tandas (chunked .in) para no exceder el largo de URL de PostgREST.
+    const [contacts, emails, phones] = await Promise.all([
+      fetchInChunks<{ id: string; first_name: string; last_name: string | null; owner_id: string }>(
+        contactIds, (c) => admin.from('contacts').select('id, first_name, last_name, owner_id').in('id', c)),
+      fetchInChunks<{ contact_id: string; email: string }>(
+        contactIds, (c) => admin.from('contact_emails').select('contact_id, email').in('contact_id', c)),
+      fetchInChunks<{ contact_id: string; phone: string }>(
+        contactIds, (c) => admin.from('contact_phones').select('contact_id, phone').in('contact_id', c)),
     ])
 
-    const contactById = new Map((contacts ?? []).map((c) => [c.id, c]))
+    const contactById = new Map(contacts.map((c) => [c.id, c]))
     const emailByContact = new Map<string, string[]>()
-    for (const e of emails ?? []) {
+    for (const e of emails) {
       const list = emailByContact.get(e.contact_id) ?? []
       list.push(e.email)
       emailByContact.set(e.contact_id, list)
     }
     const phoneByContact = new Map<string, string[]>()
-    for (const p of phones ?? []) {
+    for (const p of phones) {
       const list = phoneByContact.get(p.contact_id) ?? []
       list.push(p.phone)
       phoneByContact.set(p.contact_id, list)
@@ -295,6 +314,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ matches, property: propAttrs, viewer_role: isAdmin ? 'admin' : 'asesor' })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'unknown'
-    return NextResponse.json({ error: msg }, { status: 500 })
+    return NextResponse.json({ error: msg, code: 'INTERNAL' }, { status: 500 })
   }
 }

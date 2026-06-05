@@ -9,7 +9,7 @@ export async function GET(
   try {
     const { id } = await params
     const user = await getApiUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!user) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 })
     const isAdmin = user.role === 'admin'
 
     // Service client bypasses RLS so we can see contacts owned by other advisors.
@@ -23,7 +23,7 @@ export async function GET(
       .maybeSingle()
 
     if (!contact) {
-      return NextResponse.json({ error: 'contact_not_found' }, { status: 404 })
+      return NextResponse.json({ error: 'contact_not_found', code: 'NOT_FOUND' }, { status: 404 })
     }
 
     const isOwn = contact.owner_id === user.id
@@ -69,6 +69,6 @@ export async function GET(
     })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'unknown'
-    return NextResponse.json({ error: msg }, { status: 500 })
+    return NextResponse.json({ error: msg, code: 'INTERNAL' }, { status: 500 })
   }
 }

@@ -41,7 +41,7 @@ interface QuickAddTaskProps {
 }
 
 export function QuickAddTask({ initialSectionId, onClose, preselectedContactId = null, hideContactPicker = false, initialDate = null }: QuickAddTaskProps) {
-  const { addTask, updateTask, tasks, sections } = useTaskStore()
+  const { addTask, tasks, sections } = useTaskStore()
   const { contacts } = useContactStore()
 
   const [title, setTitle] = useState("")
@@ -99,18 +99,16 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
 
   const handleCreate = async () => {
     if (!title.trim()) return
-    await addTask(title.trim(), currentSectionId)
-    const newTask = useTaskStore.getState().tasks.at(-1)
-    if (newTask) {
-      await updateTask(newTask.id, {
-        priority,
-        task_type: taskType,
-        due_date: dueDate ?? null,
-        reminder_at: computeReminderAt(),
-        contact_id: contactId,
-        ...(recurrenceFreq ? { recurrence_freq: recurrenceFreq } : {}),
-      })
-    }
+    // Atómico: todos los campos (incl. contact_id) se insertan en una sola llamada.
+    // Evita la race de "agarrar la última tarea del store" para luego actualizarla.
+    await addTask(title.trim(), currentSectionId, {
+      priority,
+      task_type: taskType,
+      due_date: dueDate ?? null,
+      reminder_at: computeReminderAt(),
+      contact_id: contactId,
+      ...(recurrenceFreq ? { recurrence_freq: recurrenceFreq } : {}),
+    })
     onClose()
   }
 

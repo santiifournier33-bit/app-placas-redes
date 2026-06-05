@@ -31,7 +31,7 @@ export interface TaskState {
   reset: () => void
   clearError: () => void
   init: () => Promise<void>
-  addTask: (title: string, sectionId?: string | null) => Promise<void>
+  addTask: (title: string, sectionId?: string | null, extra?: Partial<Task>) => Promise<Task | null>
   toggleTask: (id: string) => Promise<void>
   deleteTask: (id: string) => Promise<void>
   updateTask: (id: string, updates: Partial<Task>) => Promise<void>
@@ -175,12 +175,15 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
       .subscribe()
   },
 
-  addTask: async (title, sectionId = null) => {
+  addTask: async (title, sectionId = null, extra) => {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { set({ error: NO_SESSION }); return }
+    if (!user) { set({ error: NO_SESSION }); return null }
 
     const position = get().tasks.filter(t => t.section_id === sectionId && !t.parent_id).length
 
+    // `extra` permite asociar contact_id / due_date / priority / etc. en el mismo INSERT,
+    // de forma atómica. Antes el caller creaba la tarea y luego "adivinaba" la última del
+    // store para actualizarla (race si entraba otra tarea en el medio). Devuelve la tarea.
     const { data, error } = await supabase
       .from('tasks')
       .insert({
@@ -188,17 +191,19 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
         title,
         section_id: sectionId,
         position,
+        ...extra,
       })
       .select()
       .single()
 
     if (error || !data) {
       set({ error: 'No se pudo crear la tarea. Reintentá.' })
-      return
+      return null
     }
 
     set(s => ({ tasks: [...s.tasks, data] }))
     if (data.due_date) syncTaskToGoogle(data.id, 'push')
+    return data
   },
 
   toggleTask: async (id) => {
