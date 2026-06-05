@@ -100,10 +100,13 @@ export function ContactsCards({ contacts, onSelectContact }: ContactsCardsProps)
               onClick={() => onSelectContact(contact)}
             >
               <p className="text-sm font-medium text-text-primary truncate">{displayName}</p>
-              {(chips.length > 0 || recency || contact.rol) && (
+              {(chips.length > 0 || recency || contact.rol || contact.primary_phone) && (
                 <div className="flex items-center gap-1.5 mt-1 min-w-0">
+                  {contact.primary_phone && (
+                    <span className="text-[11px] text-text-secondary shrink-0 tabular-nums">{contact.primary_phone}</span>
+                  )}
                   {recency && (
-                    <span className="text-[11px] text-text-muted shrink-0">{recency}</span>
+                    <span className="text-[11px] text-text-muted shrink-0">· {recency}</span>
                   )}
                   {chips.map((chip, i) => (
                     <span
@@ -113,7 +116,7 @@ export function ContactsCards({ contacts, onSelectContact }: ContactsCardsProps)
                       {chip.label}
                     </span>
                   ))}
-                  {chips.length === 0 && !recency && contact.rol && (
+                  {chips.length === 0 && !recency && !contact.primary_phone && contact.rol && (
                     <span className="text-xs text-text-muted truncate">{contact.rol}</span>
                   )}
                 </div>

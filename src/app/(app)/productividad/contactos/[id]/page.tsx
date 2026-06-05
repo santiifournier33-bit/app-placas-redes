@@ -29,6 +29,9 @@ export default function ContactDetailPage() {
   const taskStore = useTaskStore()
   const [copied, setCopied] = useState<string | null>(null)
   const [showContacted, setShowContacted] = useState(false)
+  // M2: en móvil el detalle se navega por tabs (un solo scroll) en vez del grid de 3
+  // columnas, que enterraba Tareas/Notas/Historial y generaba scrolls anidados.
+  const [tab, setTab] = useState<'datos' | 'tareas' | 'notas' | 'historial'>('datos')
 
   useEffect(() => {
     init()
@@ -180,27 +183,57 @@ export default function ContactDetailPage() {
         )}
       </div>
 
-      {/* Body — 3-column grid */}
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full grid grid-cols-1 xl:grid-cols-3 divide-y xl:divide-y-0 xl:divide-x divide-white/[0.06]">
+      {/* Body — MÓVIL: tabs (un solo scroll) */}
+      <div className="flex flex-col flex-1 overflow-hidden xl:hidden">
+        <div className="flex border-b border-border-subtle shrink-0">
+          {([
+            ['datos', 'Datos'],
+            ['tareas', 'Tareas'],
+            ['notas', 'Notas'],
+            ['historial', 'Historial'],
+          ] as const).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              className={`flex-1 min-h-11 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${
+                tab === key
+                  ? 'border-blue-400 text-text-primary'
+                  : 'border-transparent text-text-muted'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="flex-1 overflow-y-auto pb-[max(5rem,env(safe-area-inset-bottom))]">
+          {tab === 'datos' && <ContactDataTab contact={contact} />}
+          {tab === 'tareas' && <ContactTasksCard contactId={contact.id} />}
+          {tab === 'notas' && <ContactNotesTab contactId={contact.id} />}
+          {tab === 'historial' && <ContactHistoryTab contactId={contact.id} />}
+        </div>
+      </div>
+
+      {/* Body — DESKTOP: grid de 3 columnas */}
+      <div className="flex-1 overflow-hidden hidden xl:block">
+        <div className="h-full grid grid-cols-3 divide-x divide-white/[0.06]">
           {/* Column 1: Data + Tasks */}
-          <div className="overflow-y-auto pb-[max(5rem,env(safe-area-inset-bottom))] xl:pb-2">
+          <div className="overflow-y-auto pb-2">
             <ContactDataTab contact={contact} />
             <ContactTasksCard contactId={contact.id} />
           </div>
 
           {/* Column 2: Notas */}
-          <div className="overflow-y-auto pb-[max(5rem,env(safe-area-inset-bottom))] xl:pb-2">
+          <div className="overflow-y-auto pb-2">
             <div className="px-5 pt-5">
-              <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-wider">Notas</h3>
+              <h3 className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Notas</h3>
             </div>
             <ContactNotesTab contactId={contact.id} />
           </div>
 
           {/* Column 3: Historial */}
-          <div className="overflow-y-auto pb-[max(5rem,env(safe-area-inset-bottom))] xl:pb-2">
+          <div className="overflow-y-auto pb-2">
             <div className="px-5 pt-5">
-              <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-wider">Historial</h3>
+              <h3 className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Historial</h3>
             </div>
             <ContactHistoryTab contactId={contact.id} />
           </div>
