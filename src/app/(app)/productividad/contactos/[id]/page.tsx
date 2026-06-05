@@ -18,6 +18,7 @@ import { ContactNotesTab } from '@/components/productividad/contactos/ContactNot
 import { ContactHistoryTab } from '@/components/productividad/contactos/ContactHistoryTab'
 import { ContactTasksCard } from '@/components/productividad/contactos/ContactTasksCard'
 import { MarkContactedModal } from '@/components/productividad/contactos/MarkContactedModal'
+import { notify } from '@/lib/stores/toastStore'
 
 export default function ContactDetailPage() {
   const router = useRouter()
@@ -72,12 +73,14 @@ export default function ContactDetailPage() {
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text)
     setCopied(label)
+    notify(label === 'phone' ? 'Teléfono copiado' : 'Email copiado', 'info', 1500)
     setTimeout(() => setCopied(null), 1500)
   }
 
   const handleDelete = async () => {
     if (!confirm('¿Eliminar este contacto?')) return
     await deleteContact(contact.id)
+    notify('Contacto eliminado')
     router.push('/productividad/contactos')
   }
 

@@ -7,6 +7,7 @@ import { es } from 'date-fns/locale'
 import { toISODate } from '@/lib/embudo/funnel'
 import { MonthCalendar } from '@/components/embudo/MonthCalendar'
 import { useContactStore } from '@/lib/stores/contactStore'
+import { notify } from '@/lib/stores/toastStore'
 
 interface MarkContactedModalProps {
   contactId: string
@@ -38,6 +39,7 @@ export function MarkContactedModal({ contactId, contactName, onClose, onConfirme
     setSaving(true)
     await markContacted(contactId, date)
     setSaving(false)
+    notify('Marcado como contactado')
     onConfirmed?.()
     onClose()
   }

@@ -7,6 +7,7 @@ import {
   X, MessageCircle, Check, Mail, Phone, ExternalLink,
   Calendar, Tag, Home, AlertCircle, ChevronDown, UserPlus,
 } from 'lucide-react'
+import { notify } from '@/lib/stores/toastStore'
 
 interface UserPreferences {
   operation_type?: number | null
@@ -184,7 +185,12 @@ export default function ContactDrawer(props: DrawerProps) {
     setPromoting(true)
     try {
       const r = await fetch(`/api/consultas/contact/${contactId}/promote`, { method: 'POST' })
-      if (r.ok) setPromoted(true)
+      if (r.ok) {
+        setPromoted(true)
+        notify('Guardado en tus Contactos')
+      } else {
+        notify('No se pudo guardar', 'error')
+      }
     } finally {
       setPromoting(false)
     }

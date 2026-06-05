@@ -6,6 +6,7 @@ import { MobileNav } from "./MobileNav"
 import { ModuleGuard } from "./ModuleGuard"
 import { ContextualFAB } from "./ContextualFAB"
 import { PushBanner } from "@/components/push/PushBanner"
+import { Toaster } from "@/components/ui/Toaster"
 import { SidebarProvider } from "./SidebarContext"
 import type { UserRole } from "@/lib/auth/session"
 import { initTheme } from "@/lib/theme"
@@ -86,6 +87,7 @@ export function AppShell({ role, email, children }: AppShellProps) {
           <MobileNav role={role} email={email} />
         </div>
         <PushBanner />
+        <Toaster />
       </div>
     </SidebarProvider>
   )

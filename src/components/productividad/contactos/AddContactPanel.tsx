@@ -6,6 +6,7 @@ import { X, AlertTriangle, ChevronDown } from 'lucide-react'
 import { useContactStore, type Contact } from '@/lib/stores/contactStore'
 import { usePipelinesStore } from '@/lib/stores/pipelinesStore'
 import { validateContactInput, normalizePhone } from '@/lib/contacts/validation'
+import { notify } from '@/lib/stores/toastStore'
 import { InlineSelectChip } from './InlineSelectChip'
 import {
   SOURCE_OPTIONS,
@@ -60,6 +61,29 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
   // para que el z-[70] gane sobre BottomTabs/FAB. Ver AppShell.tsx.
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
+
+  // N5: en móvil el alta se completa en 3 pasos (≤ campos por vista) en vez de un
+  // scroll largo de ~19 campos. Desktop muestra todo (2 columnas). step solo aplica en móvil.
+  const TOTAL_STEPS = 3
+  const STEP_LABELS = ['Datos', 'Clasificación', 'Más']
+  const [step, setStep] = useState(1)
+  // Clase de visibilidad por paso: oculto en móvil si no es el paso activo; siempre visible en desktop.
+  const sv = (n: number) => (step === n ? '' : 'hidden') + ' lg:block'
+
+  const goNext = () => {
+    // Validar lo esencial antes de avanzar del paso 1.
+    if (step === 1) {
+      const v = validateContactInput({
+        first_name: firstName,
+        primary_email: email.trim() || null,
+        primary_phone: phone.trim() || null,
+      })
+      if (!v.ok) { setFieldErrors(v.errors); return }
+      setFieldErrors({})
+    }
+    setStep(s => Math.min(s + 1, TOTAL_STEPS))
+  }
+  const goBack = () => setStep(s => Math.max(s - 1, 1))
 
   // Duplicate detection
   const duplicate = useMemo(() => {
@@ -138,6 +162,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
         setSubmitting(false)
         return
       }
+      notify('Contacto creado')
       onCreated?.(result)
       onClose()
     } catch (e) {
@@ -183,8 +208,8 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
         {/* ── Body: 2-column layout ──────────────────── */}
         <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden bg-shell-bg/10">
           {/* Left column: DATOS BÁSICOS + CONTEXTO + NOTAS */}
-          <div className="w-full lg:w-1/2 border-r-0 lg:border-r border-border-subtle p-6 space-y-6 lg:overflow-y-auto shrink-0 lg:shrink">
-            <div>
+          <div className={`${[1, 3].includes(step) ? '' : 'hidden'} lg:block w-full lg:w-1/2 border-r-0 lg:border-r border-border-subtle p-6 space-y-6 lg:overflow-y-auto shrink-0 lg:shrink`}>
+            <div className={sv(1)}>
               <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.15em] mb-4">Datos básicos</h3>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3.5">
@@ -249,7 +274,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
             </div>
 
             {/* Contexto */}
-            <div>
+            <div className={sv(3)}>
               <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.15em] mb-3">Contexto</h3>
               <textarea
                 value={contexto}
@@ -261,7 +286,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
             </div>
 
             {/* Notas iniciales */}
-            <div>
+            <div className={sv(3)}>
               <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.15em] mb-3">Notas iniciales</h3>
               <textarea
                 value={notes}
@@ -274,9 +299,9 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
           </div>
 
           {/* Right column: CLASIFICACIÓN + FLAGS + PIPELINE */}
-          <div className="w-full lg:w-1/2 p-6 space-y-6 lg:overflow-y-auto shrink-0 lg:shrink border-t border-border-subtle lg:border-t-0">
+          <div className={`${[2, 3].includes(step) ? '' : 'hidden'} lg:block w-full lg:w-1/2 p-6 space-y-6 lg:overflow-y-auto shrink-0 lg:shrink border-t border-border-subtle lg:border-t-0`}>
             {/* Clasificación */}
-            <div>
+            <div className={sv(2)}>
               <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.15em] mb-4">Clasificación</h3>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3.5">
@@ -302,7 +327,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
             </div>
 
             {/* Flags */}
-            <div className="space-y-3.5">
+            <div className={`${sv(2)} space-y-3.5`}>
               <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.15em]">Flags</h3>
               <div className="flex flex-wrap gap-4 py-1.5 px-3 bg-shell-bg/40 border border-border-subtle rounded-xl">
                 <CheckboxField label="¿Estratégico?" checked={esEstrategico} onChange={setEsEstrategico} />
@@ -312,7 +337,7 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
             </div>
 
             {/* Pipeline (optional) */}
-            <div className="pt-5 border-t border-border-subtle space-y-4">
+            <div className={`${sv(3)} pt-5 border-t border-border-subtle space-y-4`}>
               <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.15em]">Agregar a pipeline (opcional)</h3>
               <div className="grid grid-cols-2 gap-3.5">
                 <Field label="Pipeline">
@@ -351,8 +376,8 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
           </div>
         )}
 
-        {/* ── Footer ─────────────────────────────────── */}
-        <div className="px-6 py-4 border-t border-border-subtle bg-shell-bg/20 shrink-0 flex items-center justify-end gap-3">
+        {/* ── Footer DESKTOP ─────────────────────────── */}
+        <div className="hidden lg:flex px-6 py-4 border-t border-border-subtle bg-shell-bg/20 shrink-0 items-center justify-end gap-3">
           <button
             onClick={onClose}
             disabled={submitting}
@@ -367,6 +392,45 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
           >
             {submitting ? 'Guardando...' : 'Crear contacto'}
           </button>
+        </div>
+
+        {/* ── Footer MÓVIL (stepper) ─────────────────── */}
+        <div className="lg:hidden px-4 py-3 border-t border-border-subtle bg-shell-bg/20 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div className="flex items-center justify-between mb-2.5">
+            <span className="text-[11px] font-semibold text-text-muted uppercase tracking-wider">
+              Paso {step} de {TOTAL_STEPS} · {STEP_LABELS[step - 1]}
+            </span>
+            <div className="flex gap-1.5">
+              {Array.from({ length: TOTAL_STEPS }, (_, i) => (
+                <span key={i} className={`h-1.5 rounded-full transition-all ${i + 1 === step ? 'w-5 bg-brand-accent' : 'w-1.5 bg-border-default'}`} />
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={step === 1 ? onClose : goBack}
+              disabled={submitting}
+              className="px-4 min-h-11 rounded-xl text-sm font-bold text-text-muted hover:bg-surface-2 cursor-pointer disabled:opacity-50 transition-colors"
+            >
+              {step === 1 ? 'Cancelar' : 'Atrás'}
+            </button>
+            {step < TOTAL_STEPS ? (
+              <button
+                onClick={goNext}
+                className="flex-1 min-h-11 rounded-xl text-sm font-bold bg-brand-accent hover:brightness-105 text-brand-primary cursor-pointer transition-all"
+              >
+                Siguiente
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                disabled={submitting || !firstName.trim()}
+                className="flex-1 min-h-11 rounded-xl text-sm font-bold bg-brand-accent hover:brightness-105 text-brand-primary cursor-pointer disabled:bg-surface-2 disabled:text-text-muted/50 disabled:cursor-not-allowed transition-all"
+              >
+                {submitting ? 'Guardando...' : 'Crear contacto'}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
