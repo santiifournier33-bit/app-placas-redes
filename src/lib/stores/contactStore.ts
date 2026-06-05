@@ -8,6 +8,11 @@ import type { PipelineStage } from './pipelinesStore'
 export type Contact = Tables<'contacts'>
 export type ContactPipeline = Tables<'contact_pipelines'>
 
+// Discriminador Contacto vs Inquiry. 'personal' = red personal del usuario (lo que
+// muestra el módulo Contactos). 'lead' = identidad de un interesado que consultó
+// (ingesta automática), visible solo en Consultas. Ver docs/ARQUITECTURA-CONTACTOS-INQUIRIES.md.
+export type ContactKind = 'personal' | 'lead'
+
 export type Circle = 'principal' | 'fundamental' | 'vital'
 export type Category = 'A' | 'B' | 'C' | 'D'
 export type Source = 'referido' | 'portal' | 'redes' | 'oficina' | 'otro'
@@ -123,6 +128,8 @@ export const useContactStore = create<ContactState>((set, get) => ({
         .from('contacts')
         .select('*')
         .eq('owner_id', user.id)
+        // Lente Contactos = solo red personal. Los 'lead' (consultas) viven en Consultas.
+        .eq('kind', 'personal')
         .is('deleted_at', null)
         .order('id', { ascending: true })
         .limit(PAGE)
@@ -155,12 +162,17 @@ export const useContactStore = create<ContactState>((set, get) => ({
       }, (payload) => {
         if (payload.eventType === 'INSERT') {
           const row = payload.new as Contact
-          set(s => ({ contacts: [row, ...s.contacts] }))
+          // Solo entra al lente personal. Las inserciones 'lead' (ingesta) se ignoran aquí.
+          if (row.kind === 'personal') set(s => ({ contacts: [row, ...s.contacts] }))
         } else if (payload.eventType === 'UPDATE') {
           const row = payload.new as Contact
-          set(s => ({
-            contacts: s.contacts.map(c => c.id === row.id ? row : c),
-          }))
+          set(s => {
+            const present = s.contacts.some(c => c.id === row.id)
+            // Promovido a personal → agregar; despromovido → quitar; si ya está → refrescar.
+            if (row.kind !== 'personal') return { contacts: s.contacts.filter(c => c.id !== row.id) }
+            if (!present) return { contacts: [row, ...s.contacts] }
+            return { contacts: s.contacts.map(c => c.id === row.id ? row : c) }
+          })
         } else if (payload.eventType === 'DELETE') {
           const old = payload.old as { id: string }
           set(s => ({
@@ -212,7 +224,8 @@ export const useContactStore = create<ContactState>((set, get) => ({
 
     const { data: contact, error } = await supabase
       .from('contacts')
-      .insert({ ...data, owner_id: user.id })
+      // Alta manual / CSV = contacto personal (red del usuario).
+      .insert({ kind: 'personal', ...data, owner_id: user.id })
       .select()
       .single()
 

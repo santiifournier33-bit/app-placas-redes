@@ -267,6 +267,9 @@ export async function processInbound(payload: InboundPayload): Promise<{
         primary_email: email,
         primary_phone: phone,
         owner_id: ownerId,
+        // Ingesta automática = identidad de lead. NUNCA 'personal'.
+        // El módulo Contactos filtra kind='personal'; estos solo se ven en Consultas.
+        kind: 'lead',
         source: payload.source_portal === 'web' || payload.source === 'freire-web-moderna' ? 'web'
           : payload.source_portal === 'argenprop' || payload.source_portal === 'zonaprop' ? 'portal'
           : 'tokko',

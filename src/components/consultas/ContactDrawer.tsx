@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import {
   X, MessageCircle, Check, Mail, Phone, ExternalLink,
-  Calendar, Tag, Home, AlertCircle, ChevronDown,
+  Calendar, Tag, Home, AlertCircle, ChevronDown, UserPlus,
 } from 'lucide-react'
 
 interface UserPreferences {
@@ -138,6 +138,8 @@ export default function ContactDrawer(props: DrawerProps) {
   const [error, setError] = useState<string | null>(null)
   const [showBreakdown, setShowBreakdown] = useState(false)
   const [markingResponded, setMarkingResponded] = useState(false)
+  const [promoting, setPromoting] = useState(false)
+  const [promoted, setPromoted] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -173,6 +175,18 @@ export default function ContactDrawer(props: DrawerProps) {
       }
     } finally {
       setMarkingResponded(false)
+    }
+  }
+
+  // Promueve el lead a contacto personal (kind='personal') → pasa a aparecer en el módulo Contactos.
+  async function handlePromote() {
+    if (promoting || promoted) return
+    setPromoting(true)
+    try {
+      const r = await fetch(`/api/consultas/contact/${contactId}/promote`, { method: 'POST' })
+      if (r.ok) setPromoted(true)
+    } finally {
+      setPromoting(false)
     }
   }
 
@@ -610,6 +624,17 @@ export default function ContactDrawer(props: DrawerProps) {
                   >
                     <Check size={14} />
                     {markingResponded ? 'Marcando...' : 'Marcar respondida'}
+                  </button>
+                )}
+                {(data.contact.is_own || data.contact.viewer_role === 'admin') && (
+                  <button
+                    onClick={handlePromote}
+                    disabled={promoting || promoted}
+                    title="Convertir este lead en un contacto de tu red personal"
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-purple-500/15 text-purple-300 text-xs font-bold hover:bg-purple-500/25 cursor-pointer disabled:opacity-50"
+                  >
+                    {promoted ? <Check size={14} /> : <UserPlus size={14} />}
+                    {promoted ? 'Guardado en Contactos' : promoting ? 'Guardando...' : 'Guardar en mis contactos'}
                   </button>
                 )}
               </section>

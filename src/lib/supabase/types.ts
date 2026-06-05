@@ -374,6 +374,7 @@ export type Database = {
           es_mentor: boolean | null
           first_name: string
           id: string
+          kind: string
           last_activity_at: string | null
           last_contact_date: string | null
           last_name: string | null
@@ -402,6 +403,7 @@ export type Database = {
           es_mentor?: boolean | null
           first_name: string
           id?: string
+          kind?: string
           last_activity_at?: string | null
           last_contact_date?: string | null
           last_name?: string | null
@@ -430,6 +432,7 @@ export type Database = {
           es_mentor?: boolean | null
           first_name?: string
           id?: string
+          kind?: string
           last_activity_at?: string | null
           last_contact_date?: string | null
           last_name?: string | null
