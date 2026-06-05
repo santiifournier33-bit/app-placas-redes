@@ -1,21 +1,24 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
+import { getApiUser } from '@/lib/auth/api-auth'
 
 const DOCUSEAL_URL = process.env.DOCUSEAL_URL!
 const DOCUSEAL_API_KEY = process.env.DOCUSEAL_API_KEY!
 
 export async function GET() {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getApiUser()
     if (!user) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    // Load this user's DocuSeal submission ids from the local mapping table
-    const { data: mappings, error: mappingErr } = await supabase
+    // Load this user's DocuSeal submission ids from the local mapping table.
+    // Service client bypasses RLS, so scope to the owner explicitly (was RLS-scoped before).
+    const admin = createServiceClient()
+    const { data: mappings, error: mappingErr } = await admin
       .from('signature_submissions')
       .select('docuseal_submission_id')
+      .eq('owner_id', user.id)
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useHydrated } from "@/lib/hooks/useHydrated"
 import { Bell, X, AlertTriangle } from "lucide-react"
 import { useServiciosStore } from "@/lib/stores/serviciosStore"
 import { getPaymentStatus, daysUntilDue } from "@/lib/servicios/status"
@@ -9,12 +10,11 @@ import { getPaymentStatus, daysUntilDue } from "@/lib/servicios/status"
 const STORAGE_KEY = "servicios-last-reminder-shown"
 
 export function ReminderToast() {
-  const [mounted, setMounted] = useState(false)
+  const mounted = useHydrated()
   const [dismissed, setDismissed] = useState(false)
   const { payments, providers } = useServiciosStore()
 
   useEffect(() => {
-    setMounted(true)
     const today = new Date().toISOString().slice(0, 10)
     const last = localStorage.getItem(STORAGE_KEY)
     if (last === today) setDismissed(true)

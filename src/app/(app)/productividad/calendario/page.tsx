@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { Plus, ChevronLeft, ChevronRight, X } from "lucide-react"
+import { useHydrated } from "@/lib/hooks/useHydrated"
 import {
   useCalendarStore, EVENT_COLORS,
   type EventType,
@@ -25,7 +26,7 @@ type CalendarItem = {
 }
 
 export default function CalendarioPage() {
-  const [mounted, setMounted] = useState(false)
+  const mounted = useHydrated()
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -35,7 +36,6 @@ export default function CalendarioPage() {
   const { tasks, init: initTasks } = useTaskStore()
 
   useEffect(() => {
-    setMounted(true)
     initCalendar()
     initTasks()
     fetch('/api/auth/me')

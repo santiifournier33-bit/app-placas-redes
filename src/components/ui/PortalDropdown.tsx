@@ -48,6 +48,10 @@ export function PortalDropdown({
 }: PortalDropdownProps) {
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
   const panelRef = useRef<HTMLDivElement>(null)
+  // True once the panel has been positioned. Until then we ignore scroll events:
+  // an `autoFocus` input inside the panel mounts off-screen (-9999) and the browser
+  // scrolls to reveal it, firing a spurious scroll that would otherwise close us.
+  const readyRef = useRef(false)
 
   const computePosition = useCallback(() => {
     const anchor = anchorRef.current
@@ -83,10 +87,12 @@ export function PortalDropdown({
     }
 
     setPos({ top, left })
+    readyRef.current = true
   }, [anchorRef, placement, offset])
 
   useEffect(() => {
     if (!open) return
+    readyRef.current = false
     // Compute on next frame so panel measures correctly
     requestAnimationFrame(computePosition)
 
@@ -100,6 +106,8 @@ export function PortalDropdown({
       }
     }
     const handleScroll = (e: Event) => {
+      // Ignore scrolls fired before the panel is positioned (autoFocus reveal scroll).
+      if (!readyRef.current) return
       // Scrolling inside the panel itself (e.g. a long, scrollable list) must
       // not close it — only reposition/close on ancestor or window scroll.
       if (panelRef.current && e.target instanceof Node && panelRef.current.contains(e.target)) return

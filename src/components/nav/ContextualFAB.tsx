@@ -1,6 +1,7 @@
 "use client"
 
 import { usePathname, useRouter } from "next/navigation"
+import { motion, useReducedMotion } from "framer-motion"
 import { Plus, MessageCircle, Send, type LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -19,6 +20,12 @@ interface FabAction {
 }
 
 const FAB_ACTIONS: FabAction[] = [
+  {
+    match: (p) => p.startsWith("/productividad/tareas"),
+    label: "Nueva tarea",
+    Icon: Plus,
+    eventName: "fab:new-task",
+  },
   {
     match: (p) => p.startsWith("/productividad/contactos") && !p.includes("/contactos/"),
     label: "Nuevo contacto",
@@ -59,6 +66,7 @@ const FAB_ACTIONS: FabAction[] = [
 export function ContextualFAB() {
   const pathname = usePathname()
   const router = useRouter()
+  const reduce = useReducedMotion()
   const action = FAB_ACTIONS.find((a) => a.match(pathname))
   if (!action) return null
 
@@ -76,21 +84,24 @@ export function ContextualFAB() {
       : "bg-brand-navy hover:bg-brand-navy-700 text-white"
 
   return (
-    <button
+    <motion.button
       type="button"
       onClick={handle}
       aria-label={action.label}
+      initial={reduce ? false : { scale: 0, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 500, damping: 22 }}
+      whileTap={{ scale: 0.9 }}
       className={cn(
         // Sits above the bottom nav (which is ~64px tall + safe-area).
         "fixed right-4 z-40 lg:hidden",
-        "size-14 rounded-full shadow-lg flex items-center justify-center transition-all",
-        "active:scale-95",
+        "size-14 rounded-full shadow-lg flex items-center justify-center",
         variantClass,
       )}
       style={{ bottom: "calc(72px + env(safe-area-inset-bottom))" }}
     >
       <action.Icon size={22} strokeWidth={2.2} />
       <span className="sr-only">{action.label}</span>
-    </button>
+    </motion.button>
   )
 }

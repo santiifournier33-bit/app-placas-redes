@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { getSession } from '@/lib/auth/session'
+import { getApiUser } from '@/lib/auth/api-auth'
 import {
   buildReasonsText,
   computeMatchScoreSmart,
@@ -91,12 +90,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Missing property_id' }, { status: 400 })
     }
 
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getApiUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    const session = await getSession()
-    const isAdmin = session?.role === 'admin'
+    const isAdmin = user.role === 'admin'
 
     // Service client bypasses RLS — inquiries should be visible to all advisors,
     // with PII masking applied below based on contact.owner_id vs user.id (admins see all).
@@ -164,7 +160,10 @@ export async function GET(req: NextRequest) {
     inquiries.forEach((inq, i) => {
       const inquiryAttrs = inquiryAttrsList[i]
       const prefs = (inq.user_preferences as UserPreferences | null) ?? null
-      const inquiryOp = prefs?.operation_type ?? inquiryAttrs.operation_type
+      // Regla de negocio: las preferencias de ZonaProp son SOLO referencia/contexto.
+      // Nunca deben afectar filtro/elegibilidad/score. La operación se evalúa siempre
+      // por el snapshot de la propiedad realmente consultada, no por prefs.operation_type.
+      const inquiryOp = inquiryAttrs.operation_type
       if (!operationsMatch(propAttrs.operation_type, inquiryOp)) return
       const score = computeMatchScoreSmart(propAttrs, inquiryAttrs, prefs)
       if (score.total < 40) return

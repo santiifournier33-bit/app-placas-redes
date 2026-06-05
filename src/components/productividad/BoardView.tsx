@@ -40,8 +40,8 @@ export function BoardView({ tasks, sections, showCompleted, onSelectTask, onTogg
 
   return (
     <div 
-      className="flex items-start gap-3 overflow-x-auto pt-4 pb-6 min-h-[60vh] lg:px-4 snap-container" 
-      style={{ scrollSnapType: "x mandatory", paddingLeft: "calc((100vw - 92vw) / 2)", paddingRight: "calc((100vw - 92vw) / 2)" }}
+      className="flex items-start gap-3 overflow-x-auto pt-4 pb-6 min-h-[60vh] lg:px-4 snap-container"
+      style={{ scrollSnapType: "x mandatory", overscrollBehaviorX: "contain", paddingLeft: "calc((100vw - 92vw) / 2)", paddingRight: "calc((100vw - 92vw) / 2)" }}
     >
       {/* (Sin sección) column */}
       <div className="snap-center shrink-0">

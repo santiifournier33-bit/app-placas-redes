@@ -370,6 +370,19 @@ export function computeMatchScore(
   inquiry: PropertyAttributes,
 ): MatchScore {
   const zone = scoreZone(prop, inquiry)
+  // Gate geográfico: un match DEBE tener algún solape de zona. zone_kind 'none'
+  // (otra área, sin proximidad de coords ni jerarquía en común) no es justificable
+  // geográficamente — se descarta sin importar coincidencia de precio/tipo/dorm.
+  // Antes, una inquiry en otra ciudad podía llegar a 60 (precio+dorm+tipo perfectos)
+  // y superar el threshold de 40 pese a zona = 0.
+  if (zone.kind === 'none') {
+    return {
+      total: 0,
+      breakdown: { zone: 0, price: 0, bedrooms: 0, type: 0 },
+      zone_kind: 'none',
+      reasons: ['sin cercanía geográfica'],
+    }
+  }
   const bedrooms = scoreBedrooms(prop, inquiry)
   const type = scoreType(prop, inquiry)
   // Q7 Opción B: cuando zona alta + dorm cerca + tipo OK, expandimos rango de precio
@@ -457,7 +470,11 @@ export function buildReasonsText(score: MatchScore, lastInquiredAt: string | Dat
 }
 
 // ============================================================
-// User preferences scoring (when explicit Zonaprop prefs exist)
+// User preferences (Zonaprop) — REFERENCIA/DISPLAY ÚNICAMENTE.
+// Regla de negocio: nunca deben afectar score, ranking, filtro ni elegibilidad.
+// El tipo se conserva para tipar el campo en el route + el drawer de contacto.
+// (Las antiguas funciones …FromPrefs que SÍ puntuaban con prefs fueron eliminadas:
+//  eran código muerto sin call-sites y un riesgo de reintroducir esa influencia.)
 // ============================================================
 
 export interface UserPreferences {
@@ -477,126 +494,6 @@ export interface UserPreferences {
   surface_covered_max?: number | null
   expenses_min?: number | null
   expenses_max?: number | null
-}
-
-function scoreZoneFromPrefs(prop: PropertyAttributes, prefs: UserPreferences): { score: number; reason: string } {
-  if (!prefs.zones || prefs.zones.length === 0) return { score: 0, reason: '' }
-  // Tiers analogous to scoreZone: barrio 100 > localidad 40 > partido 20.
-  // Prefs are zone names (no coords) — radius bands not applicable here.
-  const propName = (prop.location_name ?? '').toLowerCase().trim()
-  const propFullParts = (prop.location_full ?? '').toLowerCase().split('|').map(s => s.trim())
-  // Tokko location_full format: "Argentina | <region> | <partido> | <barrio>"
-  const barrio = propFullParts[3] ?? ''
-  const partido = propFullParts[2] ?? ''
-  const region = propFullParts[1] ?? ''
-
-  // Pass 1: barrio match (exact or bidirectional includes vs location_name / parts[3])
-  for (const wanted of prefs.zones) {
-    const w = wanted.toLowerCase().trim()
-    if (!w) continue
-    if (barrio && (barrio === w || w.includes(barrio) || barrio.includes(w))) {
-      return { score: 100, reason: `${wanted} (barrio preferido)` }
-    }
-    if (propName && (propName === w || w.includes(propName) || propName.includes(w))) {
-      return { score: 100, reason: `${wanted} (barrio preferido)` }
-    }
-  }
-  // Pass 2: localidad / partido / región match
-  for (const wanted of prefs.zones) {
-    const w = wanted.toLowerCase().trim()
-    if (!w) continue
-    if (partido && (partido === w || partido.includes(w) || w.includes(partido))) {
-      return { score: 40, reason: `${wanted} (misma localidad preferida)` }
-    }
-    if (region && (region === w || region.includes(w))) {
-      return { score: 20, reason: `${wanted} (mismo partido preferido)` }
-    }
-  }
-  return { score: 0, reason: '' }
-}
-
-function scorePriceFromPrefs(prop: PropertyAttributes, prefs: UserPreferences): { score: number; reason: string; isValid: boolean } {
-  if (prop.price == null || prefs.price_max == null) return { score: 0, reason: '', isValid: true }
-  if (prefs.currency && prop.currency && prefs.currency !== prop.currency) return { score: 0, reason: 'monedas diferentes', isValid: false }
-  const minP = prefs.price_min ?? 0
-  const maxP = prefs.price_max
-  if (prop.price >= minP && prop.price <= maxP) {
-    return { score: 100, reason: `dentro de rango ${prefs.currency ?? ''} ${minP.toLocaleString('es-AR')}-${maxP.toLocaleString('es-AR')}`, isValid: true }
-  }
-  // 15% tolerance above/below
-  if (prop.price >= minP * 0.85 && prop.price <= maxP * 1.15) {
-    return { score: 60, reason: `cerca del rango buscado`, isValid: true }
-  }
-  return { score: 0, reason: 'precio fuera de rango', isValid: false }
-}
-
-function scoreBedroomsFromPrefs(prop: PropertyAttributes, prefs: UserPreferences): { score: number; reason: string } {
-  if (prop.bedrooms == null) return { score: 0, reason: '' }
-  const minB = prefs.bedrooms_min ?? null
-  const maxB = prefs.bedrooms_max ?? null
-  if (minB == null && maxB == null) return { score: 0, reason: '' }
-  if ((minB == null || prop.bedrooms >= minB) && (maxB == null || prop.bedrooms <= maxB)) {
-    return { score: 100, reason: `${prop.bedrooms} dorm (dentro de ${minB ?? '?'}-${maxB ?? '?'})` }
-  }
-  const closestDiff = Math.min(
-    minB != null ? Math.abs(prop.bedrooms - minB) : Infinity,
-    maxB != null ? Math.abs(prop.bedrooms - maxB) : Infinity,
-  )
-  if (closestDiff === 1) return { score: 50, reason: `${prop.bedrooms} dorm (±1)` }
-  if (closestDiff === 2) return { score: 10, reason: `${prop.bedrooms} dorm (±2)` }
-  return { score: 0, reason: '' }
-}
-
-function scoreTypeFromPrefs(prop: PropertyAttributes, prefs: UserPreferences): { score: number; reason: string; isValid: boolean } {
-  if (!prop.property_type || !prefs.property_type) return { score: 0, reason: '', isValid: true }
-  if (propertyTypesCompatible(prop.property_type, prefs.property_type)) {
-    return { score: 100, reason: prop.property_type, isValid: true }
-  }
-  return { score: 0, reason: 'tipo de propiedad incompatible', isValid: false }
-}
-
-/** Score using explicit user preferences (from Zonaprop email "Conocé lo que busca").
- *  Same weights as snapshot-based scoring: zone 40 / price 30 / bedrooms 20 / type 10. */
-export function computeMatchScoreFromPrefs(
-  prop: PropertyAttributes,
-  prefs: UserPreferences,
-): MatchScore {
-  const zone = scoreZoneFromPrefs(prop, prefs)
-  const price = scorePriceFromPrefs(prop, prefs)
-  const bedrooms = scoreBedroomsFromPrefs(prop, prefs)
-  const type = scoreTypeFromPrefs(prop, prefs)
-
-  // Hard filter: if price or property type is invalid, score is 0
-  if (!price.isValid || !type.isValid) {
-    return {
-      total: 0,
-      breakdown: { zone: zone.score, price: price.score, bedrooms: bedrooms.score, type: type.score },
-      zone_kind: 'none',
-      reasons: [
-        !price.isValid ? price.reason : '',
-        !type.isValid ? type.reason : ''
-      ].filter(Boolean),
-    }
-  }
-
-  const total = Math.round(
-    zone.score * 0.40 +
-    price.score * 0.30 +
-    bedrooms.score * 0.20 +
-    type.score * 0.10,
-  )
-  const reasons: string[] = []
-  if (zone.reason) reasons.push(zone.reason)
-  if (price.reason) reasons.push(price.reason)
-  if (bedrooms.reason) reasons.push(bedrooms.reason)
-  if (type.reason) reasons.push(type.reason)
-
-  return {
-    total,
-    breakdown: { zone: zone.score, price: price.score, bedrooms: bedrooms.score, type: type.score },
-    zone_kind: 'none',
-    reasons,
-  }
 }
 
 /** Score is always computed against the property the contact actually consulted

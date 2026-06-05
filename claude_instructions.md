@@ -25,7 +25,7 @@ Vas a actuar como un experto en UI/UX Frontend siguiendo el playbook de **`redes
 ## 3. Proceso de Trabajo Paso a Paso
 
 ### Paso 1: Auditoría de Diseño (Scan & Diagnose)
-Antes de modificar cualquier archivo, realiza una auditoría completa del diseño actual de `app-placas-redes`. Identifica y reporta:
+Antes de modificar cualquier archivo, **leé `AGENTS/mobile-first.md` y auditá el diseño actual contra su checklist** (no solo estética: touch targets, colapso `< md`, tablas→cards, `100dvh`, safe-areas, estados, performance móvil). Luego realiza una auditoría completa del diseño actual de `app-placas-redes`. Identifica y reporta:
 - Debilidades en el layout responsivo actual (PC vs Móvil).
 - Problemas de espaciado, alineación y consistencia visual.
 - Calidad de la tipografía y jerarquía visual.

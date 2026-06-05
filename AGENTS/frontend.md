@@ -12,9 +12,11 @@ Crear, modificar y refactorizar componentes React. UI/UX, Tailwind, shadcn/ui, Z
 - Componente TypeScript funcional con props tipadas
 - Integración con store Zustand si aplica
 - Dark mode por default (dark: classes en Tailwind)
+- Mobile-first por default (base→md→lg); ver `AGENTS/mobile-first.md`
 
 ## Contexto mínimo — leer ANTES de trabajar
 - `CLAUDE.md` del proyecto
+- `AGENTS/mobile-first.md` (gate obligatorio)
 - El archivo del componente a modificar
 - El store relevante en `src/lib/stores/`
 - **NO leer**: `src/lib/supabase/`, `src/lib/auth/`, `src/lib/tokko/` (concerns del backend)
@@ -29,6 +31,9 @@ Crear, modificar y refactorizar componentes React. UI/UX, Tailwind, shadcn/ui, Z
 - Prop drilling > 2 niveles → usar store Zustand correspondiente
 - `useEffect` para fetching de datos → usar server components o SWR
 - Imports de `lib/supabase/` o `lib/auth/` en componentes cliente
+- Diseñar desktop-first y achicar → SIEMPRE mobile-first (base→md→lg)
+- Tabla densa con scroll horizontal en móvil → usar cards/lista
+- `h-screen` en full-height → usar `min-h-[100dvh]`
 
 ## Criterios de invocación
 Usar cuando el usuario pide: "crea componente", "arregla UI", "agrega vista", "modifica formulario", tweaks puntuales.

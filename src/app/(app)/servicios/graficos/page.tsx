@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import dynamic from "next/dynamic"
+import { useHydrated } from "@/lib/hooks/useHydrated"
 import { PeriodSelector, type Period } from "@/components/servicios/charts/PeriodSelector"
 
 // Charts pull in recharts (~heavy). Load them only when rendered, never on
@@ -25,8 +26,7 @@ const IngresosChart = dynamic(
 type ChartTab = "general" | "gastos" | "ingresos"
 
 export default function GraficosPage() {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
+  const mounted = useHydrated()
 
   const [tab, setTab] = useState<ChartTab>("general")
   const [period, setPeriod] = useState<Period>("month")

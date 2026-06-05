@@ -211,10 +211,24 @@ body {
   min-width: 44px;
 }
 
-/* Task checkboxes: explicit override so the touch-target rule doesn't balloon them to 44×44. */
+/* Task checkboxes: explicit override so the touch-target rule doesn't balloon them to 44×44.
+ * NOTE: TaskItem now wraps a small visual circle inside a 44×44 hit area, so the
+ * checkbox button itself keeps the global tap-target. This class remains for any
+ * legacy callsite that still needs a compact, non-ballooned box. */
 .task-checkbox {
   min-height: auto !important;
   min-width: auto !important;
+}
+
+/* ── Mobile tactile polish ─────────────────────────────────────────────────
+ * On coarse pointers, remove the 300ms tap delay (touch-action: manipulation)
+ * and the grey flash overlay iOS/Android paint on tap. Applied broadly to
+ * interactive elements so the whole app feels native, not just Tareas. */
+@media (pointer: coarse) {
+  button, [role="button"], a[href], summary, .tap-target, label[for] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
 }
 
 /* ── iOS Safari auto-zoom prevention ──────────────────────────────────────────

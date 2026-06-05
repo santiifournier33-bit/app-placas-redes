@@ -63,12 +63,13 @@ N1 — METODOLOGÍA (Superpowers)
   brainstorming → writing-plans → executing/subagent → verification
 
 N2 — DOMINIO FUNCIONAL
+  AGENTS/mobile-first.md    → MOBILE-FIRST (gate duro, toda UI de producto/CRM)
   Supabase                  → database/schema/RLS
   Netlify                   → deploy/infra/edge
   Firecrawl                 → research APIs externas
   Frontend Design           → standards estéticas
   ui-ux-pro-max             → diseño nuevo con stack genérico
-  claude_instructions.md    → REDESIGN UI/UX (4 pasos, mobile-first)
+  claude_instructions.md    → REDESIGN UI/UX (4 pasos, hereda mobile-first.md)
   Chrome DevTools           → debugging visual/perf/a11y
   Context7                  → docs librerías conocidas
   n8n MCP                   → workflows en prod (Oracle Cloud)
@@ -89,6 +90,7 @@ N4 — UTILIDAD
 
 | Conflicto | Regla |
 |---|---|
+| `mobile-first.md` vs `design-taste-frontend` | `mobile-first.md` = UI de producto/CRM (esta app: tablas, formularios, navegación). `design-taste-frontend` = landing/portfolio. NO se solapan: si la tarea es la app interna → mobile-first manda. |
 | `ui-ux-pro-max` vs `frontend-design` | `frontend-design` = standards (cómo se ve). `ui-ux-pro-max` = decisiones de diseño nuevo (qué stack/patrón). Usar ambos: pro-max decide, design valida. |
 | `claude_instructions.md` vs `frontend-design`/`ui-ux-pro-max` | **`claude_instructions.md` TIENE PRECEDENCIA** para cualquier rediseño en app-placas-redes. Los otros son fallback si la tarea no es rediseño. |
 | Superpowers brainstorming vs ui-ux-pro-max | Brainstorming primero (WHAT). ui-ux-pro-max después (HOW). |
@@ -108,13 +110,17 @@ N4 — UTILIDAD
 ```
 1. Caveman hook activo → tone comprimido por default
 2. Capability Check → ¿skill/plugin/MCP resuelve esto?
-   ├── SÍ → invocar. Documentar invocation pattern si nuevo.
-   └── NO → proceder con razonamiento + actualizar AGENTS/ si patrón emerge
+   ├── a) GOVERNANCE estático (este doc) → ¿ya está instalado algo que aplique?
+   ├── b) si nada encaja y es tarea común/novedosa → skill `find-skills` (descubrimiento dinámico)
+   ├── c) instalar externo SOLO tras vetar SKILL.md + hash pin (`skills-lock.json`)
+   └── NO (trivial o dominio cubierto) → proceder + actualizar AGENTS/ si patrón emerge
 3. Superpowers Gate → ¿es tarea nueva o bugfix?
    ├── NUEVA → brainstorming → writing-plans → executing/subagent
    └── BUGFIX → systematic-debugging → TDD → verification
-4. Domain Selection → seleccionar plugin Layer 2 según scope
-5. Quality Gates al cerrar → verify, code-review, security-review si aplica
+4. Domain Selection → seleccionar plugin Layer 2 según scope.
+   Si toca UI → AGENTS/mobile-first.md es gate obligatorio.
+5. Quality Gates al cerrar → verify, code-review, security-review si aplica.
+   Si tocó UI → pasar checklist de AGENTS/mobile-first.md antes de "listo".
 ```
 
 ### Triggers automáticos (hooks)
@@ -140,6 +146,27 @@ N4 — UTILIDAD
 | `schedule` | Cron-based remote agents | Tareas programadas |
 | `simplify` | Equivalente a `code-review --fix` | Post-implementación |
 | `update-config` | Modifica settings.json | Configurar hooks, permisos, env vars |
+| `find-skills` | Descubre skills del ecosistema abierto (`npx skills find` + skills.sh) | Solo si el user pregunta "¿hay skill para X?" o necesidad NUEVA sin cobertura. NO para tareas triviales ni dominios ya cubiertos. |
+
+### Política de skills externos (CLI `skills`)
+
+- El CLI `skills` (`npx skills`) es el mecanismo **sancionado SOLO para vendorear skills
+  externos**, con hash pinning en `skills-lock.json`. NO es capa de workflow ni reemplaza plugins.
+- **Vetar el contenido del `SKILL.md` antes de `skills add`/pinear** (supply-chain: un skill
+  corre con permisos totales del agente; `find-skills` salió Snyk "Med Risk").
+- Ubicación: skills que deban **auto-activar** en Claude Code → `.claude/skills/` (proyecto) o
+  `~/.claude/skills/` (global). Playbooks grandes de uso puntual (rediseño) → `AGENTS/skills/`
+  + referencia manual desde este doc.
+- **Trazabilidad:** registrar en la tabla Ownership qué skill se instaló, su fuente y por qué.
+
+**Skills vendoreados (registro):**
+- `design-taste-frontend` (de `Leonxlnx/taste-skill`) → `AGENTS/skills/`, ref manual. Landing/portfolio.
+- `vercel-react-best-practices` (de `vercel-labs/agent-skills`, Snyk Low) → `.claude/skills/`, auto-activa.
+  70 reglas perf React/Next 16; complementa `mobile-first.md` (perf móvil). Pineado en `skills-lock.json`.
+- **DESCARTADO** `web-design-guidelines` (vercel-labs): es wrapper que **descarga reglas en runtime**
+  → el hash pin solo fija el wrapper, no las reglas (rompe reproducibilidad); además solapa con
+  `chrome-devtools:a11y-debugging`. Los 2-3 ítems móviles genuinos (touch-action, tap-highlight,
+  overscroll) se absorbieron en `AGENTS/mobile-first.md`.
 
 ---
 
@@ -156,7 +183,7 @@ N4 — UTILIDAD
    ├── implementer (con AGENTS/ relevante)
    ├── spec reviewer
    └── code quality reviewer
-6. verification-before-completion → evidencia
+6. verification-before-completion → evidencia (si tocó UI: pasar checklist AGENTS/mobile-first.md)
 7. code-review --comment   → review pre-PR (o pr-review si PR ya existe)
 8. security-review         → si toca endpoints/auth/deploy
 9. deploy (skill)          → checklist pre-prod
@@ -178,7 +205,8 @@ N4 — UTILIDAD
 
 ```
 1. LEER ../claude_instructions.md PRIMERO ← OBLIGATORIO (playbook 4 pasos)
-2. LEER AGENTS/skills/design-taste-frontend.md ← skill anti-slop frontend del proyecto
+1b. LEER AGENTS/mobile-first.md ← gate móvil (esta app ES producto/CRM)
+2. LEER AGENTS/skills/design-taste-frontend.md ← skill anti-slop (solo si toca landing pública)
 3. Paso 1: Auditoría (Scan & Diagnose)
 4. Paso 2: Reportar + hacer preguntas → ESPERAR confirmación user
 5. Paso 3: Planificación (writing-plans)
@@ -242,13 +270,16 @@ atnigravitty/
     ├── CLAUDE.md                                ← contexto + quick-ref plugins
     ├── AGENTS.md                                ← Next.js 16 rules (no tocar)
     ├── claude_instructions.md                   ← Playbook UI/UX (precedencia en redesigns)
+    ├── .claudeignore                            ← aísla ruido (curso, logs, .bak, .msi)
+    ├── skills-lock.json                          ← hash pin de skills vendoreados (CLI skills)
     ├── README.md
     ├── AGENTS/
     │   ├── GOVERNANCE.md                        ← este archivo
+    │   ├── mobile-first.md                      ← FUENTE ÚNICA Mobile-First (gate duro)
     │   ├── frontend.md, backend.md, security.md, database.md
     │   ├── audit.md, docs.md, n8n.md
     │   └── skills/
-    │       └── design-taste-frontend.md         ← skill anti-slop frontend (local project)
+    │       └── design-taste-frontend.md         ← skill anti-slop landing (local project)
     └── docs/
         ├── architecture.md, integrations.md, env-vars.md
         ├── INFRAESTRUCTURA-FREIRE.md
@@ -268,6 +299,8 @@ atnigravitty/
 | Archivo | Owner | Cuándo actualizar |
 |---|---|---|
 | `AGENTS/GOVERNANCE.md` | Arquitecto sistema | Al cambiar plugin set o agregar skill |
+| `AGENTS/mobile-first.md` | Arquitecto + User | Al cambiar doctrina móvil |
+| `skills-lock.json` (skills vendoreados) | Claude (al instalar skill externo) | Registrar fuente + motivo del skill |
 | `CLAUDE.md` quick-ref | Claude (fin sesión) | Via `claude-md-improver` |
 | `claude_instructions.md` | User (decisiones diseño) | Antes de cada redesign cycle |
 | `docs/INFRAESTRUCTURA-FREIRE.md` | User (credenciales) | Cuando cambia infra |

@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useMemo } from "react"
 import { Plus, DollarSign, AlertTriangle, Clock, TrendingUp } from "lucide-react"
+import { useHydrated } from "@/lib/hooks/useHydrated"
 import { startOfMonth, endOfMonth, isWithinInterval } from "date-fns"
 import { useServiciosStore } from "@/lib/stores/serviciosStore"
 import { getPaymentStatus } from "@/lib/servicios/status"
@@ -14,8 +15,7 @@ import { formatARS, formatUSD } from "@/components/servicios/CurrencyAmount"
 import type { Payment } from "@/lib/stores/serviciosStore"
 
 export default function ServiciosDashboardPage() {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
+  const mounted = useHydrated()
 
   const store = useServiciosStore()
   const { payments, providers, categories } = store

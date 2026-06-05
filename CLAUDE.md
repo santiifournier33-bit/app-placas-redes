@@ -73,12 +73,15 @@ Jerarquía operativa — detalles completos en `AGENTS/GOVERNANCE.md`:
 - Service client Supabase bypassa RLS → filtrado de PII debe hacerse manualmente en server routes.
 
 ## Reglas operativas
-- Secrets NUNCA en código → solo env vars
-- Dark mode first en todo componente nuevo
-- Error format consistente: `{ error: string, code: string }`
-- Timeout 10s en llamadas HTTP externas
-- Validar inputs con Zod en boundary de API routes
-- GHL_LOCATION_ID siempre desde `process.env.GHL_LOCATION_ID`
+- **Mobile-First (NO NEGOCIABLE):** plataforma principal = móvil. Toda tarea de UI (feature,
+  bugfix, refactor, rediseño) sigue `AGENTS/mobile-first.md` y pasa su checklist antes de "lista".
+- **Capability Check (antes de construir algo complejo/novedoso):** 1) mirar `AGENTS/GOVERNANCE.md`
+  (skills ya instalados); 2) si nada encaja y es común → skill `find-skills`; 3) instalar externo
+  SOLO tras vetar SKILL.md + hash pin. No usar find-skills en tareas triviales ni dominios cubiertos.
+- Dark mode first en todo componente nuevo.
+- God components (`Dashboard.tsx`, `SocialPublisherForm.tsx`): no editar sin scope acotado.
+- Reglas globales (secrets, error `{error,code}`, timeout 10s, retry, validación Zod, GHL_LOCATION_ID,
+  reglas DB) → ver `~/.claude/rules/`. No duplicar aquí.
 
 ## Deploy
 Netlify auto-deploy en push a `main`. Ver `netlify.toml`. Build requiere 8GB heap (`NODE_OPTIONS=--max-old-space-size=8192`).

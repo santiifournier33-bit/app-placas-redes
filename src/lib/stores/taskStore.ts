@@ -25,8 +25,11 @@ export interface TaskState {
   tasks: Task[]
   sections: TaskSection[]
   initialized: boolean
+  /** Last write/read failure surfaced to the UI. null = no error. */
+  error: string | null
 
   reset: () => void
+  clearError: () => void
   init: () => Promise<void>
   addTask: (title: string, sectionId?: string | null) => Promise<void>
   toggleTask: (id: string) => Promise<void>
@@ -39,6 +42,10 @@ export interface TaskState {
 }
 
 const supabase = createClient()
+
+// Surfaced when the Supabase session is gone (e.g. expired) but the app shell
+// is still up via the separate app JWT. Without this, writes silently no-op.
+export const NO_SESSION = 'Tu sesión expiró. Volvé a iniciar sesión para guardar los cambios.'
 
 function syncTaskToGoogle(taskId: string, action: 'push' | 'remove') {
   // Fire-and-forget — never block UI on Google sync
@@ -53,18 +60,26 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
   tasks: [],
   sections: [],
   initialized: false,
+  error: null,
 
   reset: () => {
     supabase.removeChannel(supabase.channel('tasks-realtime'))
-    set({ tasks: [], sections: [], initialized: false })
+    set({ tasks: [], sections: [], initialized: false, error: null })
   },
+
+  clearError: () => set({ error: null }),
 
   init: async () => {
     if (get().initialized) return
     set({ initialized: true })
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) {
+      // No Supabase session → the list will be empty and every write would
+      // silently fail. Surface it so the UI can prompt re-login.
+      set({ initialized: false, error: NO_SESSION })
+      return
+    }
 
     // Keyset-paginate tasks (cursor = unique id) so accounts with >1000 tasks
     // aren't silently truncated at Supabase's default cap. Sections stay a
@@ -162,11 +177,11 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
 
   addTask: async (title, sectionId = null) => {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) { set({ error: NO_SESSION }); return }
 
     const position = get().tasks.filter(t => t.section_id === sectionId && !t.parent_id).length
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('tasks')
       .insert({
         owner_id: user.id,
@@ -177,10 +192,13 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
       .select()
       .single()
 
-    if (data) {
-      set(s => ({ tasks: [...s.tasks, data] }))
-      if (data.due_date) syncTaskToGoogle(data.id, 'push')
+    if (error || !data) {
+      set({ error: 'No se pudo crear la tarea. Reintentá.' })
+      return
     }
+
+    set(s => ({ tasks: [...s.tasks, data] }))
+    if (data.due_date) syncTaskToGoogle(data.id, 'push')
   },
 
   toggleTask: async (id) => {
@@ -189,6 +207,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
 
     const completing = !task.completed
     const now = new Date().toISOString()
+    const prevTasks = get().tasks
 
     set(s => ({
       tasks: s.tasks.map(t =>
@@ -198,7 +217,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
       ),
     }))
 
-    await supabase
+    const { error } = await supabase
       .from('tasks')
       .update({
         completed: completing,
@@ -206,6 +225,12 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
         updated_at: now,
       })
       .eq('id', id)
+
+    if (error) {
+      // Roll back the optimistic change so the UI reflects reality.
+      set({ tasks: prevTasks, error: 'No se pudo actualizar la tarea.' })
+      return
+    }
 
     if (completing && task.recurrence_freq) {
       const config: RecurrenceConfig = {
@@ -254,12 +279,18 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
 
   deleteTask: async (id) => {
     const prev = get().tasks.find(t => t.id === id)
+    const prevTasks = get().tasks
     set(s => ({ tasks: s.tasks.filter(t => t.id !== id && t.parent_id !== id) }))
 
-    await supabase
+    const { error } = await supabase
       .from('tasks')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', id)
+
+    if (error) {
+      set({ tasks: prevTasks, error: 'No se pudo eliminar la tarea.' })
+      return
+    }
 
     await supabase
       .from('tasks')
@@ -271,14 +302,20 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
 
   updateTask: async (id, updates) => {
     const prev = get().tasks.find(t => t.id === id)
+    const prevTasks = get().tasks
     set(s => ({
       tasks: s.tasks.map(t => t.id === id ? { ...t, ...updates } : t),
     }))
 
-    await supabase
+    const { error } = await supabase
       .from('tasks')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', id)
+
+    if (error) {
+      set({ tasks: prevTasks, error: 'No se pudo guardar el cambio.' })
+      return
+    }
 
     // Sync to Google when due_date, title or description changed and task has/should have an event
     const touchesEvent =
@@ -298,17 +335,22 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
 
   addSection: async (name) => {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) { set({ error: NO_SESSION }); return }
 
     const position = get().sections.length
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('task_sections')
       .insert({ owner_id: user.id, name, position })
       .select()
       .single()
 
-    if (data) set(s => ({ sections: [...s.sections, data] }))
+    if (error || !data) {
+      set({ error: 'No se pudo crear la sección. Reintentá.' })
+      return
+    }
+
+    set(s => ({ sections: [...s.sections, data] }))
   },
 
   renameSection: async (id, name) => {
@@ -344,11 +386,11 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
     if (!parent) return
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) { set({ error: NO_SESSION }); return }
 
     const position = get().tasks.filter(t => t.parent_id === parentId).length
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('tasks')
       .insert({
         owner_id: user.id,
@@ -360,6 +402,11 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
       .select()
       .single()
 
-    if (data) set(s => ({ tasks: [...s.tasks, data] }))
+    if (error || !data) {
+      set({ error: 'No se pudo crear la subtarea. Reintentá.' })
+      return
+    }
+
+    set(s => ({ tasks: [...s.tasks, data] }))
   },
 }))

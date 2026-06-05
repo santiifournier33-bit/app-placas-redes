@@ -36,9 +36,11 @@ interface MobileAddTaskSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   initialSectionId: string | null
+  /** Pre-fill the due date (yyyy-MM-dd), e.g. when adding from a day column in Próximo. */
+  initialDate?: string | null
 }
 
-export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId }: MobileAddTaskSheetProps) {
+export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initialDate = null }: MobileAddTaskSheetProps) {
   const { addTask, updateTask, sections } = useTaskStore()
   const { contacts } = useContactStore()
 
@@ -68,13 +70,13 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId }: Mob
       setDescription("")
       setPriority(4)
       setTaskType("tarea")
-      setDueDate(null)
+      setDueDate(initialDate)
       setReminderOffsetMin(null)
       setContactId(null)
       setRecurrenceFreq(null)
       closeAllDropdowns()
     }
-  }, [open, initialSectionId])
+  }, [open, initialSectionId, initialDate])
 
   const today = new Date()
   const todayStr = format(today, "yyyy-MM-dd")
@@ -137,7 +139,11 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId }: Mob
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-2xl px-0 pb-0 pt-4 bg-[#16161f]" showClose={false}>
+      <SheetContent side="bottom" className="rounded-t-2xl px-0 pb-0 pt-2 bg-surface-1" showClose={false}>
+        {/* Grabber handle (native bottom-sheet affordance) */}
+        <div className="flex justify-center pt-1 pb-2">
+          <div className="w-10 h-1 rounded-full bg-border-strong/40" />
+        </div>
         <SheetHeader className="sr-only">
           <SheetTitle>Nueva tarea</SheetTitle>
           <SheetDescription>Añadir nueva tarea con opciones avanzadas</SheetDescription>
@@ -153,7 +159,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId }: Mob
               onChange={(e) => setTitle(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Nombre de la tarea"
-              className="w-full bg-transparent text-base font-medium text-text-primary placeholder:text-text-muted outline-none"
+              className="w-full bg-transparent text-base font-medium text-text-primary placeholder:text-text-muted outline-none caret-red-500"
             />
             <input
               value={description}
@@ -171,7 +177,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId }: Mob
               <div className="relative">
                 <button
                   onClick={() => { closeAllDropdowns(); setShowDatePicker(!showDatePicker) }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
                     dueDate ? "bg-blue-500/15 text-blue-400 border border-blue-500/20" : "text-text-muted hover:bg-surface-overlay border border-border-subtle"
                   }`}
                 >
@@ -179,7 +185,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId }: Mob
                   {dateLabel ?? "Fecha"}
                 </button>
                 {showDatePicker && (
-                  <div className="absolute bottom-full mb-2 left-0 bg-[#1e1e2c] rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[160px]">
+                  <div className="absolute bottom-full mb-2 left-0 bg-surface-2 rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[160px]">
                     {[
                       { label: "Hoy", value: todayStr, sub: format(today, "EEE", { locale: es }) },
                       { label: "Mañana", value: tomorrowStr, sub: format(addDays(today, 1), "EEE", { locale: es }) },
@@ -210,7 +216,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId }: Mob
               <div className="relative">
                 <button
                   onClick={() => { closeAllDropdowns(); setShowPriority(!showPriority) }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
                     priority < 4 ? "bg-surface-overlay-hover border border-border-subtle" : "text-text-muted hover:bg-surface-overlay border border-border-subtle"
                   }`}
                 >
@@ -218,7 +224,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId }: Mob
                   {priority < 4 ? `P${priority}` : "Prioridad"}
                 </button>
                 {showPriority && (
-                  <div className="absolute bottom-full mb-2 left-0 bg-[#1e1e2c] rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[160px]">
+                  <div className="absolute bottom-full mb-2 left-0 bg-surface-2 rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[160px]">
                     {PRIORITY_OPTIONS.map((opt) => (
                       <button
                         key={opt.value}
@@ -238,7 +244,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId }: Mob
               <div className="relative">
                 <button
                   onClick={() => { closeAllDropdowns(); setShowType(!showType) }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
                     taskType !== "tarea" ? "bg-violet-500/15 text-violet-400 border border-violet-500/20" : "text-text-muted hover:bg-surface-overlay border border-border-subtle"
                   }`}
                 >
@@ -248,7 +254,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId }: Mob
                   {taskType !== "tarea" ? TASK_TYPES[taskType].label : "Tipo"}
                 </button>
                 {showType && (
-                  <div className="absolute bottom-full mb-2 left-0 bg-[#1e1e2c] rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[160px]">
+                  <div className="absolute bottom-full mb-2 left-0 bg-surface-2 rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[160px]">
                     {(Object.entries(TASK_TYPES) as [TaskType, typeof TASK_TYPES[TaskType]][]).map(([key, val]) => (
                       <button
                         key={key}
@@ -269,7 +275,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId }: Mob
                 <button
                   onClick={() => { if (dueDate) { closeAllDropdowns(); setShowReminder(!showReminder) } }}
                   disabled={!dueDate}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 ${
                     !dueDate
                       ? "text-zinc-700 cursor-not-allowed opacity-50 border border-border-subtle"
                       : reminderOffsetMin !== null
@@ -289,7 +295,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId }: Mob
                           : "1 día"}
                 </button>
                 {showReminder && (
-                  <div className="absolute bottom-full mb-2 left-0 bg-[#1e1e2c] rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[160px]">
+                  <div className="absolute bottom-full mb-2 left-0 bg-surface-2 rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[160px]">
                     {[
                       { value: null, label: 'Sin recordatorio' },
                       { value: 0, label: 'A la hora' },
@@ -314,7 +320,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId }: Mob
               <div className="relative">
                 <button
                   onClick={() => { closeAllDropdowns(); setShowRecurrence(!showRecurrence) }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
                     recurrenceFreq ? "bg-teal-500/15 text-teal-400 border border-teal-500/20" : "text-text-muted hover:bg-surface-overlay border border-border-subtle"
                   }`}
                 >
@@ -322,7 +328,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId }: Mob
                   {recurrenceFreq ? { daily: 'Diario', weekly: 'Semanal', biweekly: 'Quincen.', monthly: 'Mensual' }[recurrenceFreq] ?? 'Recurr.' : 'Repetir'}
                 </button>
                 {showRecurrence && (
-                  <div className="absolute bottom-full mb-2 right-0 bg-[#1e1e2c] rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[160px]">
+                  <div className="absolute bottom-full mb-2 right-0 bg-surface-2 rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[160px]">
                     {[
                       { value: null, label: 'Sin repetición' },
                       { value: 'daily', label: 'Diario' },
@@ -347,7 +353,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId }: Mob
               <div className="relative">
                 <button
                   onClick={() => { closeAllDropdowns(); setShowContactPicker(!showContactPicker); setContactSearch("") }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
                     contactId ? "bg-green-500/15 text-green-400 border border-green-500/20" : "text-text-muted hover:bg-surface-overlay border border-border-subtle"
                   }`}
                 >
@@ -355,7 +361,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId }: Mob
                   {selectedContact ? `${selectedContact.first_name} ${selectedContact.last_name}` : "Contacto"}
                 </button>
                 {showContactPicker && (
-                  <div className="absolute bottom-full mb-2 right-0 bg-[#1e1e2c] rounded-xl border border-border-default z-20 shadow-xl w-64">
+                  <div className="absolute bottom-full mb-2 right-0 bg-surface-2 rounded-xl border border-border-default z-20 shadow-xl w-64">
                     <div className="p-2 border-b border-border-subtle">
                       <input
                         autoFocus
@@ -410,11 +416,11 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId }: Mob
               className="bg-transparent text-sm font-medium text-text-secondary hover:text-text-primary outline-none appearance-none cursor-pointer pr-4 max-w-[60%]"
               style={{ backgroundImage: "url(\"data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right center", backgroundSize: "14px" }}
             >
-              <option value="" className="bg-[#1e1e2c]">Bandeja de entrada</option>
+              <option value="" className="bg-surface-2">Bandeja de entrada</option>
               {sections
                 .sort((a, b) => a.position - b.position)
                 .map(s => (
-                  <option key={s.id} value={s.id} className="bg-[#1e1e2c]">
+                  <option key={s.id} value={s.id} className="bg-surface-2">
                     {s.name}
                   </option>
                 ))}
@@ -423,7 +429,8 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId }: Mob
             <button
               onClick={handleCreate}
               disabled={!title.trim()}
-              className={`flex items-center justify-center w-10 h-10 rounded-full transition-all shadow-md ${
+              aria-label="Crear tarea"
+              className={`flex items-center justify-center w-11 h-11 rounded-full transition-all shadow-md active:scale-95 ${
                 title.trim()
                   ? "bg-red-500 hover:bg-red-600 text-white cursor-pointer"
                   : "bg-zinc-800 text-text-muted cursor-not-allowed opacity-50"

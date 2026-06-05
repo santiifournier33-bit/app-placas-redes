@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { motion } from "framer-motion"
 import {
-  X, Flag, Trash2, Plus, AlignLeft, Bell,
+  X, Flag, Trash2, Plus, AlignLeft, Bell, Calendar,
   ChevronDown, ChevronRight, ChevronUp,
   CheckSquare, MapPin, Phone, Users, PenLine, UserCircle,
   Coffee, Gift, Megaphone, MoreHorizontal, Link2, Pencil,
@@ -14,6 +15,9 @@ import { PortalDropdown } from "@/components/ui/PortalDropdown"
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { useIsMobile } from "@/lib/hooks/useIsMobile"
+import { TaskScheduler } from "@/components/productividad/TaskScheduler"
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
 
 const priorityLabels: Record<number, { label: string; color: string }> = {
   1: { label: "P1", color: "text-red-400" },
@@ -65,8 +69,14 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
   const [subtasksOpen, setSubtasksOpen] = useState(true)
   const [showMenu, setShowMenu] = useState(false)
   const [showReminder, setShowReminder] = useState(false)
+  // Mobile bottom-sheet height: false = half (peek), true = near-full.
+  const [expanded, setExpanded] = useState(false)
+  const [schedOpen, setSchedOpen] = useState(false)
   const menuBtnRef = useRef<HTMLButtonElement>(null)
   const reminderBtnRef = useRef<HTMLButtonElement>(null)
+  const prioBtnRef = useRef<HTMLButtonElement>(null)
+  const typeBtnRef = useRef<HTMLButtonElement>(null)
+  const contactBtnRef = useRef<HTMLButtonElement>(null)
 
   const effectiveType = (task.task_type ?? "tarea") as TaskType
 
@@ -145,16 +155,32 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
 
   if (isMobile) {
     return (
+      <>
       <Sheet open={open} onOpenChange={handleOpenChange}>
         <SheetContent
           side="bottom"
           showClose={false}
-          className="rounded-t-2xl max-h-[90vh] overflow-y-auto p-0 bg-surface-1"
+          className="rounded-t-2xl p-0 bg-surface-1 overflow-hidden flex flex-col transition-[height] duration-300 ease-out"
+          style={{ height: expanded ? "92dvh" : "62dvh" }}
         >
           <SheetTitle className="sr-only">{task.title || "Detalle de tarea"}</SheetTitle>
-          <div className="flex justify-center pt-2 pb-1">
+          {/* Draggable grabber: drag up → expand, drag down → collapse, or close
+              when already collapsed. Tap toggles too. Mirrors the native sheet. */}
+          <motion.div
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={0.5}
+            dragMomentum={false}
+            onDragEnd={(_, info) => {
+              if (info.offset.y < -50) setExpanded(true)
+              else if (info.offset.y > 50) { expanded ? setExpanded(false) : handleOpenChange(false) }
+            }}
+            onClick={() => setExpanded((e) => !e)}
+            className="flex justify-center pt-3 pb-2 shrink-0 cursor-grab active:cursor-grabbing touch-none"
+          >
             <div className="w-10 h-1 rounded-full bg-border-strong/40" />
-          </div>
+          </motion.div>
+          <div className="flex-1 overflow-y-auto overscroll-contain">
           <MobileHeader task={task} onClose={() => handleOpenChange(false)} onDelete={() => { deleteTask(task.id); handleOpenChange(false) }} />
           <TaskBody
             task={task} subtasks={subtasks} section={section}
@@ -166,14 +192,19 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
             showPriority={showPriority} setShowPriority={setShowPriority}
             showType={showType} setShowType={setShowType}
             effectiveType={effectiveType}
+            onOpenScheduler={() => setSchedOpen(true)}
             updateTask={updateTask} toggleTask={doToggle} handleSubtaskAdd={handleSubtaskAdd}
           />
+          </div>
         </SheetContent>
       </Sheet>
+      <TaskScheduler taskId={task.id} currentDate={task.due_date} open={schedOpen} onOpenChange={setSchedOpen} />
+      </>
     )
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="w-full max-w-[760px] max-h-[90vh] p-0 sm:rounded-2xl bg-surface-1 flex-col overflow-hidden border-border-default shadow-2xl" showClose={false}>
           <DialogTitle className="sr-only">{task.title || "Detalle de tarea"}</DialogTitle>
@@ -218,7 +249,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                 open={showMenu}
                 onClose={() => setShowMenu(false)}
                 placement="bottom-end"
-                className="bg-[#1e1e2c] border border-border-default rounded-xl shadow-2xl py-1 min-w-[200px]"
+                className="bg-surface-2 border border-border-default rounded-xl shadow-2xl py-1 min-w-[200px]"
               >
                 <button
                   onClick={() => { setEditingTitle(true); setShowMenu(false) }}
@@ -384,30 +415,27 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
 
               {/* Fecha */}
               <MetaRow label="Fecha">
-                <input
-                  type="date"
-                  value={task.due_date ? task.due_date.slice(0, 10) : ""}
-                  onChange={(e) =>
-                    updateTask(task.id, {
-                      due_date: e.target.value ?? null,
-                    })
-                  }
-                  className="bg-transparent text-xs text-text-secondary outline-none cursor-pointer [color-scheme:dark] w-full"
-                />
+                <button
+                  onClick={() => setSchedOpen(true)}
+                  className="text-xs text-text-secondary hover:text-text-primary cursor-pointer w-full text-left"
+                >
+                  {task.due_date ? format(new Date(task.due_date.slice(0, 10) + "T12:00:00"), "d MMM yyyy", { locale: es }) : "Sin fecha"}
+                </button>
               </MetaRow>
 
               {/* Prioridad */}
               <MetaRow label="Prioridad">
                 <div className="relative">
                   <button
+                    ref={prioBtnRef}
                     onClick={() => { setShowPriority(!showPriority); setShowType(false) }}
                     className={`flex items-center gap-1.5 text-xs cursor-pointer ${priorityLabels[task.priority ?? 4].color}`}
                   >
                     <Flag size={13} />
                     {priorityLabels[task.priority ?? 4].label}
                   </button>
-                  {showPriority && (
-                    <div className="absolute right-0 top-6 bg-[#222230] rounded-xl border border-border-default py-1 z-10 shadow-xl min-w-[130px]">
+                  <PortalDropdown anchorRef={prioBtnRef} open={showPriority} onClose={() => setShowPriority(false)} placement="bottom-end" className="bg-surface-2 rounded-xl border border-border-default py-1 shadow-2xl min-w-[140px]">
+                    <>
                       {([1, 2, 3, 4] as const).map((p) => (
                         <button
                           key={p}
@@ -418,8 +446,8 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                           <span className={priorityLabels[p].color}>Prioridad {p}</span>
                         </button>
                       ))}
-                    </div>
-                  )}
+                    </>
+                  </PortalDropdown>
                 </div>
               </MetaRow>
 
@@ -427,6 +455,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
               <MetaRow label="Tipo">
                 <div className="relative">
                   <button
+                    ref={typeBtnRef}
                     onClick={() => { setShowType(!showType); setShowPriority(false) }}
                     className={`flex items-center gap-1.5 text-xs cursor-pointer ${
                       effectiveType !== "tarea" ? "text-violet-400" : "text-text-muted"
@@ -435,8 +464,8 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                     {TYPE_ICONS[effectiveType]}
                     {TASK_TYPES[effectiveType]?.label ?? "Tarea"}
                   </button>
-                  {showType && (
-                    <div className="absolute right-0 top-6 bg-[#222230] rounded-xl border border-border-default py-1 z-10 shadow-xl min-w-[130px]">
+                  <PortalDropdown anchorRef={typeBtnRef} open={showType} onClose={() => setShowType(false)} placement="bottom-end" className="bg-surface-2 rounded-xl border border-border-default py-1 shadow-2xl min-w-[150px]">
+                    <>
                       {(Object.entries(TASK_TYPES) as [TaskType, typeof TASK_TYPES[TaskType]][]).map(([key, val]) => (
                         <button
                           key={key}
@@ -448,8 +477,8 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                           {effectiveType === key && <span className="ml-auto text-text-muted">✓</span>}
                         </button>
                       ))}
-                    </div>
-                  )}
+                    </>
+                  </PortalDropdown>
                 </div>
               </MetaRow>
 
@@ -478,7 +507,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                   anchorRef={reminderBtnRef}
                   open={showReminder}
                   onClose={() => setShowReminder(false)}
-                  className="bg-[#1e1e2c] border border-border-default rounded-xl shadow-2xl py-1 min-w-[160px]"
+                  className="bg-surface-2 border border-border-default rounded-xl shadow-2xl py-1 min-w-[160px]"
                 >
                   {[
                     { value: null, label: "Sin recordatorio" },
@@ -503,6 +532,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
               <MetaRow label="Contacto">
                 <div className="relative">
                   <button
+                    ref={contactBtnRef}
                     onClick={() => { setShowContactPicker(!showContactPicker); setContactSearch("") }}
                     className="flex items-center gap-1.5 text-xs cursor-pointer text-text-secondary hover:text-text-primary w-full text-left"
                   >
@@ -513,8 +543,8 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                         : "Sin contacto"}
                     </span>
                   </button>
-                  {showContactPicker && (
-                    <div className="absolute right-0 top-6 bg-[#222230] rounded-xl border border-border-default z-20 shadow-xl w-52">
+                  <PortalDropdown anchorRef={contactBtnRef} open={showContactPicker} onClose={() => setShowContactPicker(false)} placement="bottom-end" className="bg-surface-2 rounded-xl border border-border-default shadow-2xl w-56">
+                    <>
                       <div className="p-2 border-b border-border-subtle">
                         <input
                           autoFocus
@@ -546,7 +576,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                               onClick={() => { updateTask(task.id, { contact_id: c.id }); setShowContactPicker(false) }}
                               className="flex items-center gap-2 px-3 py-2 w-full hover:bg-surface-overlay text-xs cursor-pointer"
                             >
-                              <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-xs md:text-[10px] text-blue-400 font-bold shrink-0">
+                              <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-xs text-blue-400 font-bold shrink-0">
                                 {(c.first_name || c.last_name || "?")[0]}
                               </div>
                               <div className="flex-1 min-w-0 text-left">
@@ -563,8 +593,8 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                           <p className="text-xs text-text-muted text-center py-3">Sin resultados</p>
                         )}
                       </div>
-                    </div>
-                  )}
+                    </>
+                  </PortalDropdown>
                 </div>
               </MetaRow>
 
@@ -582,6 +612,8 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
           </div>
       </DialogContent>
     </Dialog>
+    <TaskScheduler taskId={task.id} currentDate={task.due_date} open={schedOpen} onOpenChange={setSchedOpen} />
+    </>
   )
 }
 
@@ -590,7 +622,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
 function MetaRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-xs font-bold text-text-muted uppercase tracking-wider mb-1">{label}</p>
       {children}
     </div>
   )
@@ -618,11 +650,13 @@ function TaskBody({
   showPriority, setShowPriority,
   showType, setShowType,
   effectiveType,
+  onOpenScheduler,
   updateTask, toggleTask, handleSubtaskAdd,
 }: {
   task: Task
   subtasks: Task[]
   section: { id: string; name: string; position: number } | undefined
+  onOpenScheduler: () => void
   title: string
   setTitle: (v: string) => void
   description: string
@@ -662,19 +696,16 @@ function TaskBody({
         </h2>
       </div>
 
-      {/* Date */}
-      <div className="flex items-center gap-2">
-        <input
-          type="date"
-          value={task.due_date ? task.due_date.slice(0, 10) : ""}
-          onChange={(e) =>
-            updateTask(task.id, {
-              due_date: e.target.value ?? null,
-            })
-          }
-          className="bg-transparent text-sm text-text-secondary outline-none cursor-pointer [color-scheme:dark]"
-        />
-      </div>
+      {/* Date — opens the chip scheduler (1-tap reschedule) */}
+      <button
+        onClick={onOpenScheduler}
+        className="flex items-center gap-2 w-full text-left active:scale-[0.99] transition-transform"
+      >
+        <Calendar size={15} className={task.due_date ? "text-blue-400" : "text-text-muted"} />
+        <span className={`text-sm ${task.due_date ? "text-text-secondary" : "text-text-muted"}`}>
+          {task.due_date ? format(new Date(task.due_date.slice(0, 10) + "T12:00:00"), "EEE d MMM yyyy", { locale: es }) : "Agregar fecha"}
+        </span>
+      </button>
 
       {/* Priority */}
       <div className="relative flex items-center gap-2">
@@ -686,7 +717,7 @@ function TaskBody({
           {priorityLabels[task.priority ?? 4].label}
         </button>
         {showPriority && (
-          <div className="absolute left-0 top-8 bg-[#222230] rounded-xl border border-border-default py-1 z-10 shadow-xl">
+          <div className="absolute left-0 top-8 bg-surface-2 rounded-xl border border-border-default py-1 z-10 shadow-xl">
             {([1, 2, 3, 4] as const).map((p) => (
               <button
                 key={p}

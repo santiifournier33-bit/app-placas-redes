@@ -8,6 +8,7 @@ import {
 } from "lucide-react"
 import { useTaskStore, TASK_TYPES, type TaskType } from "@/lib/stores/taskStore"
 import { useContactStore } from "@/lib/stores/contactStore"
+import { PortalDropdown } from "@/components/ui/PortalDropdown"
 import { format, addDays, nextMonday } from "date-fns"
 import { es } from "date-fns/locale"
 
@@ -35,16 +36,18 @@ interface QuickAddTaskProps {
   onClose: () => void
   preselectedContactId?: string | null
   hideContactPicker?: boolean
+  /** Pre-fill the due date (yyyy-MM-dd), e.g. when adding from a day column in Próximo. */
+  initialDate?: string | null
 }
 
-export function QuickAddTask({ initialSectionId, onClose, preselectedContactId = null, hideContactPicker = false }: QuickAddTaskProps) {
+export function QuickAddTask({ initialSectionId, onClose, preselectedContactId = null, hideContactPicker = false, initialDate = null }: QuickAddTaskProps) {
   const { addTask, updateTask, tasks, sections } = useTaskStore()
   const { contacts } = useContactStore()
 
   const [title, setTitle] = useState("")
   const [priority, setPriority] = useState<1 | 2 | 3 | 4>(4)
   const [taskType, setTaskType] = useState<TaskType>("tarea")
-  const [dueDate, setDueDate] = useState<string | null>(null)
+  const [dueDate, setDueDate] = useState<string | null>(initialDate)
   // reminder preset offset in minutes BEFORE due. null = no reminder.
   const [reminderOffsetMin, setReminderOffsetMin] = useState<number | null>(null)
   const [contactId, setContactId] = useState<string | null>(preselectedContactId)
@@ -61,6 +64,14 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
   const [showSectionPicker, setShowSectionPicker] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
+  const dateBtnRef = useRef<HTMLButtonElement>(null)
+  const prioBtnRef = useRef<HTMLButtonElement>(null)
+  const typeBtnRef = useRef<HTMLButtonElement>(null)
+  const reminderBtnRef = useRef<HTMLButtonElement>(null)
+  const recurrenceBtnRef = useRef<HTMLButtonElement>(null)
+  const contactBtnRef = useRef<HTMLButtonElement>(null)
+  const sectionBtnRef = useRef<HTMLButtonElement>(null)
+  const PANEL = "bg-surface-2 rounded-xl border border-border-default py-1 shadow-2xl"
 
   useEffect(() => {
     inputRef.current?.focus()
@@ -125,7 +136,7 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
   }).slice(0, 20)
 
   return (
-    <div className="rounded-xl border border-border-default bg-[#16161f] p-3 space-y-2.5">
+    <div className="rounded-xl border border-border-default bg-surface-1 p-3 space-y-2.5">
       {/* Title input */}
       <input
         ref={inputRef}
@@ -148,6 +159,7 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
         {/* Date */}
         <div className="relative">
           <button
+            ref={dateBtnRef}
             onClick={() => { closeAllDropdowns(); setShowDatePicker(!showDatePicker) }}
             className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs md:text-[11px] font-medium transition-colors cursor-pointer ${
               dueDate ? "bg-blue-500/15 text-blue-400 border border-blue-500/20" : "text-text-muted hover:bg-surface-overlay-hover hover:text-text-secondary"
@@ -156,8 +168,8 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
             <Calendar size={13} />
             {dateLabel ?? "Fecha"}
           </button>
-          {showDatePicker && (
-            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[160px]">
+          <PortalDropdown anchorRef={dateBtnRef} open={showDatePicker} onClose={() => setShowDatePicker(false)} className={`${PANEL} min-w-[160px]`}>
+            <>
               {[
                 { label: "Hoy", value: todayStr, sub: format(today, "EEE", { locale: es }) },
                 { label: "Mañana", value: tomorrowStr, sub: format(addDays(today, 1), "EEE", { locale: es }) },
@@ -180,13 +192,14 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
                   className="w-full bg-transparent text-xs text-text-secondary outline-none [color-scheme:dark]"
                 />
               </div>
-            </div>
-          )}
+            </>
+          </PortalDropdown>
         </div>
 
         {/* Priority */}
         <div className="relative">
           <button
+            ref={prioBtnRef}
             onClick={() => { closeAllDropdowns(); setShowPriority(!showPriority) }}
             className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs md:text-[11px] font-medium transition-colors cursor-pointer ${
               priority < 4 ? "bg-surface-overlay-hover border border-border-subtle" : "text-text-muted hover:bg-surface-overlay-hover hover:text-text-secondary"
@@ -195,8 +208,8 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
             <Flag size={13} className={PRIORITY_OPTIONS.find(p => p.value === priority)?.color} />
             {priority < 4 ? `P${priority}` : "Prioridad"}
           </button>
-          {showPriority && (
-            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[140px]">
+          <PortalDropdown anchorRef={prioBtnRef} open={showPriority} onClose={() => setShowPriority(false)} className={`${PANEL} min-w-[140px]`}>
+            <>
               {PRIORITY_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
@@ -208,13 +221,14 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
                   {priority === opt.value && <span className="ml-auto text-text-muted">✓</span>}
                 </button>
               ))}
-            </div>
-          )}
+            </>
+          </PortalDropdown>
         </div>
 
         {/* Task type */}
         <div className="relative">
           <button
+            ref={typeBtnRef}
             onClick={() => { closeAllDropdowns(); setShowType(!showType) }}
             className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs md:text-[11px] font-medium transition-colors cursor-pointer ${
               taskType !== "tarea" ? "bg-violet-500/15 text-violet-400 border border-violet-500/20" : "text-text-muted hover:bg-surface-overlay-hover hover:text-text-secondary"
@@ -225,8 +239,8 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
             </span>
             {taskType !== "tarea" ? TASK_TYPES[taskType].label : "Tipo"}
           </button>
-          {showType && (
-            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[140px]">
+          <PortalDropdown anchorRef={typeBtnRef} open={showType} onClose={() => setShowType(false)} className={`${PANEL} min-w-[140px]`}>
+            <>
               {(Object.entries(TASK_TYPES) as [TaskType, typeof TASK_TYPES[TaskType]][]).map(([key, val]) => (
                 <button
                   key={key}
@@ -238,13 +252,14 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
                   {taskType === key && <span className="ml-auto text-text-muted">✓</span>}
                 </button>
               ))}
-            </div>
-          )}
+            </>
+          </PortalDropdown>
         </div>
 
         {/* Reminder */}
         <div className="relative">
           <button
+            ref={reminderBtnRef}
             onClick={() => { if (dueDate) { closeAllDropdowns(); setShowReminder(!showReminder) } }}
             disabled={!dueDate}
             title={!dueDate ? "Primero asigná una fecha a la tarea" : undefined}
@@ -267,8 +282,8 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
                     ? "1 h antes"
                     : "1 día antes"}
           </button>
-          {showReminder && (
-            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[160px]">
+          <PortalDropdown anchorRef={reminderBtnRef} open={showReminder} onClose={() => setShowReminder(false)} className={`${PANEL} min-w-[160px]`}>
+            <>
               {[
                 { value: null, label: 'Sin recordatorio' },
                 { value: 0, label: 'A la hora' },
@@ -285,13 +300,14 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
                   {reminderOffsetMin === opt.value && <span className="ml-auto text-text-muted">✓</span>}
                 </button>
               ))}
-            </div>
-          )}
+            </>
+          </PortalDropdown>
         </div>
 
         {/* Recurrence */}
         <div className="relative">
           <button
+            ref={recurrenceBtnRef}
             onClick={() => { closeAllDropdowns(); setShowRecurrence(!showRecurrence) }}
             className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs md:text-[11px] font-medium transition-colors cursor-pointer ${
               recurrenceFreq ? "bg-teal-500/15 text-teal-400 border border-teal-500/20" : "text-text-muted hover:bg-surface-overlay-hover hover:text-text-secondary"
@@ -300,8 +316,8 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
             <Repeat size={13} />
             {recurrenceFreq ? { daily: 'Diario', weekly: 'Semanal', biweekly: 'Quincenal', monthly: 'Mensual' }[recurrenceFreq] ?? 'Recurrente' : 'Repetir'}
           </button>
-          {showRecurrence && (
-            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[140px]">
+          <PortalDropdown anchorRef={recurrenceBtnRef} open={showRecurrence} onClose={() => setShowRecurrence(false)} className={`${PANEL} min-w-[140px]`}>
+            <>
               {[
                 { value: null, label: 'Sin repetición' },
                 { value: 'daily', label: 'Diario' },
@@ -318,14 +334,15 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
                   {recurrenceFreq === opt.value && <span className="ml-auto text-text-muted">✓</span>}
                 </button>
               ))}
-            </div>
-          )}
+            </>
+          </PortalDropdown>
         </div>
 
         {/* Contact */}
         {!hideContactPicker && (
         <div className="relative">
           <button
+            ref={contactBtnRef}
             onClick={() => { closeAllDropdowns(); setShowContactPicker(!showContactPicker); setContactSearch("") }}
             className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs md:text-[11px] font-medium transition-colors cursor-pointer ${
               contactId ? "bg-green-500/15 text-green-400 border border-green-500/20" : "text-text-muted hover:bg-surface-overlay-hover hover:text-text-secondary"
@@ -334,8 +351,8 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
             <UserCircle size={13} />
             {selectedContact ? `${selectedContact.first_name} ${selectedContact.last_name}` : "Contacto"}
           </button>
-          {showContactPicker && (
-            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-border-default z-20 shadow-xl w-52">
+          <PortalDropdown anchorRef={contactBtnRef} open={showContactPicker} onClose={() => setShowContactPicker(false)} className="bg-surface-2 rounded-xl border border-border-default shadow-2xl w-56">
+            <>
               <div className="p-2 border-b border-border-subtle">
                 <input
                   autoFocus
@@ -375,8 +392,8 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
                   <p className="text-xs text-text-muted text-center py-3">Sin resultados</p>
                 )}
               </div>
-            </div>
-          )}
+            </>
+          </PortalDropdown>
         </div>
         )}
       </div>
@@ -385,6 +402,7 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
       <div className="flex items-center justify-between pt-1 border-t border-border-subtle">
         <div className="relative">
           <button
+            ref={sectionBtnRef}
             onClick={() => { closeAllDropdowns(); setShowSectionPicker(!showSectionPicker) }}
             className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs md:text-[11px] font-medium text-text-muted hover:bg-surface-overlay-hover hover:text-text-secondary cursor-pointer"
           >
@@ -394,8 +412,8 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
             })()}
             <span className="text-text-muted">▾</span>
           </button>
-          {showSectionPicker && (
-            <div className="absolute bottom-full mb-1 left-0 bg-[#1e1e2c] rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[180px] max-h-60 overflow-y-auto">
+          <PortalDropdown anchorRef={sectionBtnRef} open={showSectionPicker} onClose={() => setShowSectionPicker(false)} className={`${PANEL} min-w-[180px] max-h-60 overflow-y-auto`}>
+            <>
               <button
                 onClick={() => { setCurrentSectionId(null); setShowSectionPicker(false) }}
                 className="flex items-center gap-2 px-3 py-2 w-full hover:bg-surface-overlay text-xs text-text-secondary cursor-pointer"
@@ -415,8 +433,8 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
                     {currentSectionId === s.id && <span className="ml-auto text-text-muted shrink-0">✓</span>}
                   </button>
                 ))}
-            </div>
-          )}
+            </>
+          </PortalDropdown>
         </div>
         <div className="flex items-center gap-2">
           <button

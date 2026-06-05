@@ -1,0 +1,10 @@
+agente-santimagnin/
+backups/
+*.log
+*.bak
+*.msi
+z-*.txt
+lint-output.txt
+ts-output.txt
+setup_v3_error.txt
+tokko-renew-error.png

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronDown, ChevronRight, MoreHorizontal, Trash2, Pencil } from "lucide-react"
+import { ChevronDown, MoreHorizontal, Trash2, Pencil } from "lucide-react"
 import { useTaskStore } from "@/lib/stores/taskStore"
 
 interface SectionHeaderProps {
@@ -44,12 +44,11 @@ export function SectionHeader({ id, name, count, collapsed, onToggle }: SectionH
 
   return (
     <div className="flex items-center gap-2 px-4 py-3 border-b border-border-subtle">
-      <button onClick={onToggle} className="cursor-pointer">
-        {collapsed ? (
-          <ChevronRight size={16} className="text-text-muted" />
-        ) : (
-          <ChevronDown size={16} className="text-text-muted" />
-        )}
+      <button onClick={onToggle} className="cursor-pointer active:scale-90 transition-transform touch-manipulation">
+        <ChevronDown
+          size={16}
+          className={`text-text-muted transition-transform duration-200 ${collapsed ? "-rotate-90" : ""}`}
+        />
       </button>
       <span className="text-sm font-bold text-text-primary">{name}</span>
       <span className="text-xs text-text-muted font-medium">{count}</span>
@@ -62,7 +61,7 @@ export function SectionHeader({ id, name, count, collapsed, onToggle }: SectionH
           <MoreHorizontal size={16} className="text-text-muted" />
         </button>
         {showMenu && (
-          <div className="absolute right-0 top-7 bg-[#222230] rounded-xl border border-border-default py-1 z-10 shadow-xl min-w-[140px]">
+          <div className="absolute right-0 top-7 bg-surface-2 rounded-xl border border-border-default py-1 z-10 shadow-xl min-w-[140px]">
             <button
               onClick={() => {
                 setEditing(true)

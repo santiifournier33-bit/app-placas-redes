@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { Search, SlidersHorizontal, Plus, LayoutList, LayoutGrid, X } from "lucide-react"
+import { useHydrated } from "@/lib/hooks/useHydrated"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { useServiciosStore } from "@/lib/stores/serviciosStore"
@@ -14,8 +15,7 @@ import type { Payment, PaymentStatus, Currency } from "@/lib/stores/serviciosSto
 type ViewMode = "list" | "grouped"
 
 export default function GastosPage() {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
+  const mounted = useHydrated()
 
   // Mobile FAB fab:new-payment → open payment form (fresh, no edit).
   useEffect(() => {

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { getSession } from '@/lib/auth/session'
+import { getApiUser } from '@/lib/auth/api-auth'
 
 export async function GET(
   req: NextRequest,
@@ -9,12 +8,9 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getApiUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    const session = await getSession()
-    const isAdmin = session?.role === 'admin'
+    const isAdmin = user.role === 'admin'
 
     // Service client bypasses RLS so we can see contacts owned by other advisors.
     // PII is masked in code below for non-admin users when contact.owner_id !== user.id.

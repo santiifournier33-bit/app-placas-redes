@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useHydrated } from "@/lib/hooks/useHydrated"
 import { FolderOpen, RefreshCw, Clock } from "lucide-react"
 import { DocKPICards } from "@/components/documentacion/DocKPICards"
 import { AgentSummaryCards } from "@/components/documentacion/AgentSummaryCards"
@@ -12,7 +13,7 @@ import type { PropertyStatus } from "@/lib/docs/doc-requirements"
 import type { FullDocStatus, PropertyDocStatus } from "@/lib/docs/doc-analyzer"
 
 export default function DocumentacionPage() {
-  const [mounted, setMounted] = useState(false)
+  const mounted = useHydrated()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [data, setData] = useState<FullDocStatus | null>(null)
@@ -25,8 +26,6 @@ export default function DocumentacionPage() {
   // Modals
   const [selectedProperty, setSelectedProperty] = useState<PropertyDocStatus | null>(null)
   const [showSync, setShowSync] = useState(false)
-
-  useEffect(() => setMounted(true), [])
 
   const fetchData = useCallback(async (force = false) => {
     setLoading(true)

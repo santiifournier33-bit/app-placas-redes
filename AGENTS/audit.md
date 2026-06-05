@@ -5,7 +5,7 @@ Auditoría técnica del codebase: deuda técnica, complejidad, duplicaciones, an
 
 ## Inputs requeridos
 - Scope: `archivo` | `módulo` | `proyecto-completo`
-- Dimensiones: `seguridad` | `performance` | `mantenibilidad` | `tests` | `all`
+- Dimensiones: `seguridad` | `performance` | `mantenibilidad` | `tests` | `mobile` | `all`
 
 ## Outputs
 - Lista de issues con severidad: CRITICAL / HIGH / MEDIUM / LOW
@@ -34,6 +34,15 @@ Para scope `proyecto-completo`, lanzar 3 agentes en paralelo:
 - 0 archivos de test en `src/`
 - Sin rate limiting en `/api/generate` y `/api/auth`
 - Gemini API key en query param URL en `/api/generate/route.ts:5`
+
+## Deuda Mobile-First (dimensión `mobile` — contra `AGENTS/mobile-first.md`)
+Marcar como deuda técnica las violaciones del checklist móvil:
+- Touch targets < 44px en elementos interactivos
+- `h-screen` en lugar de `min-h-[100dvh]`
+- Layouts multi-columna sin colapso declarado a 1 col en `< md`
+- Tablas densas con scroll horizontal en móvil (deberían ser cards/lista)
+- Listas largas sin paginar/virtualizar (payload excesivo en red móvil)
+- Animaciones sin `prefers-reduced-motion` o que animan layout (no transform/opacity)
 
 ## Criterios de invocación
 - Usuario pide "auditá", "revisá deuda técnica", "buscá problemas"

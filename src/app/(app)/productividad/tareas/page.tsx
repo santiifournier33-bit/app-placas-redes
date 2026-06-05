@@ -1,37 +1,34 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
+import Link from "next/link"
 import {
-  Inbox, CalendarDays, Plus, FolderPlus,
+  Inbox, CalendarDays, CalendarRange, Plus, FolderPlus,
   LayoutDashboard, List, Columns, CheckSquare2, X,
 } from "lucide-react"
+import { AnimatePresence } from "framer-motion"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
-} from "@/components/ui/sheet"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { useTaskStore, TASK_TYPES, type TaskType } from "@/lib/stores/taskStore"
+import { useTaskStore, NO_SESSION } from "@/lib/stores/taskStore"
 import { useContactStore } from "@/lib/stores/contactStore"
 import { TaskItem } from "@/components/productividad/TaskItem"
 import { TaskDetail } from "@/components/productividad/TaskDetail"
 import { SectionHeader } from "@/components/productividad/SectionHeader"
 import { BoardView } from "@/components/productividad/BoardView"
 import { MobileAddTaskSheet } from "@/components/productividad/MobileAddTaskSheet"
+import { ProximoView } from "@/components/productividad/ProximoView"
 import { useIsMobile } from "@/lib/hooks/useIsMobile"
+import { useHydrated } from "@/lib/hooks/useHydrated"
 import { isToday, isPast, format } from "date-fns"
 import { es } from "date-fns/locale"
 import type { Task } from "@/lib/stores/taskStore"
-import {
-  CheckSquare, MapPin, Phone, Users, PenLine,
-} from "lucide-react"
 
-type View = "bandeja" | "hoy"
+type View = "bandeja" | "hoy" | "proximo"
 type DisplayMode = "lista" | "panel"
 
 const viewConfig = [
   { key: "bandeja" as const, label: "Bandeja", icon: Inbox },
   { key: "hoy" as const, label: "Hoy", icon: CalendarDays },
+  { key: "proximo" as const, label: "Próximo", icon: CalendarRange },
 ]
 
 export default function TareasPage() {
@@ -45,21 +42,29 @@ export default function TareasPage() {
   const [newSectionName, setNewSectionName] = useState("")
   const [showNewSection, setShowNewSection] = useState(false)
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set())
-  const [mounted, setMounted] = useState(false)
+  const mounted = useHydrated()
   const [toast, setToast] = useState<{ count: number; undoIds: string[] } | null>(null)
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   
   const [mobileAddOpen, setMobileAddOpen] = useState(false)
   const [mobileAddSectionId, setMobileAddSectionId] = useState<string | null>(null)
+  const [mobileAddDate, setMobileAddDate] = useState<string | null>(null)
   const isMobile = useIsMobile()
+
+  const handleAddForDay = useCallback((dateStr: string) => {
+    setMobileAddSectionId(null)
+    setMobileAddDate(dateStr)
+    setMobileAddOpen(true)
+  }, [])
 
   const formatMenuRef = useRef<HTMLDivElement>(null)
 
   const { tasks, sections, addTask, addSection, toggleTask, init: initTasks } = useTaskStore()
+  const error = useTaskStore((s) => s.error)
+  const clearError = useTaskStore((s) => s.clearError)
   const { init: initContacts } = useContactStore()
 
   useEffect(() => {
-    setMounted(true)
     initTasks()
     initContacts()
   }, [])
@@ -74,7 +79,25 @@ export default function TareasPage() {
     return () => document.removeEventListener("mousedown", handler)
   }, [])
 
-  // Cleanup old fab listeners if any
+  // ContextualFAB ("Nueva tarea") dispatches this event on tap → open the
+  // mobile add sheet. Keeps the FAB decoupled from this page's state.
+  useEffect(() => {
+    const open = () => {
+      setMobileAddSectionId(null)
+      setMobileAddDate(null)
+      setMobileAddOpen(true)
+    }
+    window.addEventListener("fab:new-task", open)
+    return () => window.removeEventListener("fab:new-task", open)
+  }, [])
+
+  // Auto-dismiss store errors after a few seconds (user can also tap to close).
+  // Session-expired errors persist so the re-login action stays reachable.
+  useEffect(() => {
+    if (!error || error === NO_SESSION) return
+    const t = setTimeout(() => clearError(), 6000)
+    return () => clearTimeout(t)
+  }, [error, clearError])
 
   const handleToggleTask = useCallback((id: string) => {
     const currentTasks = useTaskStore.getState().tasks
@@ -112,7 +135,23 @@ export default function TareasPage() {
   }, [toast, toggleTask])
 
   if (!mounted) {
-    return <div className="p-6"><div className="animate-pulse h-8 w-48 bg-surface-overlay rounded-xl" /></div>
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle">
+          <div className="animate-pulse h-8 w-40 bg-surface-overlay rounded-xl" />
+          <div className="animate-pulse h-7 w-20 bg-surface-overlay rounded-lg" />
+        </div>
+        <div className="p-4 space-y-3">
+          <div className="animate-pulse h-4 w-32 bg-surface-overlay rounded" />
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <div className="animate-pulse h-[22px] w-[22px] rounded-full bg-surface-overlay shrink-0" />
+              <div className="animate-pulse h-4 bg-surface-overlay rounded" style={{ width: `${55 + ((i * 13) % 35)}%` }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   const rootTasks = tasks.filter((t) => !t.parent_id)
@@ -175,7 +214,7 @@ export default function TareasPage() {
             Formato
           </button>
           {showFormatMenu && (
-            <div className="absolute right-0 top-full mt-1 bg-[#1e1e2c] rounded-xl border border-border-default py-2 z-30 shadow-xl w-52">
+            <div className="absolute right-0 top-full mt-1 bg-surface-2 rounded-xl border border-border-default py-2 z-30 shadow-xl w-52">
               {/* Vista section */}
               <div className="px-3 pb-1">
                 <p className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1.5">Vista</p>
@@ -270,6 +309,18 @@ export default function TareasPage() {
             />
           )}
 
+          {view === "proximo" && (
+            <ProximoView
+              tasks={rootTasks}
+              displayMode={displayMode}
+              isMobile={isMobile}
+              getSubtasks={getSubtasks}
+              onSelectTask={setSelectedTask}
+              onToggleTask={handleToggleTask}
+              onAddForDay={handleAddForDay}
+            />
+          )}
+
         </div>
 
       </div>
@@ -292,19 +343,21 @@ export default function TareasPage() {
         />
       )}
 
-      {/* Mobile Add Task Bottom Sheet */}
+      {/* Mobile Add Task Bottom Sheet (FAB + per-day add in Próximo). Desktop uses
+          the inline QuickAddTask instead (rendered by BoardColumn / ProximoView). */}
       {isMobile && (
-        <MobileAddTaskSheet 
-          open={mobileAddOpen} 
-          onOpenChange={setMobileAddOpen} 
-          initialSectionId={mobileAddSectionId} 
+        <MobileAddTaskSheet
+          open={mobileAddOpen}
+          onOpenChange={setMobileAddOpen}
+          initialSectionId={mobileAddSectionId}
+          initialDate={mobileAddDate}
         />
       )}
 
       {/* Completion toast */}
       {toast && (
-        <div 
-          className="fixed left-1/2 -translate-x-1/2 z-[200] flex items-center gap-3 bg-[#1e1e2c] border border-border-default rounded-2xl px-4 py-3 shadow-2xl animate-in slide-in-from-bottom-4 duration-300 whitespace-nowrap lg:bottom-6"
+        <div
+          className="fixed left-3 right-3 lg:left-1/2 lg:right-auto lg:-translate-x-1/2 z-[200] flex items-center gap-3 bg-surface-2 border border-border-default rounded-2xl px-4 py-3 shadow-2xl animate-in slide-in-from-bottom-4 duration-300 lg:bottom-6"
           style={{ bottom: "calc(72px + env(safe-area-inset-bottom) + 12px)" }}
         >
           <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
@@ -312,7 +365,7 @@ export default function TareasPage() {
               <path d="M1 5L4 8L11 1" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <span className="text-sm text-text-secondary">
+          <span className="text-sm text-text-secondary flex-1 lg:flex-none">
             {toast.count === 1 ? "1 tarea completada" : `${toast.count} tareas completadas`}
           </span>
           <button
@@ -326,6 +379,34 @@ export default function TareasPage() {
             className="text-text-muted hover:text-text-secondary cursor-pointer ml-1"
           >
             <X size={14} />
+          </button>
+        </div>
+      )}
+
+      {/* Error toast — surfaces silent write/session failures (no more silent no-ops) */}
+      {error && (
+        <div
+          role="alert"
+          className="fixed left-3 right-3 lg:left-1/2 lg:right-auto lg:-translate-x-1/2 z-[210] flex items-center gap-3 bg-red-500/15 border border-red-500/30 rounded-2xl px-4 py-3 shadow-2xl animate-in slide-in-from-bottom-4 duration-300 text-left lg:bottom-6"
+          style={{ bottom: "calc(72px + env(safe-area-inset-bottom) + 12px)" }}
+        >
+          <div className="w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
+            <X size={14} className="text-red-400" />
+          </div>
+          <span className="text-sm text-red-200 flex-1">{error}</span>
+          {error === NO_SESSION && (
+            <Link
+              href="/login"
+              className="shrink-0 inline-flex items-center min-h-[44px] px-3 rounded-lg bg-red-500/25 text-xs font-semibold text-red-100 hover:bg-red-500/35 active:scale-95 transition-all touch-manipulation"
+            >
+              Volver a iniciar sesión
+            </Link>
+          )}
+          <button
+            onClick={clearError}
+            className="shrink-0 inline-flex items-center min-h-[44px] px-2 text-xs font-semibold text-red-300 hover:text-red-200 active:scale-95 transition-all touch-manipulation"
+          >
+            Cerrar
           </button>
         </div>
       )}
@@ -362,9 +443,23 @@ function BandejaView({
 }) {
   const unsectioned = tasks.filter((t) => !t.section_id && !t.completed)
   const completed = showCompleted ? tasks.filter((t) => t.completed) : []
+  const isEmpty = tasks.length === 0 && sections.length === 0
 
   return (
     <div>
+      {/* Empty state (no tasks, no sections) */}
+      {isEmpty && newTaskSection !== "__none__" && (
+        <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-surface-2 flex items-center justify-center mb-4">
+            <Inbox size={28} className="text-text-muted" strokeWidth={1.5} />
+          </div>
+          <p className="text-base font-semibold text-text-primary">Bandeja vacía</p>
+          <p className="text-sm text-text-muted mt-1 max-w-[16rem]">
+            Agregá tu primera tarea con el botón <span className="text-brand-gold font-medium">+</span> o desde un contacto.
+          </p>
+        </div>
+      )}
+
       {/* Unsectioned tasks */}
       {unsectioned.length > 0 && (
         <div>
@@ -373,19 +468,21 @@ function BandejaView({
             <span className="text-sm font-bold text-text-primary">(Sin sección)</span>
             <span className="text-xs text-text-muted font-medium">{unsectioned.length}</span>
           </div>
-          {unsectioned.map((task) => {
-            const subs = getSubtasks(task.id)
-            return (
-              <TaskItem
-                key={task.id}
-                task={task}
-                subtaskCount={subs.length}
-                subtaskDone={subs.filter((s) => s.completed).length}
-                onTap={() => onSelectTask(task)}
-                onToggle={onToggleTask}
-              />
-            )
-          })}
+          <AnimatePresence initial={false}>
+            {unsectioned.map((task) => {
+              const subs = getSubtasks(task.id)
+              return (
+                <TaskItem
+                  key={task.id}
+                  task={task}
+                  subtaskCount={subs.length}
+                  subtaskDone={subs.filter((s) => s.completed).length}
+                  onTap={() => onSelectTask(task)}
+                  onToggle={onToggleTask}
+                />
+              )
+            })}
+          </AnimatePresence>
         </div>
       )}
 
@@ -402,20 +499,22 @@ function BandejaView({
               collapsed={collapsed}
               onToggle={() => toggleCollapse(sec.id)}
             />
-            {!collapsed &&
-              sectionTasks.map((task) => {
-                const subs = getSubtasks(task.id)
-                return (
-                  <TaskItem
-                    key={task.id}
-                    task={task}
-                    subtaskCount={subs.length}
-                    subtaskDone={subs.filter((s) => s.completed).length}
-                    onTap={() => onSelectTask(task)}
-                    onToggle={onToggleTask}
-                  />
-                )
-              })}
+            <AnimatePresence initial={false}>
+              {!collapsed &&
+                sectionTasks.map((task) => {
+                  const subs = getSubtasks(task.id)
+                  return (
+                    <TaskItem
+                      key={task.id}
+                      task={task}
+                      subtaskCount={subs.length}
+                      subtaskDone={subs.filter((s) => s.completed).length}
+                      onTap={() => onSelectTask(task)}
+                      onToggle={onToggleTask}
+                    />
+                  )
+                })}
+            </AnimatePresence>
             {!collapsed && newTaskSection === sec.id && (
               <div className="px-4 py-2 border-b border-border-subtle">
                 <input
@@ -505,9 +604,11 @@ function BandejaView({
               Completadas ({completed.length})
             </span>
           </div>
-          {completed.map((task) => (
-            <TaskItem key={task.id} task={task} onTap={() => onSelectTask(task)} />
-          ))}
+          <AnimatePresence initial={false}>
+            {completed.map((task) => (
+              <TaskItem key={task.id} task={task} onTap={() => onSelectTask(task)} />
+            ))}
+          </AnimatePresence>
         </div>
       )}
     </div>
@@ -550,19 +651,21 @@ function HoyView({
           <div className="px-4 py-2">
             <span className="text-xs font-bold text-red-400 uppercase tracking-wider">Vencidas</span>
           </div>
-          {overdue.map((task) => {
-            const subs = getSubtasks(task.id)
-            return (
-              <TaskItem
-                key={task.id}
-                task={task}
-                subtaskCount={subs.length}
-                subtaskDone={subs.filter((s) => s.completed).length}
-                onTap={() => onSelectTask(task)}
-                onToggle={onToggleTask}
-              />
-            )
-          })}
+          <AnimatePresence initial={false}>
+            {overdue.map((task) => {
+              const subs = getSubtasks(task.id)
+              return (
+                <TaskItem
+                  key={task.id}
+                  task={task}
+                  subtaskCount={subs.length}
+                  subtaskDone={subs.filter((s) => s.completed).length}
+                  onTap={() => onSelectTask(task)}
+                  onToggle={onToggleTask}
+                />
+              )
+            })}
+          </AnimatePresence>
         </div>
       )}
 
@@ -571,19 +674,21 @@ function HoyView({
           <div className="px-4 py-2">
             <span className="text-xs font-bold text-blue-400 uppercase tracking-wider">Hoy</span>
           </div>
-          {todayTasks.map((task) => {
-            const subs = getSubtasks(task.id)
-            return (
-              <TaskItem
-                key={task.id}
-                task={task}
-                subtaskCount={subs.length}
-                subtaskDone={subs.filter((s) => s.completed).length}
-                onTap={() => onSelectTask(task)}
-                onToggle={onToggleTask}
-              />
-            )
-          })}
+          <AnimatePresence initial={false}>
+            {todayTasks.map((task) => {
+              const subs = getSubtasks(task.id)
+              return (
+                <TaskItem
+                  key={task.id}
+                  task={task}
+                  subtaskCount={subs.length}
+                  subtaskDone={subs.filter((s) => s.completed).length}
+                  onTap={() => onSelectTask(task)}
+                  onToggle={onToggleTask}
+                />
+              )
+            })}
+          </AnimatePresence>
         </div>
       )}
 
@@ -598,9 +703,11 @@ function HoyView({
           <div className="px-4 py-2">
             <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Sin fecha</span>
           </div>
-          {noDate.map((task) => (
-            <TaskItem key={task.id} task={task} onTap={() => onSelectTask(task)} onToggle={onToggleTask} />
-          ))}
+          <AnimatePresence initial={false}>
+            {noDate.map((task) => (
+              <TaskItem key={task.id} task={task} onTap={() => onSelectTask(task)} onToggle={onToggleTask} />
+            ))}
+          </AnimatePresence>
         </div>
       )}
     </div>

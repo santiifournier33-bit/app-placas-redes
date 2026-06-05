@@ -13,7 +13,7 @@ export default async function FirmasPage() {
 
   return (
     <div className="h-[calc(100dvh-4rem)] lg:h-screen overflow-hidden">
-      <SignaturesModule />
+      <SignaturesModule role={session.role} />
     </div>
   )
 }

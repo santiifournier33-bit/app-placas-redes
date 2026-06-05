@@ -222,8 +222,9 @@ interface TaskCardProps {
   isDragging: boolean
 }
 
-function TaskCard({ task, subtaskCount, subtaskDone, onTap, onToggle, onDragStart, isDragging }: TaskCardProps) {
-  const overdue = task.due_date && isPast(new Date(task.due_date)) && !isToday(new Date(task.due_date)) && !task.completed
+export function TaskCard({ task, subtaskCount, subtaskDone, onTap, onToggle, onDragStart, isDragging }: TaskCardProps) {
+  const dueLocal = task.due_date ? new Date(task.due_date.slice(0, 10) + "T12:00:00") : null
+  const overdue = dueLocal && isPast(dueLocal) && !isToday(dueLocal) && !task.completed
   const effectiveType = (task.task_type ?? "tarea") as TaskType
 
   return (
@@ -275,8 +276,8 @@ function TaskCard({ task, subtaskCount, subtaskDone, onTap, onToggle, onDragStar
           {(task.due_date || subtaskCount > 0 || effectiveType !== "tarea") && (
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               {task.due_date && (
-                <span className={`text-xs md:text-[10px] ${overdue ? "text-red-400" : "text-text-muted"}`}>
-                  {format(new Date(task.due_date), "d MMM", { locale: es })}
+                <span className={`text-xs ${overdue ? "text-red-400" : "text-text-muted"}`}>
+                  {format(new Date(task.due_date.slice(0, 10) + "T12:00:00"), "d MMM", { locale: es })}
                 </span>
               )}
               {subtaskCount > 0 && (

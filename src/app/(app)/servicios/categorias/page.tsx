@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useMemo } from "react"
 import * as LucideIcons from "lucide-react"
+import { useHydrated } from "@/lib/hooks/useHydrated"
 import {
   Plus, ChevronDown, ChevronRight, Edit2, Trash2, X, Check, GripVertical,
 } from "lucide-react"
@@ -221,8 +222,7 @@ function SubForm({ initial, macroCategoryId, macroCategories, onSave, onCancel }
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function CategoriasPage() {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
+  const mounted = useHydrated()
 
   const {
     macroCategories, categories, payments,

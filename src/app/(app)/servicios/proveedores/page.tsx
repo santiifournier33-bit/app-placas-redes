@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useMemo } from "react"
 import { Search, Plus, X } from "lucide-react"
+import { useHydrated } from "@/lib/hooks/useHydrated"
 import { useServiciosStore } from "@/lib/stores/serviciosStore"
 import { ProviderCard } from "@/components/servicios/ProviderCard"
 import { ProviderForm } from "@/components/servicios/ProviderForm"
@@ -9,8 +10,7 @@ import { ProviderDetail } from "@/components/servicios/ProviderDetail"
 import type { Provider } from "@/lib/stores/serviciosStore"
 
 export default function ProveedoresPage() {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
+  const mounted = useHydrated()
 
   const { providers, categories } = useServiciosStore()
   const [search, setSearch] = useState("")

@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
+import { useHydrated } from "@/lib/hooks/useHydrated"
 import { useTaskStore } from "@/lib/stores/taskStore"
 import { useContactStore } from "@/lib/stores/contactStore"
 import { useFunnelStore } from "@/lib/stores/funnelStore"
@@ -19,14 +20,13 @@ import { PageHeader } from "@/components/nav/PageHeader"
 import type { FunnelStage } from "@/lib/embudo/funnel"
 
 export default function DashboardPage() {
-  const [mounted, setMounted] = useState(false)
+  const mounted = useHydrated()
   const router = useRouter()
   const { tasks, init: initTasks } = useTaskStore()
   const { contacts, init: initContacts } = useContactStore()
   const initFunnel = useFunnelStore(s => s.init)
 
   useEffect(() => {
-    setMounted(true)
     initTasks()
     initContacts()
     initFunnel()

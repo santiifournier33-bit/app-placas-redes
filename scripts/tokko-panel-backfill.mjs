@@ -21,7 +21,9 @@ dotenv.config({ path: path.resolve(__dirname, '..', '.env.local') })
 const TOKKO_API_KEY = process.env.TOKKO_API_KEY
 const TOKKO_BASE = 'https://www.tokkobroker.com/api/v1'
 const BRANCH_FILTER = '[0,28214]'
-const STATUS_BY_BUCKET = { new: 'pending', assigned: 'assigned', deleted: 'archived' }
+// DB constraint inquiries_status_check allows only pending|responded|archived.
+// Tokko's "assigned" bucket = leads being worked → map to 'pending' (actionable in this CRM).
+const STATUS_BY_BUCKET = { new: 'pending', assigned: 'pending', deleted: 'archived' }
 
 const args = Object.fromEntries(process.argv.slice(2).map(a => {
   const [k, v] = a.replace(/^--/, '').split('=')
@@ -74,8 +76,22 @@ function parseHtml(html, bucket) {
     if (seen.has(wcid)) return
     seen.add(wcid)
     const text = $el.text()
-    const emailM = text.match(/Email:\s*([^\s<>]+@[^\s<>]+)/i)
-    const phoneM = text.match(/Celular:\s*([0-9+\-\s()]+)/i)
+    // Contact layout differs per bucket — extract robustly so BOTH yield contact (else the
+    // row is skipped, which is what dropped the whole "assigned" bucket before):
+    //   - "new":      labels "Correo electrónico:" (email) + "Celular:" (phone).
+    //   - "assigned": NO labels; .webcontact_name TEXT = email, its `title` attr = phone.
+    // In both, .webcontact_name shows the contact NAME, or the email when no name exists.
+    const wn = $el.find('.webcontact_name').first()
+    const wnText = wn.text().trim()
+    const wnTitle = (wn.attr('title') || '').trim()
+    const labelEmail = (text.match(/(?:Correo electr[oó]nico|E-?mail|Correo):\s*([^\s<>]+@[^\s<>]+)/i) || [])[1]
+    const anyEmail = (text.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/) || [])[0]
+    const contactEmail = labelEmail || (wnText.includes('@') ? wnText : null) || anyEmail || null
+    const labelPhone = (text.match(/Celular:\s*([0-9+\-\s()]+)/i) || [])[1]
+    const titlePhone = wnTitle.replace(/\D/g, '').length >= 6 ? wnTitle : null
+    const contactPhone = labelPhone || titlePhone || null
+    // Name: .webcontact_name text unless it's actually the email (no real name available).
+    const contactName = wnText && !wnText.includes('@') ? wnText : ''
     const onclickAttrs = []
     $el.find('[onclick]').each((_, e) => {
       const oc = $(e).attr('onclick')
@@ -93,9 +109,9 @@ function parseHtml(html, bucket) {
     })
     rows.push({
       web_contact_id: wcid,
-      contact_name: $el.find('.webcontact_name').first().text().trim(),
-      contact_email: emailM ? emailM[1].trim() : null,
-      contact_phone: phoneM ? phoneM[1].trim() : null,
+      contact_name: contactName,
+      contact_email: contactEmail ? contactEmail.trim() : null,
+      contact_phone: contactPhone ? contactPhone.trim() : null,
       received_at_iso: parseDateDdmmyyyy($el.find('li[title]').first().attr('title')),
       property_tokko_id: propId,
       property_address: $el.find('.web_contact_lead_address').first().text().trim() || null,
@@ -152,6 +168,36 @@ async function fetchProperty(tokkoId) {
   return result
 }
 
+// When re-running over an EXISTING inquiry, the freshly built snapshot may be the minimal
+// "inactive" shape (no operation_type/geo) while the stored one was already enriched
+// (operation_type inferred + geo recovered via panel /api3/quick → _source 'inactive_recovered').
+// Merging preserves those recovered fields so a re-run never clobbers them (which previously
+// broke the matching — see plan). New inserts are unaffected.
+function mergeSnapshot(existing, fresh) {
+  if (!existing || typeof existing !== 'object') return fresh
+  const merged = { ...existing, ...fresh }
+  const preserve = ['operation_type', 'geo_lat', 'geo_long', 'location_name', 'location_full', 'location_id', '_op_source']
+  for (const k of preserve) {
+    if ((fresh[k] === undefined || fresh[k] === null) && existing[k] != null) merged[k] = existing[k]
+  }
+  if (fresh._source === 'inactive' && existing._source === 'inactive_recovered') merged._source = 'inactive_recovered'
+  return merged
+}
+
+// Tokko devuelve `operation_id` (número) en /property/{id}/ pero `type` (string) en otros
+// endpoints. Derivar el operation_type numérico (1=venta,2=alquiler,3=temporal) de cualquiera
+// de los dos — si no, las propiedades activas quedaban con operation_type null → sin matchear.
+function tokkoOpType(op) {
+  if (!op) return null
+  if (typeof op.operation_id === 'number') return op.operation_id
+  if (typeof op.type === 'number') return op.type
+  const t = (op.operation_type || op.type || '').toString().toLowerCase()
+  if (t.includes('temporal') || t.includes('temporario')) return 3
+  if (t === 'alquiler' || t === 'rent') return 2
+  if (t === 'venta' || t === 'sale') return 1
+  return null
+}
+
 function buildSnapshot(prop, fallback) {
   if (!prop) return { tokko_id: fallback.tokko_id ?? null, address: fallback.address, cover_photo_url: fallback.thumbnail, _source: 'unresolved' }
   if (prop.deleted_at && !prop.address) return { tokko_id: prop.id, address: fallback.address, cover_photo_url: fallback.thumbnail, deleted_at: prop.deleted_at, _source: 'inactive' }
@@ -160,7 +206,7 @@ function buildSnapshot(prop, fallback) {
   return {
     tokko_id: prop.id, reference_code: prop.reference_code, address: prop.address, publication_title: prop.publication_title,
     price: price?.price ?? null, currency: price?.currency ?? null,
-    operation_type: op?.type ?? null, property_type: prop.type?.name ?? null,
+    operation_type: tokkoOpType(op), property_type: prop.type?.name ?? null,
     rooms_total: prop.room_amount ?? null, bedrooms: prop.suite_amount ?? null, bathrooms: prop.bathroom_amount ?? null,
     surface_total: prop.total_surface ? Number(prop.total_surface) : null, surface_covered: prop.roofed_surface ? Number(prop.roofed_surface) : null,
     geo_lat: prop.geo_lat ? Number(prop.geo_lat) : null, geo_long: prop.geo_long ? Number(prop.geo_long) : null,
@@ -299,22 +345,24 @@ async function main() {
           raw_payload: row,
         }
 
-        const { data: byWcId } = await supabase.from('inquiries').select('id, first_inquired_at').eq('tokko_web_contact_id', row.web_contact_id).maybeSingle()
+        const { data: byWcId } = await supabase.from('inquiries').select('id, first_inquired_at, property_snapshot').eq('tokko_web_contact_id', row.web_contact_id).maybeSingle()
         if (byWcId) {
           const { error } = await supabase.from('inquiries').update({
             ...baseData,
+            property_snapshot: mergeSnapshot(byWcId.property_snapshot, snapshot),
             first_inquired_at: byWcId.first_inquired_at ?? row.received_at_iso ?? new Date().toISOString(),
             last_inquired_at: row.received_at_iso ?? new Date().toISOString(),
           }).eq('id', byWcId.id)
           if (error) bucketStats.errors++; else bucketStats.inquiries_updated++
           continue
         }
-        const { data: byPair } = await supabase.from('inquiries').select('id, first_inquired_at, last_inquired_at').eq('contact_id', contactId).eq('tokko_property_id', String(row.property_tokko_id)).maybeSingle()
+        const { data: byPair } = await supabase.from('inquiries').select('id, first_inquired_at, last_inquired_at, property_snapshot').eq('contact_id', contactId).eq('tokko_property_id', String(row.property_tokko_id)).maybeSingle()
         if (byPair) {
           const newLast = row.received_at_iso ?? new Date().toISOString()
           const existingLast = byPair.last_inquired_at ?? newLast
           const { error } = await supabase.from('inquiries').update({
             ...baseData,
+            property_snapshot: mergeSnapshot(byPair.property_snapshot, snapshot),
             first_inquired_at: byPair.first_inquired_at ?? newLast,
             last_inquired_at: newLast > existingLast ? newLast : existingLast,
           }).eq('id', byPair.id)

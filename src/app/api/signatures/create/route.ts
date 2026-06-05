@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
+import { getApiUser } from '@/lib/auth/api-auth'
 
 const DOCUSEAL_URL = process.env.DOCUSEAL_URL!
 const DOCUSEAL_API_KEY = process.env.DOCUSEAL_API_KEY!
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getApiUser()
     if (!user) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
@@ -69,7 +69,8 @@ export async function POST(req: NextRequest) {
           : null
 
     if (docusealSubmissionId) {
-      const { error: insertErr } = await supabase
+      const admin = createServiceClient()
+      const { error: insertErr } = await admin
         .from('signature_submissions')
         .insert({
           docuseal_submission_id: docusealSubmissionId,

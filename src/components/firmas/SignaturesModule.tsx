@@ -13,13 +13,18 @@ const tabLoading = () => (
 )
 const TemplateSender = dynamic(() => import('./TemplateSender'), { loading: tabLoading })
 const SignaturesList = dynamic(() => import('./SignaturesList'), { loading: tabLoading })
+const AutorizacionForm = dynamic(() => import('./AutorizacionForm'), { loading: tabLoading })
+const TemplateEditor = dynamic(() => import('./TemplateEditor'), { loading: tabLoading })
 
-type Tab = 'nueva' | 'listado'
+type Tab = 'nueva' | 'listado' | 'plantillas'
+type NuevaMode = 'autorizacion' | 'otras'
 
 const DOCUSEAL_URL = process.env.NEXT_PUBLIC_DOCUSEAL_URL ?? 'http://144.22.45.201:3001'
 
-export default function SignaturesModule() {
+export default function SignaturesModule({ role = 'asesor' }: { role?: 'admin' | 'asesor' }) {
+  const isAdmin = role === 'admin'
   const [activeTab, setActiveTab] = useState<Tab>('nueva')
+  const [nuevaMode, setNuevaMode] = useState<NuevaMode>('autorizacion')
   const [refreshList, setRefreshList] = useState(0)
 
   const handleRefresh = () => {
@@ -63,6 +68,7 @@ export default function SignaturesModule() {
           {([
             ['nueva', '✍️ Nueva Firma'],
             ['listado', '📋 Mis Documentos'],
+            ...(isAdmin ? [['plantillas', '⚙️ Plantillas'] as [Tab, string]] : []),
           ] as [Tab, string][]).map(([id, label]) => (
             <button
               key={id}
@@ -80,9 +86,36 @@ export default function SignaturesModule() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-hidden">
-        {activeTab === 'nueva' && <TemplateSender onSent={() => setActiveTab('listado')} />}
+      <div className="flex-1 overflow-hidden flex flex-col">
+        {activeTab === 'nueva' && (
+          <>
+            <div className="px-6 pt-4 flex-shrink-0">
+              <div className="inline-flex rounded-lg border border-[var(--border-subtle)] p-0.5 bg-[var(--bg-secondary)]">
+                {([
+                  ['autorizacion', 'Autorización (dinámica)'],
+                  ['otras', 'Otras plantillas'],
+                ] as [NuevaMode, string][]).map(([id, label]) => (
+                  <button
+                    key={id}
+                    onClick={() => setNuevaMode(id)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                      nuevaMode === id ? 'bg-violet-600 text-white' : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              {nuevaMode === 'autorizacion'
+                ? <AutorizacionForm onSent={() => setActiveTab('listado')} />
+                : <TemplateSender onSent={() => setActiveTab('listado')} />}
+            </div>
+          </>
+        )}
         {activeTab === 'listado' && <SignaturesList key={refreshList} />}
+        {activeTab === 'plantillas' && isAdmin && <TemplateEditor />}
       </div>
     </div>
   )
