@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef, useDeferredValue } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Search, ChevronDown, Download, Upload, Table2, LayoutGrid, MoreHorizontal, Check } from 'lucide-react'
+import { Plus, Search, ChevronDown, Download, Upload, Table2, LayoutGrid, MoreHorizontal, Check, Merge } from 'lucide-react'
 import { PortalDropdown } from '@/components/ui/PortalDropdown'
 import {
   useContactStore,
@@ -14,6 +14,7 @@ import { ContactsTable } from '@/components/productividad/contactos/ContactsTabl
 import { ContactsCards } from '@/components/productividad/contactos/ContactsCards'
 import { AddContactPanel } from '@/components/productividad/contactos/AddContactPanel'
 import { ImportCSVModal } from '@/components/productividad/contactos/ImportCSVModal'
+import { MergeDuplicatesModal } from '@/components/productividad/contactos/MergeDuplicatesModal'
 import { exportContactsCSV } from '@/lib/csv/export'
 
 type ViewMode = 'table' | 'cards'
@@ -32,6 +33,7 @@ export default function ContactosPage() {
   const [filterCirculo, setFilterCirculo] = useState<string>(persisted?.circulo ?? 'all')
   const [showForm, setShowForm] = useState(false)
   const [showImport, setShowImport] = useState(false)
+  const [showMerge, setShowMerge] = useState(false)
   const [showMore, setShowMore] = useState(false)
   const moreBtnRef = useRef<HTMLButtonElement>(null)
 
@@ -146,6 +148,13 @@ export default function ContactosPage() {
             <Download size={13} /> Exportar
           </button>
           <button
+            onClick={() => setShowMerge(true)}
+            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-text-secondary hover:text-text-secondary hover:bg-surface-overlay-hover cursor-pointer"
+            title="Combinar duplicados"
+          >
+            <Merge size={13} /> Duplicados
+          </button>
+          <button
             onClick={() => setShowForm(true)}
             className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 cursor-pointer"
           >
@@ -180,6 +189,12 @@ export default function ContactosPage() {
               className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md text-sm text-text-secondary hover:bg-surface-overlay cursor-pointer text-left"
             >
               <Download size={15} /> Exportar CSV
+            </button>
+            <button
+              onClick={() => { setShowMerge(true); setShowMore(false) }}
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md text-sm text-text-secondary hover:bg-surface-overlay cursor-pointer text-left"
+            >
+              <Merge size={15} /> Combinar duplicados
             </button>
           </PortalDropdown>
         </div>
@@ -254,6 +269,11 @@ export default function ContactosPage() {
       {/* Import CSV modal */}
       {showImport && (
         <ImportCSVModal onClose={() => setShowImport(false)} />
+      )}
+
+      {/* Merge duplicates modal */}
+      {showMerge && (
+        <MergeDuplicatesModal contacts={filtered} onClose={() => setShowMerge(false)} />
       )}
     </div>
   )

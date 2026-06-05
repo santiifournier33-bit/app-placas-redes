@@ -1280,6 +1280,10 @@ export type Database = {
           total_actions: number
         }[]
       }
+      merge_contacts: {
+        Args: { p_primary: string; p_secondary: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

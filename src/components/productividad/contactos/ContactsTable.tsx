@@ -2,12 +2,14 @@
 
 import { useState, useMemo, useRef, useCallback, useDeferredValue } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { ChevronUp, ChevronDown, ExternalLink, Phone, MessageSquare, Check, Copy } from 'lucide-react'
+import { ChevronUp, ChevronDown, ExternalLink, Phone, MessageSquare, Check, Copy, Download, Trash2, X } from 'lucide-react'
 import {
   useContactStore,
   type Contact,
   type KanbanContact,
 } from '@/lib/stores/contactStore'
+import { exportContactsCSV } from '@/lib/csv/export'
+import { notify } from '@/lib/stores/toastStore'
 import { usePipelinesStore, type PipelineStage } from '@/lib/stores/pipelinesStore'
 import { EditableCell } from './EditableCell'
 import { InlineSelectChip } from './InlineSelectChip'
@@ -165,7 +167,7 @@ function PipelineStageCell({
 }
 
 export function ContactsTable({ contacts, onSelectContact, selectedId }: ContactsTableProps) {
-  const { updateContact, kanbanContacts, moveToStage, addToPipeline, fetchKanban } = useContactStore()
+  const { updateContact, deleteContact, kanbanContacts, moveToStage, addToPipeline, fetchKanban } = useContactStore()
   const { activePipelineId, pipelines } = usePipelinesStore()
 
   // Pipeline data read ONCE here (not per row). Build the stage list and a
@@ -208,6 +210,15 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
   const [showColPicker, setShowColPicker] = useState(false)
   const colPickerBtnRef = useRef<HTMLButtonElement>(null)
 
+  // F7: selección múltiple para acciones masivas (exportar / eliminar).
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const toggleSelect = (id: string) => setSelected(prev => {
+    const next = new Set(prev)
+    if (next.has(id)) next.delete(id); else next.add(id)
+    return next
+  })
+  const clearSelection = () => setSelected(new Set())
+
   // Defer the heavy table re-render so toggling a column checkbox feels instant:
   // the picker reads `hiddenCols` (live) while the 1000-row table reads the
   // deferred value, letting React commit the table update in a non-blocking pass.
@@ -233,6 +244,24 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
       return sortDir === 'asc' ? cmp : -cmp
     })
   }, [contacts, sortKey, sortDir])
+
+  const allSelected = sorted.length > 0 && sorted.every(c => selected.has(c.id))
+  const toggleSelectAll = () => {
+    setSelected(allSelected ? new Set() : new Set(sorted.map(c => c.id)))
+  }
+  const handleBulkExport = () => {
+    const rows = sorted.filter(c => selected.has(c.id))
+    exportContactsCSV(rows)
+    notify(`${rows.length} contacto${rows.length !== 1 ? 's' : ''} exportado${rows.length !== 1 ? 's' : ''}`, 'info')
+  }
+  const handleBulkDelete = async () => {
+    const ids = [...selected]
+    if (ids.length === 0) return
+    if (!confirm(`¿Eliminar ${ids.length} contacto${ids.length !== 1 ? 's' : ''}? Esta acción se puede revertir desde la base.`)) return
+    for (const id of ids) await deleteContact(id)
+    clearSelection()
+    notify(`${ids.length} contacto${ids.length !== 1 ? 's' : ''} eliminado${ids.length !== 1 ? 's' : ''}`)
+  }
 
   // Row virtualization: only the rows in view (+overscan) are mounted, so the
   // table stays at 60fps regardless of how many thousands of contacts load.
@@ -296,8 +325,31 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
 
   return (
     <div className="relative">
-      {/* Column picker toggle */}
-      <div className="flex justify-end px-4 py-2">
+      {/* Toolbar: acciones masivas (izq, si hay selección) + selector de columnas (der) */}
+      <div className="flex items-center justify-between px-4 py-2 gap-2 min-h-9">
+        {selected.size > 0 ? (
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-text-secondary">{selected.size} seleccionado{selected.size !== 1 ? 's' : ''}</span>
+            <button
+              onClick={handleBulkExport}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-text-secondary hover:bg-surface-overlay-hover cursor-pointer"
+            >
+              <Download size={13} /> Exportar
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-red-400 hover:bg-red-500/10 cursor-pointer"
+            >
+              <Trash2 size={13} /> Eliminar
+            </button>
+            <button
+              onClick={clearSelection}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs text-text-muted hover:bg-surface-overlay-hover cursor-pointer"
+            >
+              <X size={13} /> Limpiar
+            </button>
+          </div>
+        ) : <span />}
         <button
           ref={colPickerBtnRef}
           onClick={() => setShowColPicker(!showColPicker)}
@@ -350,7 +402,17 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
                   } ${idx === 0 ? 'sticky left-0 z-20 bg-[#12121a]' : ''}`}
                   onClick={() => col.sortable && toggleSort(col.key)}
                 >
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
+                    {idx === 0 && (
+                      <input
+                        type="checkbox"
+                        checked={allSelected}
+                        onChange={toggleSelectAll}
+                        onClick={e => e.stopPropagation()}
+                        title="Seleccionar todo"
+                        className="accent-blue-500 cursor-pointer shrink-0"
+                      />
+                    )}
                     {col.label}
                     {col.sortable && sortKey === col.key && (
                       sortDir === 'asc'
@@ -360,7 +422,7 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
                   </div>
                 </th>
               ))}
-              <th className="w-20 px-2 py-2.5 font-semibold text-text-muted uppercase tracking-wider">Acc.</th>
+              <th className="w-20 px-2 py-2.5 font-semibold text-text-muted uppercase tracking-wider sticky right-0 z-20 bg-[#12121a]">Acc.</th>
             </tr>
           </thead>
           <tbody>
@@ -382,12 +444,21 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
                 {visibleCols.map((col, idx) => (
                   <td key={col.key} className={`px-1 py-0.5 ${col.width} ${idx === 0 ? 'sticky left-0 z-[5] bg-[#14141e]' : ''}`}>
                     {col.key === 'full_name' ? (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); onSelectContact(contact) }}
-                        className="px-1 text-left text-xs text-text-primary hover:underline cursor-pointer truncate block w-full"
-                      >
-                        {`${contact.first_name ?? ''} ${contact.last_name ?? ''}`.trim() || '—'}
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="checkbox"
+                          checked={selected.has(contact.id)}
+                          onChange={() => toggleSelect(contact.id)}
+                          onClick={e => e.stopPropagation()}
+                          className="accent-blue-500 cursor-pointer shrink-0"
+                        />
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onSelectContact(contact) }}
+                          className="px-1 text-left text-xs text-text-primary hover:underline cursor-pointer truncate block min-w-0 flex-1"
+                        >
+                          {`${contact.first_name ?? ''} ${contact.last_name ?? ''}`.trim() || '—'}
+                        </button>
+                      </div>
                     ) : col.key === 'tags' ? (
                       <div className="flex gap-1 flex-wrap px-1">
                         {(contact.tags ?? []).map((tag, i) => (
@@ -458,7 +529,7 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
                     )}
                   </td>
                 ))}
-                <td className="px-1 py-0.5 w-20">
+                <td className="px-1 py-0.5 w-20 sticky right-0 z-[5] bg-[#14141e]">
                   <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => onSelectContact(contact)}
