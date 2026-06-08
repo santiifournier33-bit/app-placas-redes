@@ -25,7 +25,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Dominio del link: COLEGA_BASE_URL (dominio propio tipo ficha.us.kg) si está configurado;
+    // Dominio del link: COLEGA_BASE_URL (dominio propio tipo ficha.qzz.io) si está configurado;
     // si no, el origin de la request (ej. app-interna-freire.netlify.app).
     const base = (process.env.COLEGA_BASE_URL || new URL(request.url).origin).replace(/\/$/, '');
     return NextResponse.json({ url: `${base}/ficha/${token}` });

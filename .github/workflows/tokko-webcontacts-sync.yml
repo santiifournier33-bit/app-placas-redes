@@ -38,7 +38,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'   # supabase-js v2 (realtime-js) requiere WebSocket nativo; Node 20 no lo tiene
           cache: 'npm'
 
       - name: Install dependencies
