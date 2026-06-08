@@ -126,10 +126,11 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'GOOGLE_DRIVE_ROOT_FOLDER_ID no configurado' }, { status: 500 })
     }
 
-    // Fetch Tokko properties and Drive tree in parallel
+    // Fetch Tokko properties and Drive tree in parallel.
+    // Status is read-only → service account (JWT). No refresh token, no 7-day expiry.
     const [properties, driveClient] = await Promise.all([
       tokko.getAllProperties(config.tokkoApiKey),
-      drive.getDrive(config.oauthClientPath),
+      drive.getDriveReadonly(config.serviceAccountPath, config.oauthClientPath),
     ])
 
     const driveTree = await getDriveTree(driveClient, config.rootFolderId)
@@ -144,6 +145,16 @@ export async function GET(request: Request) {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Error desconocido'
     console.error('Error in /api/docs/status:', message)
+
+    // Credential failures (expired service account key / revoked grant) surface as
+    // invalid_grant or JWT errors from googleapis. Give admins an actionable message.
+    if (/invalid_grant|JWT|invalid_client|unauthorized/i.test(message)) {
+      return NextResponse.json(
+        { error: 'Credenciales de Google vencidas o inválidas. Regenerá la clave del service account (credentials.json) y compartí la carpeta de Drive con su email.' },
+        { status: 500 },
+      )
+    }
+
     return NextResponse.json({ error: `Error al obtener estado de documentación: ${message}` }, { status: 500 })
   }
 }

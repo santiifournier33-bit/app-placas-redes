@@ -100,6 +100,20 @@ PASOS:
    Probar clasificación de archivos de una propiedad:
    node src/test-classifier.js 8002445
 
+   --- Re-autorizar Google Drive (cuando el sync da "invalid_grant") ---
+
+   El permiso de subida a Drive (OAuth) caduca. Si el sync falla con
+   "invalid_grant", regenerá el token con:
+   node src/authorize.js
+
+   Se abre el navegador, iniciás sesión con la cuenta de Google dueña
+   del Drive y listo. Usa el puerto 4100 (no choca con la app en 3000).
+   Para que NO caduque cada 7 días, publicá la pantalla de consentimiento
+   a "Production" en Google Cloud Console (OAuth consent screen).
+
+   NOTA: la pantalla de ESTADO (panel admin /documentacion) NO usa este
+   token: usa el service account (credentials.json), que es solo lectura.
+
 
 ¿CUÁNDO CORRERLO?
 ------------------

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import {
-  Calendar, Flag, Bell, ChevronRight, Repeat,
+  Calendar, Clock, Flag, Bell, ChevronRight, Repeat,
   CheckSquare, MapPin, Phone, Users, PenLine, UserCircle,
   Coffee, Gift, Megaphone,
 } from "lucide-react"
@@ -49,6 +49,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
   const [priority, setPriority] = useState<1 | 2 | 3 | 4>(4)
   const [taskType, setTaskType] = useState<TaskType>("tarea")
   const [dueDate, setDueDate] = useState<string | null>(null)
+  const [dueTime, setDueTime] = useState<string | null>(null)
   const [reminderOffsetMin, setReminderOffsetMin] = useState<number | null>(null)
   const [contactId, setContactId] = useState<string | null>(null)
   const [contactSearch, setContactSearch] = useState("")
@@ -71,6 +72,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
       setPriority(4)
       setTaskType("tarea")
       setDueDate(initialDate)
+      setDueTime(null)
       setReminderOffsetMin(null)
       setContactId(null)
       setRecurrenceFreq(null)
@@ -91,7 +93,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
 
   const computeReminderAt = (): string | null => {
     if (reminderOffsetMin === null || !dueDate) return null
-    const dueIso = `${dueDate}T09:00:00`
+    const dueIso = `${dueDate}T${dueTime ?? "09:00"}:00`
     const due = new Date(dueIso)
     const reminderMs = due.getTime() - reminderOffsetMin * 60 * 1000
     return new Date(reminderMs).toISOString()
@@ -107,6 +109,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
         priority,
         task_type: taskType,
         due_date: dueDate ?? null,
+        due_time: dueDate ? dueTime : null,
         reminder_at: computeReminderAt(),
         contact_id: contactId,
         ...(recurrenceFreq ? { recurrence_freq: recurrenceFreq } : {}),
@@ -208,6 +211,20 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
                         className="w-full bg-transparent text-sm text-text-secondary outline-none [color-scheme:dark]"
                       />
                     </div>
+                    {dueDate && (
+                      <div className="border-t border-border-subtle pt-2 px-3 pb-2 flex items-center gap-2">
+                        <Clock size={14} className="text-text-muted shrink-0" />
+                        <input
+                          type="time"
+                          value={dueTime ?? ""}
+                          onChange={(e) => setDueTime(e.target.value || null)}
+                          className="flex-1 bg-transparent text-sm text-text-secondary outline-none [color-scheme:dark]"
+                        />
+                        {dueTime && (
+                          <button onClick={() => setDueTime(null)} className="text-xs text-text-muted hover:text-text-secondary cursor-pointer">Quitar</button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

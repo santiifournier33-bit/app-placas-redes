@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import {
-  Calendar, Flag, Bell, X, ChevronRight, Repeat,
+  Calendar, Clock, Flag, Bell, X, ChevronRight, Repeat,
   CheckSquare, MapPin, Phone, Users, PenLine, UserCircle,
   Coffee, Gift, Megaphone,
 } from "lucide-react"
@@ -48,6 +48,7 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
   const [priority, setPriority] = useState<1 | 2 | 3 | 4>(4)
   const [taskType, setTaskType] = useState<TaskType>("tarea")
   const [dueDate, setDueDate] = useState<string | null>(initialDate)
+  const [dueTime, setDueTime] = useState<string | null>(null)
   // reminder preset offset in minutes BEFORE due. null = no reminder.
   const [reminderOffsetMin, setReminderOffsetMin] = useState<number | null>(null)
   const [contactId, setContactId] = useState<string | null>(preselectedContactId)
@@ -90,8 +91,8 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
 
   const computeReminderAt = (): string | null => {
     if (reminderOffsetMin === null || !dueDate) return null
-    // Default to 09:00 local time if no due_time set
-    const dueIso = `${dueDate}T09:00:00`
+    // Use the task's time if set, else default to 09:00 local.
+    const dueIso = `${dueDate}T${dueTime ?? "09:00"}:00`
     const due = new Date(dueIso)
     const reminderMs = due.getTime() - reminderOffsetMin * 60 * 1000
     return new Date(reminderMs).toISOString()
@@ -105,6 +106,7 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
       priority,
       task_type: taskType,
       due_date: dueDate ?? null,
+      due_time: dueDate ? dueTime : null,
       reminder_at: computeReminderAt(),
       contact_id: contactId,
       ...(recurrenceFreq ? { recurrence_freq: recurrenceFreq } : {}),
@@ -190,6 +192,20 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
                   className="w-full bg-transparent text-xs text-text-secondary outline-none [color-scheme:dark]"
                 />
               </div>
+              {dueDate && (
+                <div className="border-t border-border-subtle pt-1 px-3 pb-2 flex items-center gap-2">
+                  <Clock size={12} className="text-text-muted shrink-0" />
+                  <input
+                    type="time"
+                    value={dueTime ?? ""}
+                    onChange={(e) => setDueTime(e.target.value || null)}
+                    className="flex-1 bg-transparent text-xs text-text-secondary outline-none [color-scheme:dark]"
+                  />
+                  {dueTime && (
+                    <button onClick={() => setDueTime(null)} className="text-xs text-text-muted hover:text-text-secondary cursor-pointer">Quitar</button>
+                  )}
+                </div>
+              )}
             </>
           </PortalDropdown>
         </div>

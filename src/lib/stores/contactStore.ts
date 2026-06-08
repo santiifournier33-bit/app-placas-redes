@@ -87,6 +87,9 @@ interface ContactState {
   addContact: (data: Omit<TablesInsert<'contacts'>, 'owner_id'>, pipelineId?: string, stageId?: string) => Promise<Contact | null>
   updateContact: (id: string, updates: Partial<Contact>) => Promise<void>
   deleteContact: (id: string) => Promise<void>
+  // Crea una nota en el timeline (tabla contact_notes), la misma fuente que muestran
+  // el detalle de Contactos y el de Negocios (ContactNotesTab). Devuelve la fila o null.
+  addNote: (contactId: string, body: string) => Promise<{ id: string; body: string; created_at: string | null; updated_at: string | null } | null>
 
   moveToStage: (contactPipelineId: string, newStageId: string) => Promise<void>
   addToPipeline: (contactId: string, pipelineId: string, stageId: string) => Promise<void>
@@ -255,6 +258,23 @@ export const useContactStore = create<ContactState>((set, get) => ({
     }))
 
     await supabase.from('contacts').update(updates).eq('id', id)
+  },
+
+  addNote: async (contactId, body) => {
+    const trimmed = body.trim()
+    if (!trimmed) return null
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return null
+    const { data, error } = await supabase
+      .from('contact_notes')
+      .insert({ contact_id: contactId, owner_id: user.id, body: trimmed })
+      .select('id, body, created_at, updated_at')
+      .single()
+    if (error) {
+      console.error('addNote: insert failed', error)
+      return null
+    }
+    return data
   },
 
   deleteContact: async (id) => {

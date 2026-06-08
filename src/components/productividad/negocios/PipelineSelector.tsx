@@ -32,11 +32,11 @@ export function PipelineSelector() {
       })}
       <button
         onClick={() => {
-          if (confirm('¿Restablecer todos los pipelines a los valores por defecto? Se perderán los pipelines actuales.')) {
+          if (confirm('¿Restablecer todos los procesos comerciales a los valores por defecto? Se perderán los procesos comerciales actuales.')) {
             seedDefaultPipelines()
           }
         }}
-        title="Restablecer pipelines por defecto"
+        title="Restablecer procesos comerciales por defecto"
         className="p-1.5 rounded-lg text-text-muted hover:text-text-secondary hover:bg-surface-overlay-hover transition-colors cursor-pointer shrink-0"
       >
         <RotateCcw size={14} />

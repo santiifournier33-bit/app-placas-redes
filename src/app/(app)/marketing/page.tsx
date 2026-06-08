@@ -8,7 +8,7 @@ export default function MarketingPage() {
         <h1 className="text-2xl font-bold text-text-primary">Marketing</h1>
       </div>
       <p className="text-text-muted text-sm mb-8">
-        Dashboard de marketing: campañas, embudo, pipeline y métricas.
+        Dashboard de marketing: campañas, embudo, proceso comercial y métricas.
       </p>
       <div className="rounded-2xl border border-border-subtle bg-surface-1 p-12 text-center">
         <p className="text-text-muted text-sm">Módulo en desarrollo</p>

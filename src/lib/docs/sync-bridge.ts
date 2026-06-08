@@ -10,6 +10,7 @@ const SYNC_ROOT = path.join(process.cwd(), 'tokko-drive-sync')
 const SYNC_SRC = path.join(SYNC_ROOT, 'src')
 const SYNC_ENV = path.join(SYNC_ROOT, '.env')
 const OAUTH_CLIENT = path.join(SYNC_ROOT, 'oauth-client.json')
+const SERVICE_ACCOUNT = path.join(SYNC_ROOT, 'credentials.json')
 
 // Completely bypass webpack static analysis
 // eslint-disable-next-line no-eval
@@ -69,6 +70,13 @@ export function getOAuthClientPath() {
 }
 
 /**
+ * Get service account key path for Google Drive (read-only / status path)
+ */
+export function getServiceAccountPath() {
+  return SERVICE_ACCOUNT
+}
+
+/**
  * Get configured env values
  */
 export function getSyncConfig() {
@@ -79,5 +87,6 @@ export function getSyncConfig() {
     tokkoEmail: process.env.TOKKO_EMAIL || '',
     tokkoPassword: process.env.TOKKO_PASSWORD || '',
     oauthClientPath: OAUTH_CLIENT,
+    serviceAccountPath: SERVICE_ACCOUNT,
   }
 }

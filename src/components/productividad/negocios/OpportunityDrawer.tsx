@@ -163,7 +163,7 @@ export function OpportunityDrawer({ contact, onClose, onRemove }: OpportunityDra
 
   // Handle remove with confirmation
   const handleRemove = () => {
-    if (confirm('¿Eliminar esta oportunidad del pipeline? El contacto no se borrará.')) {
+    if (confirm('¿Eliminar esta oportunidad del proceso comercial? El contacto no se borrará.')) {
       onRemove()
     }
   }
@@ -295,7 +295,7 @@ export function OpportunityDrawer({ contact, onClose, onRemove }: OpportunityDra
           {/* Pipeline/Stage movement */}
           <div className="flex items-center gap-3 mt-3">
             <div className="flex items-center gap-2">
-              <label className="text-xs md:text-[10px] text-text-muted font-medium">Pipeline</label>
+              <label className="text-xs md:text-[10px] text-text-muted font-medium">Proceso comercial</label>
               <select
                 value={selectedPipelineId}
                 onChange={(e) => handlePipelineChange(e.target.value)}
@@ -428,7 +428,7 @@ export function OpportunityDrawer({ contact, onClose, onRemove }: OpportunityDra
             className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-300 cursor-pointer"
           >
             <Trash2 size={13} />
-            Eliminar del pipeline
+            Eliminar del proceso comercial
           </button>
           <button
             onClick={onClose}

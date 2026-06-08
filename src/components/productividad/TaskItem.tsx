@@ -137,6 +137,7 @@ export function TaskItem({ task, subtaskCount = 0, subtaskDone = 0, onTap, inden
                 className={`text-xs flex items-center gap-1 rounded px-1 -mx-1 hover:bg-surface-overlay-hover active:scale-95 transition-all touch-manipulation ${overdue ? "text-red-400" : "text-text-muted"}`}
               >
                 {format(new Date(task.due_date.slice(0, 10) + "T12:00:00"), "d MMM", { locale: es })}
+                {task.due_time && ` · ${task.due_time.slice(0, 5)}`}
               </button>
             )}
 
@@ -160,6 +161,7 @@ export function TaskItem({ task, subtaskCount = 0, subtaskDone = 0, onTap, inden
       <TaskScheduler
         taskId={task.id}
         currentDate={task.due_date}
+        currentTime={task.due_time}
         open={schedOpen}
         onOpenChange={setSchedOpen}
       />

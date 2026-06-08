@@ -8,7 +8,6 @@ import {
 import { WhatsAppIcon } from '@/components/productividad/contactos/WhatsAppIcon'
 import {
   useContactStore,
-  SOURCE_LABELS,
   type Contact,
 } from '@/lib/stores/contactStore'
 import { usePipelinesStore } from '@/lib/stores/pipelinesStore'
@@ -103,11 +102,6 @@ export default function ContactDetailPage() {
         <div className="flex flex-col min-w-0 flex-1 leading-tight">
           <h1 className="text-sm font-bold text-text-primary truncate">{fullName || 'Contacto'}</h1>
           <div className="flex items-center gap-2 mt-0.5">
-            {contact.source && (
-              <span className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-text-muted">
-                {SOURCE_LABELS[contact.source as keyof typeof SOURCE_LABELS] ?? contact.source}
-              </span>
-            )}
             {contact.circulo && (
               <span className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">
                 {contact.circulo}

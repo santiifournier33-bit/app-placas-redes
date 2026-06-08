@@ -111,14 +111,14 @@ export default function NegociosPage() {
   if (!activePipeline) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
-        <p className="text-text-muted text-sm">No hay pipelines configurados.</p>
+        <p className="text-text-muted text-sm">No hay procesos comerciales configurados.</p>
         <button
           onClick={async () => {
             await pipelinesStore.seedDefaultPipelines()
           }}
           className="px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 transition-colors cursor-pointer"
         >
-          Crear pipelines por defecto
+          Crear procesos comerciales por defecto
         </button>
       </div>
     )
@@ -203,7 +203,6 @@ export default function NegociosPage() {
             await contactStore.updateContact(data.contactId, {
               primary_phone: data.primary_phone,
               primary_email: data.primary_email,
-              notes: data.notes,
             })
 
             const { data: { user } } = await sb.auth.getUser()
@@ -222,7 +221,7 @@ export default function NegociosPage() {
               .limit(1)
 
             if (existing && existing.length > 0) {
-              alert('Este contacto ya se encuentra en este pipeline.')
+              alert('Este contacto ya se encuentra en este proceso comercial.')
               return
             }
 
@@ -237,8 +236,14 @@ export default function NegociosPage() {
 
             if (error) {
               console.error('Error adding to pipeline:', error)
-              alert('No se pudo asociar el contacto al pipeline.')
+              alert('No se pudo asociar el contacto al proceso comercial.')
               return
+            }
+
+            // La nota inicial va al timeline (contact_notes), misma fuente que el
+            // detalle de Contactos y el de Negocios (ContactNotesTab).
+            if (data.notes.trim()) {
+              await contactStore.addNote(data.contactId, data.notes)
             }
 
             await contactStore.fetchKanban(activePipeline.id)
@@ -331,7 +336,8 @@ function QuickLeadModal({
     setSearchQuery(`${c.first_name} ${c.last_name ?? ''}`.trim())
     setPrimaryPhone(c.primary_phone ?? '')
     setPrimaryEmail(c.primary_email ?? '')
-    setNotes(c.notes ?? '')
+    // Nota inicial = entrada nueva al timeline; no precargar el escalar viejo.
+    setNotes('')
     setShowSuggestions(false)
   }
 
@@ -460,7 +466,7 @@ function QuickLeadModal({
           {/* Pipeline & Stage Selection */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs md:text-[11px] text-text-muted font-medium block mb-1">Pipeline</label>
+              <label className="text-xs md:text-[11px] text-text-muted font-medium block mb-1">Proceso comercial</label>
               <select
                 value={selectedPipelineId}
                 onChange={(e) => setSelectedPipelineId(e.target.value)}
@@ -487,7 +493,7 @@ function QuickLeadModal({
 
           {/* Notes Selection */}
           <div>
-            <label className="text-xs md:text-[11px] text-text-muted font-medium block mb-1">Notas</label>
+            <label className="text-xs md:text-[11px] text-text-muted font-medium block mb-1">Nota inicial (opcional)</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}

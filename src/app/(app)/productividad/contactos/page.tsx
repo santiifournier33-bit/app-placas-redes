@@ -2,12 +2,11 @@
 
 import { useState, useEffect, useMemo, useRef, useDeferredValue } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Search, ChevronDown, Download, Upload, Table2, LayoutGrid, MoreHorizontal, Check, Merge } from 'lucide-react'
+import { Plus, Search, ChevronDown, Download, Upload, Table2, LayoutGrid, MoreHorizontal, Check, Merge, CheckSquare, Trash2, X } from 'lucide-react'
 import { PortalDropdown } from '@/components/ui/PortalDropdown'
 import {
   useContactStore,
-  SOURCE_OPTIONS, SOURCE_LABELS,
-  type Contact, type Source, type Category,
+  type Contact, type Category,
 } from '@/lib/stores/contactStore'
 import { usePipelinesStore } from '@/lib/stores/pipelinesStore'
 import { ContactsTable } from '@/components/productividad/contactos/ContactsTable'
@@ -16,6 +15,7 @@ import { AddContactPanel } from '@/components/productividad/contactos/AddContact
 import { ImportCSVModal } from '@/components/productividad/contactos/ImportCSVModal'
 import { MergeDuplicatesModal } from '@/components/productividad/contactos/MergeDuplicatesModal'
 import { exportContactsCSV } from '@/lib/csv/export'
+import { notify } from '@/lib/stores/toastStore'
 
 type ViewMode = 'table' | 'cards'
 
@@ -28,9 +28,23 @@ export default function ContactosPage() {
   })()
   const [search, setSearch] = useState('')
   const deferredSearch = useDeferredValue(search)
-  const [filterSource, setFilterSource] = useState<Source | 'all'>(persisted?.source ?? 'all')
   const [filterCategory, setFilterCategory] = useState<Category | 'all'>(persisted?.category ?? 'all')
   const [filterCirculo, setFilterCirculo] = useState<string>(persisted?.circulo ?? 'all')
+
+  // Selección compartida tabla + cards. Oculta por defecto (selectMode=false):
+  // los checkboxes solo aparecen al activar "Seleccionar".
+  const [selectMode, setSelectMode] = useState(false)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const toggleSelect = (id: string) => setSelected(prev => {
+    const next = new Set(prev)
+    if (next.has(id)) next.delete(id); else next.add(id)
+    return next
+  })
+  const exitSelect = () => { setSelectMode(false); setSelected(new Set()) }
+  const toggleSelectAll = (ids: string[]) => {
+    const all = ids.length > 0 && ids.every(id => selected.has(id))
+    setSelected(all ? new Set() : new Set(ids))
+  }
   const [showForm, setShowForm] = useState(false)
   const [showImport, setShowImport] = useState(false)
   const [showMerge, setShowMerge] = useState(false)
@@ -67,10 +81,10 @@ export default function ContactosPage() {
   useEffect(() => {
     try {
       localStorage.setItem('contacts-filters', JSON.stringify({
-        source: filterSource, category: filterCategory, circulo: filterCirculo,
+        category: filterCategory, circulo: filterCirculo,
       }))
     } catch { /* storage lleno/no disponible: no crítico */ }
-  }, [filterSource, filterCategory, filterCirculo])
+  }, [filterCategory, filterCirculo])
 
   const filtered = useMemo(() => {
     return contacts
@@ -85,13 +99,29 @@ export default function ContactosPage() {
             (c.contexto ?? '').toLowerCase().includes(q)
           if (!match) return false
         }
-        if (filterSource !== 'all' && c.source !== filterSource) return false
         if (filterCategory !== 'all' && c.category !== filterCategory) return false
         if (filterCirculo !== 'all' && c.circulo !== filterCirculo) return false
         return true
       })
       .sort((a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime())
-  }, [contacts, deferredSearch, filterSource, filterCategory, filterCirculo])
+  }, [contacts, deferredSearch, filterCategory, filterCirculo])
+
+  // Acciones masivas (modo selección).
+  const allSelected = filtered.length > 0 && filtered.every(c => selected.has(c.id))
+  const handleBulkExport = () => {
+    const rows = filtered.filter(c => selected.has(c.id))
+    if (rows.length === 0) return
+    exportContactsCSV(rows)
+    notify(`${rows.length} contacto${rows.length !== 1 ? 's' : ''} exportado${rows.length !== 1 ? 's' : ''}`, 'info')
+  }
+  const handleBulkDelete = async () => {
+    const ids = [...selected]
+    if (ids.length === 0) return
+    if (!confirm(`¿Eliminar ${ids.length} contacto${ids.length !== 1 ? 's' : ''}? Esta acción se puede revertir desde la base.`)) return
+    for (const id of ids) await deleteContact(id)
+    exitSelect()
+    notify(`${ids.length} contacto${ids.length !== 1 ? 's' : ''} eliminado${ids.length !== 1 ? 's' : ''}`)
+  }
 
   if (!useContactStore.getState().initialized) {
     return (
@@ -155,6 +185,17 @@ export default function ContactosPage() {
             <Merge size={13} /> Duplicados
           </button>
           <button
+            onClick={() => (selectMode ? exitSelect() : setSelectMode(true))}
+            className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs cursor-pointer ${
+              selectMode
+                ? 'text-blue-400 bg-blue-500/10 hover:bg-blue-500/20'
+                : 'text-text-secondary hover:text-text-secondary hover:bg-surface-overlay-hover'
+            }`}
+            title="Modo selección"
+          >
+            <CheckSquare size={13} /> Seleccionar
+          </button>
+          <button
             onClick={() => setShowForm(true)}
             className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 cursor-pointer"
           >
@@ -196,8 +237,43 @@ export default function ContactosPage() {
             >
               <Merge size={15} /> Combinar duplicados
             </button>
+            <button
+              onClick={() => { selectMode ? exitSelect() : setSelectMode(true); setShowMore(false) }}
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md text-sm text-text-secondary hover:bg-surface-overlay cursor-pointer text-left"
+            >
+              <CheckSquare size={15} /> {selectMode ? 'Salir de selección' : 'Seleccionar'}
+            </button>
           </PortalDropdown>
         </div>
+
+        {/* Barra de acciones masivas — visible solo en modo selección */}
+        {selectMode && (
+          <div className="flex items-center gap-2 px-1">
+            <span className="text-xs font-semibold text-text-secondary mr-auto">
+              {selected.size} seleccionado{selected.size !== 1 ? 's' : ''}
+            </span>
+            <button
+              onClick={handleBulkExport}
+              disabled={selected.size === 0}
+              className="flex items-center gap-1.5 px-3 min-h-9 rounded-lg text-xs text-text-secondary hover:bg-surface-overlay-hover cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Download size={14} /> Exportar
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              disabled={selected.size === 0}
+              className="flex items-center gap-1.5 px-3 min-h-9 rounded-lg text-xs text-red-400 hover:bg-red-500/10 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Trash2 size={14} /> Eliminar
+            </button>
+            <button
+              onClick={exitSelect}
+              className="flex items-center gap-1.5 px-3 min-h-9 rounded-lg text-xs text-text-muted hover:bg-surface-overlay-hover cursor-pointer"
+            >
+              <X size={14} /> Cancelar
+            </button>
+          </div>
+        )}
 
         {/* Search — own full-width row */}
         <div className="flex items-center gap-2 bg-surface-overlay rounded-xl px-3 h-11 border border-border-subtle min-w-0">
@@ -212,12 +288,6 @@ export default function ContactosPage() {
 
         {/* Filters — own row */}
         <div className="flex gap-1.5 overflow-x-auto scroll-x-affordance">
-            <FilterChip
-              label="Origen"
-              value={filterSource}
-              options={[{ value: 'all', label: 'Todos' }, ...SOURCE_OPTIONS.map(s => ({ value: s, label: SOURCE_LABELS[s] }))]}
-              onChange={v => setFilterSource(v as Source | 'all')}
-            />
             <FilterChip
               label="Cat."
               value={filterCategory}
@@ -249,11 +319,19 @@ export default function ContactosPage() {
             <ContactsTable
               contacts={filtered}
               onSelectContact={openContact}
+              selectMode={selectMode}
+              selected={selected}
+              onToggleSelect={toggleSelect}
+              allSelected={allSelected}
+              onToggleAll={toggleSelectAll}
             />
           ) : (
             <ContactsCards
               contacts={filtered}
               onSelectContact={openContact}
+              selectMode={selectMode}
+              selected={selected}
+              onToggleSelect={toggleSelect}
             />
           )}
         </div>

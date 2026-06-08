@@ -237,6 +237,14 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
       return
     }
 
+    // E1: completing removes the task's Google event (no longer pending);
+    // un-completing restores it. Best-effort, like the other Google syncs.
+    if (completing) {
+      if (task.google_event_id) syncTaskToGoogle(id, 'remove')
+    } else if (task.due_date) {
+      syncTaskToGoogle(id, 'push')
+    }
+
     if (completing && task.recurrence_freq) {
       const config: RecurrenceConfig = {
         freq: task.recurrence_freq as RecurrenceConfig['freq'],

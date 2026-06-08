@@ -89,7 +89,7 @@ export function ReunionLunesView() {
             />
             <SummaryCard
               icon={<ArrowRightLeft size={18} strokeWidth={1.8} />}
-              label="Movimientos pipeline"
+              label="Movimientos de proceso comercial"
               value={totals.contacts_moved}
               color="emerald"
             />

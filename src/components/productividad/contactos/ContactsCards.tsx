@@ -8,6 +8,10 @@ import { WhatsAppIcon } from './WhatsAppIcon'
 interface ContactsCardsProps {
   contacts: Contact[]
   onSelectContact: (contact: Contact) => void
+  // Modo selección (compartido con la tabla). Oculto por defecto.
+  selectMode?: boolean
+  selected?: Set<string>
+  onToggleSelect?: (id: string) => void
 }
 
 // Color-hashed avatar — same name always renders the same tint so the user
@@ -59,7 +63,7 @@ function recencyLabel(date: string | null | undefined): string | null {
   return `hace ${Math.floor(days / 365)}a`
 }
 
-export function ContactsCards({ contacts, onSelectContact }: ContactsCardsProps) {
+export function ContactsCards({ contacts, onSelectContact, selectMode = false, selected, onToggleSelect }: ContactsCardsProps) {
   if (contacts.length === 0) {
     return (
       <div className="px-4 py-12 text-center">
@@ -84,12 +88,25 @@ export function ContactsCards({ contacts, onSelectContact }: ContactsCardsProps)
 
         const recency = recencyLabel(contact.last_contact_date)
         const waNumber = contact.primary_phone?.replace(/\D/g, '')
+        const isSelected = !!selected?.has(contact.id)
 
         return (
           <div
             key={contact.id}
-            className="flex items-center gap-3 px-4 py-3 border-b border-border-subtle hover:bg-surface-overlay transition-colors"
+            className={`flex items-center gap-3 px-4 py-3 border-b border-border-subtle transition-colors ${
+              selectMode && isSelected ? 'bg-blue-500/[0.08]' : 'hover:bg-surface-overlay'
+            }`}
           >
+            {selectMode && (
+              <label className="flex items-center justify-center w-11 h-11 -mr-1 shrink-0 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={() => onToggleSelect?.(contact.id)}
+                  className="accent-blue-500 w-4 h-4 cursor-pointer"
+                />
+              </label>
+            )}
             <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 font-semibold text-sm ${tint}`}>
               {initial}
             </div>
@@ -97,7 +114,7 @@ export function ContactsCards({ contacts, onSelectContact }: ContactsCardsProps)
             <button
               type="button"
               className="flex-1 min-w-0 text-left cursor-pointer no-tap-target"
-              onClick={() => onSelectContact(contact)}
+              onClick={() => (selectMode ? onToggleSelect?.(contact.id) : onSelectContact(contact))}
             >
               <p className="text-sm font-medium text-text-primary truncate">{displayName}</p>
               {(chips.length > 0 || recency || contact.rol || contact.primary_phone) && (
@@ -123,7 +140,7 @@ export function ContactsCards({ contacts, onSelectContact }: ContactsCardsProps)
               )}
             </button>
 
-            {waNumber && (
+            {waNumber && !selectMode && (
               <a
                 href={`https://wa.me/${waNumber}`}
                 target="_blank"

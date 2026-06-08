@@ -1,17 +1,33 @@
 'use client'
 
 import { useMemo } from 'react'
+import { Info } from 'lucide-react'
 import { useContactStore, type Contact } from '@/lib/stores/contactStore'
 import { EditableCell } from './EditableCell'
 import { InlineSelectChip, type ChipColor } from './InlineSelectChip'
 import { InlineCreatableCombobox } from './InlineCreatableCombobox'
 import {
-  SOURCE_OPTIONS,
   CIRCLE_OPTIONS,
   CATEGORY_OPTIONS,
   TIPO_OPTIONS,
   CERCANIA_OPTIONS,
+  FIELD_HINTS,
 } from './options'
+
+// Label con ícono de ayuda (tooltip nativo, hover/long-press) según FIELD_HINTS.
+function FieldLabel({ label, fieldKey }: { label: string; fieldKey: string }) {
+  const hint = FIELD_HINTS[fieldKey]
+  return (
+    <span className="flex items-center gap-1 text-xs md:text-[11px] text-text-muted w-28 shrink-0">
+      {label}
+      {hint && (
+        <span title={hint} className="cursor-help inline-flex">
+          <Info size={11} className="text-text-muted/50 shrink-0" />
+        </span>
+      )}
+    </span>
+  )
+}
 
 interface ContactDataTabProps {
   contact: Contact
@@ -36,7 +52,6 @@ const FIELDS: FieldDef[] = [
   { key: 'last_name',         label: 'Apellido',        type: 'text' },
   { key: 'primary_phone',     label: 'Teléfono',        type: 'text' },
   { key: 'primary_email',     label: 'Email',           type: 'text' },
-  { key: 'source',            label: 'Origen',          type: 'select', options: SOURCE_OPTIONS },
   { key: 'category',          label: 'Categoría',       type: 'select', options: CATEGORY_OPTIONS },
   { key: 'last_contact_date', label: 'Último contacto', type: 'date' },
   { key: 'rol',               label: 'Rol',             type: 'text' },
@@ -77,7 +92,7 @@ export function ContactDataTab({ contact }: ContactDataTabProps) {
             const stringVal = raw != null ? String(raw) : null
             return (
               <div key={field.key} className="flex items-center gap-3">
-                <span className="text-xs md:text-[11px] text-text-muted w-28 shrink-0">{field.label}</span>
+                <FieldLabel label={field.label} fieldKey={field.key as string} />
                 <div className="flex-1">
                   <InlineSelectChip
                     value={stringVal}
@@ -99,7 +114,7 @@ export function ContactDataTab({ contact }: ContactDataTabProps) {
             const stringVal = raw != null ? String(raw) : null
             return (
               <div key={field.key} className="flex items-center gap-3">
-                <span className="text-xs md:text-[11px] text-text-muted w-28 shrink-0">{field.label}</span>
+                <FieldLabel label={field.label} fieldKey={field.key as string} />
                 <div className="flex-1">
                   <InlineCreatableCombobox
                     value={stringVal}

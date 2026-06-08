@@ -13,7 +13,8 @@ interface Props {
 
 const normPhone = (p: string | null) => (p ? p.replace(/\D/g, '') : '')
 const normEmail = (e: string | null) => (e ? e.toLowerCase().trim() : '')
-const fullName = (c: Contact) => `${c.first_name ?? ''} ${c.last_name ?? ''}`.trim() || 'Sin nombre'
+const fullName = (c?: Contact | null) =>
+  c ? `${c.first_name ?? ''} ${c.last_name ?? ''}`.trim() || 'Sin nombre' : 'Sin nombre'
 
 /**
  * Detecta grupos de contactos duplicados (mismo teléfono o email) con union-find
@@ -73,7 +74,7 @@ export function MergeDuplicatesModal({ contacts, onClose }: Props) {
               Tu lista no tiene contactos con teléfono o email repetido.
             </div>
           ) : (
-            groups.map((g, i) => <DuplicateGroup key={i} group={g} />)
+            groups.map(g => <DuplicateGroup key={g.map(c => c.id).sort().join(':')} group={g} />)
           )}
         </div>
       </div>
@@ -86,9 +87,12 @@ function DuplicateGroup({ group }: { group: Contact[] }) {
   const [primaryId, setPrimaryId] = useState(group[0].id)
   const [merging, setMerging] = useState(false)
   const [done, setDone] = useState(false)
+  const [doneName, setDoneName] = useState('')
 
   const handleMerge = async () => {
     setMerging(true)
+    // Capturar el nombre AHORA: tras el merge el store muta y `group` puede recomponerse.
+    setDoneName(fullName(group.find(c => c.id === primaryId)))
     const secondaries = group.filter(c => c.id !== primaryId)
     let okCount = 0
     for (const s of secondaries) {
@@ -111,7 +115,7 @@ function DuplicateGroup({ group }: { group: Contact[] }) {
   if (done) {
     return (
       <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-sm text-emerald-300">
-        Combinado en {fullName(group.find(c => c.id === primaryId)!)}.
+        Combinado en {doneName}.
       </div>
     )
   }

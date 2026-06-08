@@ -9,11 +9,11 @@ import { validateContactInput, normalizePhone } from '@/lib/contacts/validation'
 import { notify } from '@/lib/stores/toastStore'
 import { InlineSelectChip } from './InlineSelectChip'
 import {
-  SOURCE_OPTIONS,
   CIRCLE_OPTIONS,
   CATEGORY_OPTIONS,
   TIPO_OPTIONS,
   CERCANIA_OPTIONS,
+  FIELD_HINTS,
 } from './options'
 
 interface AddContactPanelProps {
@@ -22,7 +22,7 @@ interface AddContactPanelProps {
 }
 
 export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
-  const { addContact, findDuplicate } = useContactStore()
+  const { addContact, addNote, findDuplicate } = useContactStore()
   const { pipelines } = usePipelinesStore()
 
   // Basic data
@@ -34,7 +34,6 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
   const [ubicacion, setUbicacion] = useState('')
 
   // Classification
-  const [source, setSource] = useState<string | null>(null)
   const [category, setCategory] = useState<string | null>(null)
   const [tipo, setTipo] = useState<string | null>(null)
   const [cercania, setCercania] = useState<string | null>(null)
@@ -139,7 +138,6 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
         // Normaliza a E.164 AR cuando se puede; guarda null si es basura.
         primary_phone: normalizePhone(phone) ?? (phone.trim() || null),
         primary_email: email.trim().toLowerCase() || null,
-        source,
         circulo,
         category,
         tipo,
@@ -147,7 +145,6 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
         rol: rol.trim() || null,
         contexto: contexto.trim() || null,
         ubicacion: ubicacion.trim() || null,
-        notes: notes.trim() || null,
         es_estrategico: esEstrategico || null,
         es_influyente: esInfluyente || null,
         es_mentor: esMentor || null,
@@ -161,6 +158,11 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
         setError('No se pudo crear el contacto. Verificá tu sesión.')
         setSubmitting(false)
         return
+      }
+      // La nota inicial va al timeline (contact_notes), la fuente que muestran
+      // los detalles de Contactos y Negocios — no al escalar contacts.notes.
+      if (notes.trim()) {
+        await addNote(result.id, notes)
       }
       notify('Contacto creado')
       onCreated?.(result)
@@ -253,15 +255,15 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
                 </Field>
 
                 <div className="grid grid-cols-2 gap-3.5">
-                  <Field label="Rol">
+                  <Field label="Rol" hint={FIELD_HINTS.rol}>
                     <input
                       value={rol}
                       onChange={e => setRol(e.target.value)}
-                      placeholder="Ej: Arquitecto, Inversor..."
+                      placeholder="Ej: hermano, excompañero, colega"
                       className="w-full h-11 bg-shell-bg/40 border border-border-subtle rounded-xl px-3 text-base lg:text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all"
                     />
                   </Field>
-                  <Field label="Ubicación">
+                  <Field label="Ubicación" hint={FIELD_HINTS.ubicacion}>
                     <input
                       value={ubicacion}
                       onChange={e => setUbicacion(e.target.value)}
@@ -275,11 +277,12 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
 
             {/* Contexto */}
             <div className={sv(3)}>
-              <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.15em] mb-3">Contexto</h3>
+              <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.15em] mb-1.5">Contexto</h3>
+              <p className="text-[11px] text-text-muted/80 leading-snug mb-2">{FIELD_HINTS.contexto}</p>
               <textarea
                 value={contexto}
                 onChange={e => setContexto(e.target.value)}
-                placeholder="¿Cómo conocés a esta persona? ¿En qué contexto se conocieron?"
+                placeholder="Ej: colegio San José, gimnasio, trabajo anterior"
                 rows={3}
                 className="w-full bg-shell-bg/40 border border-border-subtle rounded-xl p-3 text-base lg:text-sm font-semibold text-text-primary placeholder:text-text-muted/40 outline-none focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/10 transition-all resize-none"
               />
@@ -305,42 +308,39 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
               <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.15em] mb-4">Clasificación</h3>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3.5">
-                  <Field label="Origen">
-                    <InlineSelectChip value={source} options={SOURCE_OPTIONS} onChange={setSource} />
-                  </Field>
-                  <Field label="Categoría">
+                  <Field label="Categoría" hint={FIELD_HINTS.category}>
                     <InlineSelectChip value={category} options={CATEGORY_OPTIONS} onChange={setCategory} />
+                  </Field>
+                  <Field label="Tipo" hint={FIELD_HINTS.tipo}>
+                    <InlineSelectChip value={tipo} options={TIPO_OPTIONS} onChange={setTipo} />
                   </Field>
                 </div>
                 <div className="grid grid-cols-2 gap-3.5">
-                  <Field label="Tipo">
-                    <InlineSelectChip value={tipo} options={TIPO_OPTIONS} onChange={setTipo} />
-                  </Field>
-                  <Field label="Cercanía">
+                  <Field label="Cercanía" hint={FIELD_HINTS.cercania}>
                     <InlineSelectChip value={cercania} options={CERCANIA_OPTIONS} onChange={setCercania} />
                   </Field>
+                  <Field label="Círculo" hint={FIELD_HINTS.circulo}>
+                    <InlineSelectChip value={circulo} options={CIRCLE_OPTIONS} onChange={setCirculo} />
+                  </Field>
                 </div>
-                <Field label="Círculo">
-                  <InlineSelectChip value={circulo} options={CIRCLE_OPTIONS} onChange={setCirculo} />
-                </Field>
               </div>
             </div>
 
             {/* Flags */}
             <div className={`${sv(2)} space-y-3.5`}>
               <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.15em]">Flags</h3>
-              <div className="flex flex-wrap gap-4 py-1.5 px-3 bg-shell-bg/40 border border-border-subtle rounded-xl">
-                <CheckboxField label="¿Estratégico?" checked={esEstrategico} onChange={setEsEstrategico} />
-                <CheckboxField label="¿Influyente?" checked={esInfluyente} onChange={setEsInfluyente} />
-                <CheckboxField label="¿Mentor?" checked={esMentor} onChange={setEsMentor} />
+              <div className="flex flex-col gap-1 py-2 px-3 bg-shell-bg/40 border border-border-subtle rounded-xl">
+                <CheckboxField label="¿Estratégico?" checked={esEstrategico} onChange={setEsEstrategico} hint={FIELD_HINTS.es_estrategico} />
+                <CheckboxField label="¿Influyente?" checked={esInfluyente} onChange={setEsInfluyente} hint={FIELD_HINTS.es_influyente} />
+                <CheckboxField label="¿Mentor?" checked={esMentor} onChange={setEsMentor} hint={FIELD_HINTS.es_mentor} />
               </div>
             </div>
 
             {/* Pipeline (optional) */}
             <div className={`${sv(3)} pt-5 border-t border-border-subtle space-y-4`}>
-              <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.15em]">Agregar a pipeline (opcional)</h3>
+              <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.15em]">Agregar a proceso comercial (opcional)</h3>
               <div className="grid grid-cols-2 gap-3.5">
-                <Field label="Pipeline">
+                <Field label="Proceso comercial">
                   <InlineSelectChip
                     value={pipelineId}
                     options={pipelineOptions}
@@ -441,21 +441,22 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
 
 /* ── Helpers ───────────────────────────────────────────── */
 
-function Field({ label, children, error }: { label: string; children: React.ReactNode; error?: string }) {
+function Field({ label, children, error, hint }: { label: string; children: React.ReactNode; error?: string; hint?: string }) {
   return (
     <div className="space-y-1.5">
       <label className="text-xs md:text-[11px] text-text-muted font-bold block uppercase tracking-wider">{label}</label>
       {children}
+      {hint && <p className="text-[11px] text-text-muted/80 leading-snug">{hint}</p>}
       {error && <p role="alert" className="text-xs text-red-400 font-medium">{error}</p>}
     </div>
   )
 }
 
-function CheckboxField({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+function CheckboxField({ label, checked, onChange, hint }: { label: string; checked: boolean; onChange: (v: boolean) => void; hint?: string }) {
   return (
-    <label className="flex items-center gap-2.5 cursor-pointer group py-1.5">
+    <label className="flex items-start gap-2.5 cursor-pointer group py-1.5">
       <div
-        className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-colors ${
+        className={`w-5 h-5 mt-0.5 rounded-lg border flex items-center justify-center shrink-0 transition-colors ${
           checked
             ? 'bg-brand-accent border-brand-accent text-brand-primary'
             : 'border-border-subtle bg-shell-bg/40 group-hover:border-shell-text-muted'
@@ -468,7 +469,10 @@ function CheckboxField({ label, checked, onChange }: { label: string; checked: b
           </svg>
         )}
       </div>
-      <span className="text-xs font-bold text-text-muted group-hover:text-text-primary transition-colors">{label}</span>
+      <div className="min-w-0">
+        <span className="text-xs font-bold text-text-muted group-hover:text-text-primary transition-colors block">{label}</span>
+        {hint && <span className="text-[11px] text-text-muted/80 leading-snug block mt-0.5">{hint}</span>}
+      </div>
     </label>
   )
 }

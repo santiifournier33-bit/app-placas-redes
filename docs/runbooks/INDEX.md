@@ -22,7 +22,6 @@ Tabla resumida de los 20 scripts en `scripts/`. Para scripts críticos hay runbo
 | `infer-op-type-inactive.mjs` | Infiere `operation_type` para inquiries con property inactiva | UPDATE `inquiries.operation_type` |
 | `fix-inquiries-operation-type.mjs` | Corrige `operation_type` mal seteado | UPDATE `inquiries.operation_type` |
 | `verify-enrich.mjs` | Verifica que enrichment de leads funcionó | Read-only |
-| `generate-pwa-icons.mjs` | Genera iconos PWA desde un source | Escribe en `public/` |
 
 ## n8n workflow scripts (operativa avanzada)
 

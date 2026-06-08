@@ -278,6 +278,7 @@ export function TaskCard({ task, subtaskCount, subtaskDone, onTap, onToggle, onD
               {task.due_date && (
                 <span className={`text-xs ${overdue ? "text-red-400" : "text-text-muted"}`}>
                   {format(new Date(task.due_date.slice(0, 10) + "T12:00:00"), "d MMM", { locale: es })}
+                  {task.due_time && ` · ${task.due_time.slice(0, 5)}`}
                 </span>
               )}
               {subtaskCount > 0 && (

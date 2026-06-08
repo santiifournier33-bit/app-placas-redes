@@ -6,9 +6,39 @@ const http = require('http');
 const { exec } = require('child_process');
 
 const TOKEN_PATH = path.join(__dirname, '..', 'oauth-token.json');
+const SERVICE_ACCOUNT_PATH = path.join(__dirname, '..', 'credentials.json');
 const SCOPES = ['https://www.googleapis.com/auth/drive'];
+const SCOPES_RO = ['https://www.googleapis.com/auth/drive.readonly'];
 
 let _drive = null;
+let _driveRO = null;
+
+/**
+ * Read-only Drive client for the status (read) path.
+ * Prefers the service account (JWT): no refresh token, no 7-day expiry —
+ * requires the Drive root folder shared with the service account email.
+ * Falls back to the user OAuth token if the service account key is
+ * invalid/revoked, so the status page keeps working during key rotation.
+ */
+async function getDriveReadonly(serviceAccountPath, oauthClientPath) {
+  if (_driveRO) return _driveRO;
+
+  const keyFile = serviceAccountPath || SERVICE_ACCOUNT_PATH;
+  try {
+    const auth = new google.auth.GoogleAuth({ keyFile, scopes: SCOPES_RO });
+    const client = await auth.getClient();
+    // Force the JWT exchange now so an invalid/revoked key fails here
+    // (rather than mid-request) and we can fall back cleanly.
+    await client.getAccessToken();
+    _driveRO = google.drive({ version: 'v3', auth });
+    return _driveRO;
+  } catch (err) {
+    if (!oauthClientPath) throw err;
+    console.warn('[docs] Service account auth failed, falling back to OAuth token:', err.message);
+    _driveRO = await getDrive(oauthClientPath);
+    return _driveRO;
+  }
+}
 
 async function getDrive(oauthClientPath) {
   if (_drive) return _drive;
@@ -26,7 +56,7 @@ async function getDrive(oauthClientPath) {
       fs.writeFileSync(TOKEN_PATH, JSON.stringify(merged, null, 2));
     });
   } else {
-    const authUrl = oauth2Client.generateAuthUrl({ access_type: 'offline', scope: SCOPES });
+    const authUrl = oauth2Client.generateAuthUrl({ access_type: 'offline', prompt: 'consent', scope: SCOPES });
     console.log('\n=== AUTORIZACIÓN REQUERIDA ===');
     console.log('Abriendo navegador para autorizar acceso a Google Drive...');
     console.log('Si no se abre, entrá manualmente a esta URL:\n');
@@ -148,4 +178,4 @@ async function uploadFile(drive, fileName, fileBuffer, mimeType, folderId) {
   return res.data.id;
 }
 
-module.exports = { getDrive, findOrCreateFolder, uploadFile };
+module.exports = { getDrive, getDriveReadonly, findOrCreateFolder, uploadFile };

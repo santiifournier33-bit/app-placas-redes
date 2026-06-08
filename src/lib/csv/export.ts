@@ -15,11 +15,9 @@ const EXPORT_COLUMNS: { key: keyof Contact; label: string }[] = [
   { key: 'es_estrategico', label: 'Estratégico' },
   { key: 'es_influyente', label: 'Influyente' },
   { key: 'es_mentor', label: 'Mentor' },
-  { key: 'source', label: 'Origen' },
   { key: 'category', label: 'Categoría' },
   { key: 'last_contact_date', label: 'Último contacto' },
   { key: 'notes', label: 'Notas' },
-  { key: 'tags', label: 'Tags' },
 ]
 
 export function exportContactsCSV(contacts: Contact[]) {

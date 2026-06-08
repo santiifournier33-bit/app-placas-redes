@@ -2,24 +2,22 @@
 
 import { useState, useMemo, useRef, useCallback, useDeferredValue } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { ChevronUp, ChevronDown, ExternalLink, Phone, MessageSquare, Check, Copy, Download, Trash2, X } from 'lucide-react'
+import { ChevronUp, ChevronDown, Check, Copy, GripVertical } from 'lucide-react'
 import {
   useContactStore,
   type Contact,
   type KanbanContact,
 } from '@/lib/stores/contactStore'
-import { exportContactsCSV } from '@/lib/csv/export'
-import { notify } from '@/lib/stores/toastStore'
 import { usePipelinesStore, type PipelineStage } from '@/lib/stores/pipelinesStore'
 import { EditableCell } from './EditableCell'
 import { InlineSelectChip } from './InlineSelectChip'
 import { PortalDropdown } from '@/components/ui/PortalDropdown'
 import {
-  SOURCE_OPTIONS,
   CIRCLE_OPTIONS,
   CATEGORY_SHORT as CATEGORY_OPTIONS,
   TIPO_OPTIONS,
   CERCANIA_OPTIONS,
+  FIELD_HINTS,
 } from './options'
 
 type SortKey = keyof Contact | null
@@ -31,36 +29,63 @@ interface Column {
   width: string
   sortable?: boolean
   visible?: boolean
+  description?: string
 }
 
+// Orden por defecto (de fábrica). full_name va siempre 1ª y fija. El resto sigue
+// este orden salvo que el usuario lo reordene por drag (se persiste en localStorage).
 const ALL_COLUMNS: Column[] = [
-  { key: 'full_name', label: 'Nombre', width: 'w-56', sortable: true },
-  { key: 'pipeline_stage', label: 'Pipeline', width: 'w-36' },
-  { key: 'primary_phone', label: 'Teléfono', width: 'w-32' },
-  { key: 'primary_email', label: 'Email', width: 'w-40' },
-  { key: 'rol', label: 'Rol', width: 'w-28' },
-  { key: 'tipo', label: 'Tipo', width: 'w-28' },
-  { key: 'cercania', label: 'Cercanía', width: 'w-24' },
-  { key: 'circulo', label: 'Círculo', width: 'w-28' },
-  { key: 'contexto', label: 'Contexto', width: 'w-36' },
-  { key: 'ubicacion', label: 'Ubicación', width: 'w-32' },
-  { key: 'last_contact_date', label: 'Último contacto', width: 'w-32', sortable: true },
-  { key: 'es_estrategico', label: 'Estratégico', width: 'w-24' },
-  { key: 'es_influyente', label: 'Influyente', width: 'w-24' },
-  { key: 'es_mentor', label: 'Mentor', width: 'w-20' },
-  { key: 'category', label: 'Cat.', width: 'w-20' },
-  { key: 'source', label: 'Origen', width: 'w-24' },
-  { key: 'tags', label: 'Tags', width: 'w-32' },
+  { key: 'full_name', label: 'Nombre', width: 'w-56', sortable: true, description: 'Nombre y apellido del contacto.' },
+  { key: 'last_contact_date', label: 'Último contacto', width: 'w-32', sortable: true, description: FIELD_HINTS.last_contact_date },
+  { key: 'primary_phone', label: 'Teléfono', width: 'w-32', description: FIELD_HINTS.primary_phone },
+  { key: 'primary_email', label: 'Email', width: 'w-40', description: FIELD_HINTS.primary_email },
+  { key: 'category', label: 'Cat.', width: 'w-20', description: FIELD_HINTS.category },
+  { key: 'rol', label: 'Rol', width: 'w-28', description: FIELD_HINTS.rol },
+  { key: 'tipo', label: 'Tipo', width: 'w-28', description: FIELD_HINTS.tipo },
+  { key: 'cercania', label: 'Cercanía', width: 'w-24', description: FIELD_HINTS.cercania },
+  { key: 'contexto', label: 'Contexto', width: 'w-36', description: FIELD_HINTS.contexto },
+  { key: 'ubicacion', label: 'Ubicación', width: 'w-32', description: FIELD_HINTS.ubicacion },
+  { key: 'pipeline_stage', label: 'Proceso comercial', width: 'w-44', description: FIELD_HINTS.pipeline_stage },
+  { key: 'circulo', label: 'Círculo', width: 'w-28', description: FIELD_HINTS.circulo },
+  { key: 'es_estrategico', label: 'Estratégico', width: 'w-24', description: FIELD_HINTS.es_estrategico },
+  { key: 'es_influyente', label: 'Influyente', width: 'w-24', description: FIELD_HINTS.es_influyente },
+  { key: 'es_mentor', label: 'Mentor', width: 'w-20', description: FIELD_HINTS.es_mentor },
 ]
 
+const COLUMN_BY_KEY = new Map(ALL_COLUMNS.map(c => [c.key, c]))
+
 // Columns that can never be hidden — the contact's name is the primary
-// reference, so it stays pinned regardless of the picker.
+// reference, so it stays pinned (and first) regardless of the picker/reorder.
 const LOCKED_COLS = new Set<string>(['full_name'])
+
+// Orden por defecto de las columnas reordenables (sin full_name, que va fija 1ª).
+const DEFAULT_COL_ORDER = ALL_COLUMNS.filter(c => !LOCKED_COLS.has(c.key)).map(c => c.key)
+// Set para validar membresía en sanitizeOrder.
+const REORDERABLE_KEYS = DEFAULT_COL_ORDER
+// v2: bump de clave → resetea el orden viejo guardado y aplica el nuevo default a todos.
+const ORDER_STORAGE_KEY = 'contacts-col-order-v2'
+
+// Sanitize a persisted order against the current schema: drop unknown keys
+// (e.g. a removed `source`/`tags`) and append any new reorderable key not yet
+// present, so the table never breaks when ALL_COLUMNS changes.
+function sanitizeOrder(raw: unknown): string[] {
+  const arr = Array.isArray(raw) ? (raw as unknown[]).filter((k): k is string => typeof k === 'string') : []
+  const known = arr.filter(k => REORDERABLE_KEYS.includes(k) && !LOCKED_COLS.has(k))
+  const seen = new Set(known)
+  for (const k of REORDERABLE_KEYS) if (!seen.has(k)) known.push(k)
+  return known
+}
 
 interface ContactsTableProps {
   contacts: Contact[]
   onSelectContact: (contact: Contact) => void
   selectedId?: string | null
+  // Selección (estado levantado a page.tsx, compartido con las cards mobile).
+  selectMode: boolean
+  selected: Set<string>
+  onToggleSelect: (id: string) => void
+  allSelected: boolean
+  onToggleAll: (ids: string[]) => void
 }
 
 function CopyChip({ value, kind }: { value: string; kind: 'phone' | 'email' }) {
@@ -166,8 +191,17 @@ function PipelineStageCell({
   )
 }
 
-export function ContactsTable({ contacts, onSelectContact, selectedId }: ContactsTableProps) {
-  const { updateContact, deleteContact, kanbanContacts, moveToStage, addToPipeline, fetchKanban } = useContactStore()
+export function ContactsTable({
+  contacts,
+  onSelectContact,
+  selectedId,
+  selectMode,
+  selected,
+  onToggleSelect,
+  allSelected,
+  onToggleAll,
+}: ContactsTableProps) {
+  const { updateContact, kanbanContacts, moveToStage, addToPipeline, fetchKanban } = useContactStore()
   const { activePipelineId, pipelines } = usePipelinesStore()
 
   // Pipeline data read ONCE here (not per row). Build the stage list and a
@@ -204,29 +238,45 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
   const [hiddenCols, setHiddenCols] = useState<Set<string>>(() => {
     const stored = typeof window !== 'undefined' ? localStorage.getItem('contacts-hidden-cols') : null
     const raw: string[] = stored ? JSON.parse(stored) : []
-    // Drop any locked column persisted by an older config so it can't stay hidden.
-    return new Set(raw.filter(k => !LOCKED_COLS.has(k)))
+    // Drop locked + unknown columns persisted by an older config.
+    return new Set(raw.filter(k => !LOCKED_COLS.has(k) && COLUMN_BY_KEY.has(k)))
   })
   const [showColPicker, setShowColPicker] = useState(false)
   const colPickerBtnRef = useRef<HTMLButtonElement>(null)
 
-  // F7: selección múltiple para acciones masivas (exportar / eliminar).
-  const [selected, setSelected] = useState<Set<string>>(new Set())
-  const toggleSelect = (id: string) => setSelected(prev => {
-    const next = new Set(prev)
-    if (next.has(id)) next.delete(id); else next.add(id)
-    return next
+  // Orden de columnas (D&D, persistido). full_name nunca entra: queda fija 1ª.
+  const [colOrder, setColOrder] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return [...REORDERABLE_KEYS]
+    try { return sanitizeOrder(JSON.parse(localStorage.getItem(ORDER_STORAGE_KEY) ?? 'null')) }
+    catch { return [...REORDERABLE_KEYS] }
   })
-  const clearSelection = () => setSelected(new Set())
+  const [dragKey, setDragKey] = useState<string | null>(null)
+  const [dragOverKey, setDragOverKey] = useState<string | null>(null)
+
+  const moveColumn = (from: string, to: string) => {
+    if (from === to) return
+    setColOrder(prev => {
+      const next = prev.filter(k => k !== from)
+      const idx = next.indexOf(to)
+      if (idx === -1) return prev
+      next.splice(idx, 0, from)
+      localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(next))
+      return next
+    })
+  }
 
   // Defer the heavy table re-render so toggling a column checkbox feels instant:
   // the picker reads `hiddenCols` (live) while the 1000-row table reads the
   // deferred value, letting React commit the table update in a non-blocking pass.
   const deferredHidden = useDeferredValue(hiddenCols)
-  const visibleCols = useMemo(
-    () => ALL_COLUMNS.filter(c => !deferredHidden.has(c.key)),
-    [deferredHidden],
-  )
+  // Nombre fija primera + el resto en el orden elegido, filtrando ocultas.
+  const visibleCols = useMemo(() => {
+    const nameCol = COLUMN_BY_KEY.get('full_name')!
+    const rest = colOrder
+      .map(k => COLUMN_BY_KEY.get(k))
+      .filter((c): c is Column => !!c && !deferredHidden.has(c.key))
+    return [nameCol, ...rest]
+  }, [colOrder, deferredHidden])
 
   const sorted = useMemo(() => {
     if (!sortKey) return contacts
@@ -245,35 +295,16 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
     })
   }, [contacts, sortKey, sortDir])
 
-  const allSelected = sorted.length > 0 && sorted.every(c => selected.has(c.id))
-  const toggleSelectAll = () => {
-    setSelected(allSelected ? new Set() : new Set(sorted.map(c => c.id)))
-  }
-  const handleBulkExport = () => {
-    const rows = sorted.filter(c => selected.has(c.id))
-    exportContactsCSV(rows)
-    notify(`${rows.length} contacto${rows.length !== 1 ? 's' : ''} exportado${rows.length !== 1 ? 's' : ''}`, 'info')
-  }
-  const handleBulkDelete = async () => {
-    const ids = [...selected]
-    if (ids.length === 0) return
-    if (!confirm(`¿Eliminar ${ids.length} contacto${ids.length !== 1 ? 's' : ''}? Esta acción se puede revertir desde la base.`)) return
-    for (const id of ids) await deleteContact(id)
-    clearSelection()
-    notify(`${ids.length} contacto${ids.length !== 1 ? 's' : ''} eliminado${ids.length !== 1 ? 's' : ''}`)
-  }
+  const toggleSelectAll = () => onToggleAll(sorted.map(c => c.id))
 
   // Row virtualization: only the rows in view (+overscan) are mounted, so the
   // table stays at 60fps regardless of how many thousands of contacts load.
-  // Scroll happens in our own bounded container (scrollRef) for deterministic
-  // measurement independent of the parent layout.
   const scrollRef = useRef<HTMLDivElement>(null)
   const rowVirtualizer = useVirtualizer({
     count: sorted.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => 33,
     overscan: 12,
-    // Keyed by contact id so re-sorts/filters don't scramble measured sizes.
     getItemKey: (index) => sorted[index]?.id ?? index,
   })
   const virtualRows = rowVirtualizer.getVirtualItems()
@@ -309,13 +340,12 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
 
   const getCellType = (key: string): 'text' | 'select' | 'boolean' | 'number' | 'date' => {
     if (['es_estrategico', 'es_influyente', 'es_mentor'].includes(key)) return 'boolean'
-    if (['source', 'circulo', 'category', 'tipo', 'cercania'].includes(key)) return 'select'
+    if (['circulo', 'category', 'tipo', 'cercania'].includes(key)) return 'select'
     if (key === 'last_contact_date') return 'date'
     return 'text'
   }
 
   const getCellOptions = (key: string) => {
-    if (key === 'source') return SOURCE_OPTIONS
     if (key === 'circulo') return CIRCLE_OPTIONS
     if (key === 'category') return CATEGORY_OPTIONS
     if (key === 'tipo') return TIPO_OPTIONS
@@ -325,31 +355,8 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
 
   return (
     <div className="relative">
-      {/* Toolbar: acciones masivas (izq, si hay selección) + selector de columnas (der) */}
-      <div className="flex items-center justify-between px-4 py-2 gap-2 min-h-9">
-        {selected.size > 0 ? (
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-text-secondary">{selected.size} seleccionado{selected.size !== 1 ? 's' : ''}</span>
-            <button
-              onClick={handleBulkExport}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-text-secondary hover:bg-surface-overlay-hover cursor-pointer"
-            >
-              <Download size={13} /> Exportar
-            </button>
-            <button
-              onClick={handleBulkDelete}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-red-400 hover:bg-red-500/10 cursor-pointer"
-            >
-              <Trash2 size={13} /> Eliminar
-            </button>
-            <button
-              onClick={clearSelection}
-              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs text-text-muted hover:bg-surface-overlay-hover cursor-pointer"
-            >
-              <X size={13} /> Limpiar
-            </button>
-          </div>
-        ) : <span />}
+      {/* Toolbar: selector de columnas (la barra de acciones masivas vive en page.tsx) */}
+      <div className="flex items-center justify-end px-4 py-2 gap-2 min-h-9">
         <button
           ref={colPickerBtnRef}
           onClick={() => setShowColPicker(!showColPicker)}
@@ -394,16 +401,43 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
         <table className="w-full text-xs">
           <thead className="sticky top-0 z-10 bg-[#12121a]">
             <tr className="border-b border-border-subtle">
-              {visibleCols.map((col, idx) => (
+              {visibleCols.map((col, idx) => {
+                const reorderable = !LOCKED_COLS.has(col.key)
+                const isDropTarget = reorderable && dragOverKey === col.key && dragKey !== col.key
+                return (
                 <th
                   key={col.key}
-                  className={`text-left px-2 py-2.5 font-semibold text-text-muted uppercase tracking-wider ${col.width} ${
+                  title={col.description}
+                  draggable={reorderable}
+                  onDragStart={reorderable ? (e) => {
+                    e.dataTransfer.effectAllowed = 'move'
+                    e.dataTransfer.setData('text/plain', col.key)
+                    setDragKey(col.key)
+                  } : undefined}
+                  onDragOver={reorderable ? (e) => {
+                    e.preventDefault()
+                    e.dataTransfer.dropEffect = 'move'
+                    if (dragOverKey !== col.key) setDragOverKey(col.key)
+                  } : undefined}
+                  onDragLeave={reorderable ? () => setDragOverKey(k => (k === col.key ? null : k)) : undefined}
+                  onDrop={reorderable ? (e) => {
+                    e.preventDefault()
+                    const from = e.dataTransfer.getData('text/plain')
+                    if (from) moveColumn(from, col.key)
+                    setDragKey(null); setDragOverKey(null)
+                  } : undefined}
+                  onDragEnd={() => { setDragKey(null); setDragOverKey(null) }}
+                  className={`group/th text-left px-2 py-2.5 font-semibold text-text-muted uppercase tracking-wider ${col.width} ${
                     col.sortable ? 'cursor-pointer hover:text-text-secondary select-none' : ''
-                  } ${idx === 0 ? 'sticky left-0 z-20 bg-[#12121a]' : ''}`}
+                  } ${reorderable ? 'cursor-grab active:cursor-grabbing' : ''} ${
+                    idx === 0 ? 'sticky left-0 z-20 bg-[#12121a]' : ''
+                  } ${dragKey === col.key ? 'opacity-40' : ''} ${
+                    isDropTarget ? 'border-l-2 border-l-blue-500' : ''
+                  }`}
                   onClick={() => col.sortable && toggleSort(col.key)}
                 >
                   <div className="flex items-center gap-1.5">
-                    {idx === 0 && (
+                    {idx === 0 && selectMode && (
                       <input
                         type="checkbox"
                         checked={allSelected}
@@ -413,6 +447,9 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
                         className="accent-blue-500 cursor-pointer shrink-0"
                       />
                     )}
+                    {reorderable && (
+                      <GripVertical size={11} className="shrink-0 text-text-muted/40 opacity-0 group-hover/th:opacity-100 transition-opacity" />
+                    )}
                     {col.label}
                     {col.sortable && sortKey === col.key && (
                       sortDir === 'asc'
@@ -421,13 +458,13 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
                     )}
                   </div>
                 </th>
-              ))}
-              <th className="w-20 px-2 py-2.5 font-semibold text-text-muted uppercase tracking-wider sticky right-0 z-20 bg-[#12121a]">Acc.</th>
+                )
+              })}
             </tr>
           </thead>
           <tbody>
             {paddingTop > 0 && (
-              <tr aria-hidden="true"><td colSpan={visibleCols.length + 1} style={{ height: paddingTop }} /></tr>
+              <tr aria-hidden="true"><td colSpan={visibleCols.length} style={{ height: paddingTop }} /></tr>
             )}
             {virtualRows.map(vr => {
               const contact = sorted[vr.index]
@@ -436,34 +473,30 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
                 key={contact.id}
                 data-index={vr.index}
                 style={{ height: 33 }}
-                onClick={() => onSelectContact(contact)}
+                onClick={() => (selectMode ? onToggleSelect(contact.id) : onSelectContact(contact))}
                 className={`border-b border-white/[0.03] hover:bg-surface-overlay transition-colors group cursor-pointer ${
                   selectedId === contact.id ? 'bg-blue-500/[0.06] border-l-2 border-l-blue-500/50' : ''
-                }`}
+                } ${selectMode && selected.has(contact.id) ? 'bg-blue-500/[0.08]' : ''}`}
               >
                 {visibleCols.map((col, idx) => (
                   <td key={col.key} className={`px-1 py-0.5 ${col.width} ${idx === 0 ? 'sticky left-0 z-[5] bg-[#14141e]' : ''}`}>
                     {col.key === 'full_name' ? (
                       <div className="flex items-center gap-1.5">
-                        <input
-                          type="checkbox"
-                          checked={selected.has(contact.id)}
-                          onChange={() => toggleSelect(contact.id)}
-                          onClick={e => e.stopPropagation()}
-                          className="accent-blue-500 cursor-pointer shrink-0"
-                        />
+                        {selectMode && (
+                          <input
+                            type="checkbox"
+                            checked={selected.has(contact.id)}
+                            onChange={() => onToggleSelect(contact.id)}
+                            onClick={e => e.stopPropagation()}
+                            className="accent-blue-500 cursor-pointer shrink-0"
+                          />
+                        )}
                         <button
-                          onClick={(e) => { e.stopPropagation(); onSelectContact(contact) }}
+                          onClick={(e) => { e.stopPropagation(); selectMode ? onToggleSelect(contact.id) : onSelectContact(contact) }}
                           className="px-1 text-left text-xs text-text-primary hover:underline cursor-pointer truncate block min-w-0 flex-1"
                         >
                           {`${contact.first_name ?? ''} ${contact.last_name ?? ''}`.trim() || '—'}
                         </button>
-                      </div>
-                    ) : col.key === 'tags' ? (
-                      <div className="flex gap-1 flex-wrap px-1">
-                        {(contact.tags ?? []).map((tag, i) => (
-                          <span key={i} className="text-xs md:text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-text-muted">{tag}</span>
-                        ))}
                       </div>
                     ) : col.key === 'pipeline_stage' ? (
                       <div className="px-1">
@@ -478,14 +511,6 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
                       <div className="px-1"><CopyChip value={contact.primary_phone} kind="phone" /></div>
                     ) : col.key === 'primary_email' && contact.primary_email ? (
                       <div className="px-1"><CopyChip value={contact.primary_email} kind="email" /></div>
-                    ) : col.key === 'source' ? (
-                      <div className="px-1">
-                        <InlineSelectChip
-                          value={contact.source ?? null}
-                          options={SOURCE_OPTIONS}
-                          onChange={(v) => handleCellSave(contact.id, 'source', v)}
-                        />
-                      </div>
                     ) : col.key === 'category' ? (
                       <div className="px-1">
                         <InlineSelectChip
@@ -529,37 +554,11 @@ export function ContactsTable({ contacts, onSelectContact, selectedId }: Contact
                     )}
                   </td>
                 ))}
-                <td className="px-1 py-0.5 w-20 sticky right-0 z-[5] bg-[#14141e]">
-                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => onSelectContact(contact)}
-                      className="p-1.5 hover:bg-surface-overlay-hover rounded cursor-pointer"
-                      title="Detalle"
-                    >
-                      <ExternalLink size={13} className="text-text-muted" />
-                    </button>
-                    {contact.primary_phone && (
-                      <>
-                        <a href={`tel:${contact.primary_phone}`} className="p-1.5 hover:bg-surface-overlay-hover rounded">
-                          <Phone size={13} className="text-text-muted" />
-                        </a>
-                        <a
-                          href={`https://wa.me/${contact.primary_phone.replace(/\D/g, '')}`}
-                          target="_blank"
-                          rel="noopener"
-                          className="p-1.5 hover:bg-surface-overlay-hover rounded"
-                        >
-                          <MessageSquare size={13} className="text-text-muted" />
-                        </a>
-                      </>
-                    )}
-                  </div>
-                </td>
               </tr>
               )
             })}
             {paddingBottom > 0 && (
-              <tr aria-hidden="true"><td colSpan={visibleCols.length + 1} style={{ height: paddingBottom }} /></tr>
+              <tr aria-hidden="true"><td colSpan={visibleCols.length} style={{ height: paddingBottom }} /></tr>
             )}
           </tbody>
         </table>

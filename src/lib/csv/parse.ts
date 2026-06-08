@@ -37,7 +37,6 @@ export const MAPPABLE_FIELDS = [
   { value: 'circulo', label: 'Círculo' },
   { value: 'contexto', label: 'Contexto' },
   { value: 'ubicacion', label: 'Ubicación' },
-  { value: 'source', label: 'Origen' },
   { value: 'category', label: 'Categoría' },
   { value: 'notes', label: 'Notas' },
 ] as const
@@ -70,9 +69,6 @@ export function autoMapHeaders(csvHeaders: string[]): ColumnMapping[] {
     ubicacion: 'ubicacion',
     ubicación: 'ubicacion',
     location: 'ubicacion',
-    origen: 'source',
-    source: 'source',
-    fuente: 'source',
     categoria: 'category',
     categoría: 'category',
     category: 'category',

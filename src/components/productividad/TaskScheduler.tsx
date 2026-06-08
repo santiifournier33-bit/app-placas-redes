@@ -11,6 +11,7 @@ import { useIsMobile } from "@/lib/hooks/useIsMobile"
 interface TaskSchedulerProps {
   taskId: string | null
   currentDate?: string | null
+  currentTime?: string | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -21,11 +22,16 @@ interface TaskSchedulerProps {
  * Writes via the existing taskStore.updateTask — no new data logic.
  * Bottom-sheet on mobile, small dialog on desktop.
  */
-export function TaskScheduler({ taskId, currentDate, open, onOpenChange }: TaskSchedulerProps) {
+export function TaskScheduler({ taskId, currentDate, currentTime, open, onOpenChange }: TaskSchedulerProps) {
   const updateTask = useTaskStore((s) => s.updateTask)
   const isMobile = useIsMobile()
   const today = new Date()
   const current = currentDate ? currentDate.slice(0, 10) : null
+  const currentHM = currentTime ? currentTime.slice(0, 5) : ""
+
+  const setTime = (v: string) => {
+    if (taskId) updateTask(taskId, { due_time: v || null })
+  }
 
   const options = [
     { key: "hoy",     label: "Hoy",                 sub: format(today, "EEE", { locale: es }),               value: format(today, "yyyy-MM-dd"),               Icon: Calendar,   color: "text-emerald-400" },
@@ -65,6 +71,29 @@ export function TaskScheduler({ taskId, currentDate, open, onOpenChange }: TaskS
           onChange={(e) => pick(e.target.value || null)}
           className="w-full bg-transparent text-sm text-text-secondary outline-none [color-scheme:dark]"
         />
+      </div>
+      <div className="border-t border-border-subtle pt-3 px-4 pb-3">
+        <p className="text-xs font-bold text-text-muted uppercase tracking-wider mb-1.5">Hora</p>
+        {current ? (
+          <div className="flex items-center gap-3">
+            <input
+              type="time"
+              value={currentHM}
+              onChange={(e) => setTime(e.target.value)}
+              className="flex-1 bg-transparent text-sm text-text-secondary outline-none [color-scheme:dark]"
+            />
+            {currentHM && (
+              <button
+                onClick={() => setTime("")}
+                className="text-xs text-text-muted hover:text-text-secondary active:scale-95 transition-all touch-manipulation"
+              >
+                Quitar hora
+              </button>
+            )}
+          </div>
+        ) : (
+          <p className="text-xs text-text-muted">Elegí una fecha primero</p>
+        )}
       </div>
     </div>
   )

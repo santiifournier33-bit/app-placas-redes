@@ -105,6 +105,8 @@ export type Database = {
           id: string
           last_synced_at: string | null
           owner_id: string
+          reminder_at: string | null
+          reminder_sent_at: string | null
           scope: string
           title: string
           updated_at: string | null
@@ -121,6 +123,8 @@ export type Database = {
           id?: string
           last_synced_at?: string | null
           owner_id: string
+          reminder_at?: string | null
+          reminder_sent_at?: string | null
           scope?: string
           title: string
           updated_at?: string | null
@@ -137,6 +141,8 @@ export type Database = {
           id?: string
           last_synced_at?: string | null
           owner_id?: string
+          reminder_at?: string | null
+          reminder_sent_at?: string | null
           scope?: string
           title?: string
           updated_at?: string | null

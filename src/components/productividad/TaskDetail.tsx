@@ -16,6 +16,7 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { useIsMobile } from "@/lib/hooks/useIsMobile"
 import { TaskScheduler } from "@/components/productividad/TaskScheduler"
+import { ReminderPresetPicker } from "@/components/productividad/ReminderPresetPicker"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 
@@ -110,7 +111,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
   // Reminder presets (mirrors QuickAddTask)
   const reminderOffsetMin: number | null = (() => {
     if (!task.reminder_at || !task.due_date) return null
-    const due = new Date(`${task.due_date}T09:00:00`).getTime()
+    const due = new Date(`${task.due_date}T${task.due_time ?? "09:00"}:00`).getTime()
     const r = new Date(task.reminder_at).getTime()
     return Math.round((due - r) / 60000)
   })()
@@ -120,7 +121,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
       updateTask(task.id, { reminder_at: null, reminder_sent_at: null })
       return
     }
-    const due = new Date(`${task.due_date}T09:00:00`).getTime()
+    const due = new Date(`${task.due_date}T${task.due_time ?? "09:00"}:00`).getTime()
     const reminderAt = new Date(due - offsetMin * 60 * 1000).toISOString()
     updateTask(task.id, { reminder_at: reminderAt, reminder_sent_at: null })
   }
@@ -198,7 +199,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
           </div>
         </SheetContent>
       </Sheet>
-      <TaskScheduler taskId={task.id} currentDate={task.due_date} open={schedOpen} onOpenChange={setSchedOpen} />
+      <TaskScheduler taskId={task.id} currentDate={task.due_date} currentTime={task.due_time} open={schedOpen} onOpenChange={setSchedOpen} />
       </>
     )
   }
@@ -612,7 +613,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
           </div>
       </DialogContent>
     </Dialog>
-    <TaskScheduler taskId={task.id} currentDate={task.due_date} open={schedOpen} onOpenChange={setSchedOpen} />
+    <TaskScheduler taskId={task.id} currentDate={task.due_date} currentTime={task.due_time} open={schedOpen} onOpenChange={setSchedOpen} />
     </>
   )
 }
@@ -732,18 +733,8 @@ function TaskBody({
         )}
       </div>
 
-      {/* Reminder */}
-      <div className="flex items-center gap-2">
-        <Bell size={15} className={task.reminder ? "text-amber-400" : "text-text-muted"} />
-        <input
-          type="datetime-local"
-          value={task.reminder ?? ""}
-          onChange={(e) => updateTask(task.id, { reminder: e.target.value || null })}
-          className={`bg-transparent text-sm outline-none cursor-pointer [color-scheme:dark] ${
-            task.reminder ? "text-amber-400" : "text-text-muted"
-          }`}
-        />
-      </div>
+      {/* Reminder (unified on reminder_at) */}
+      <ReminderPresetPicker task={task} updateTask={updateTask} />
 
       {/* Description */}
       {showDesc ? (

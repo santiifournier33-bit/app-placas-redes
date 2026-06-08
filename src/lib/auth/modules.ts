@@ -75,7 +75,7 @@ export const modules: ModuleDefinition[] = [
       { id: 'tareas',     label: 'Tareas',     href: '/productividad/tareas',     icon: 'CheckSquare' },
       { id: 'negocios',   label: 'Negocios',   href: '/productividad/negocios',   icon: 'Briefcase', lockedFor: ['asesor'] },
       { id: 'contactos',  label: 'Contactos',  href: '/productividad/contactos',  icon: 'Users' },
-      { id: 'calendario', label: 'Calendario', href: '/productividad/calendario', icon: 'Calendar', lockedFor: ['asesor'] },
+      { id: 'calendario', label: 'Calendario', href: '/productividad/calendario', icon: 'Calendar' },
     ],
   },
   {
