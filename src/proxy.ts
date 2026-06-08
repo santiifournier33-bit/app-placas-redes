@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { jwtVerify } from 'jose'
+import { SignJWT, jwtVerify } from 'jose'
+import { shouldRenewSession } from '@/lib/auth/session-renewal'
 
 const secretKey = process.env.SESSION_SECRET || 'freire-propiedades-secret-key-change-in-prod'
 const encodedKey = new TextEncoder().encode(secretKey)
+// Espejo de session.ts; fallback para tokens viejos sin claim `maxAge`.
+const SESSION_MAX_AGE_DEFAULT = 7 * 24 * 60 * 60
 
 const ADMIN_ONLY_PATHS = ['/documentacion', '/marketing', '/ventas', '/servicios']
 // '/ficha' = ficha pública "modo colegas" (sin auth, token opaco propio).
@@ -41,7 +44,37 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL('/diseno', request.url))
     }
 
-    return NextResponse.next({ request })
+    const response = NextResponse.next({ request })
+
+    // Renovación deslizante: si queda menos de la mitad de la ventana, re-firmar
+    // una jose nueva con exp extendido (claims idénticos a session.ts) para que
+    // un usuario activo nunca tope con el vencimiento del gate de páginas.
+    const exp = payload.exp as number | undefined
+    const maxAge = (payload.maxAge as number) || SESSION_MAX_AGE_DEFAULT
+    const nowSeconds = Math.floor(Date.now() / 1000)
+    if (exp && shouldRenewSession(exp, maxAge, nowSeconds)) {
+      const newExpiresAt = new Date(Date.now() + maxAge * 1000)
+      const renewed = await new SignJWT({
+        email: payload.email as string,
+        role: payload.role as string,
+        expiresAt: newExpiresAt.toISOString(),
+        maxAge,
+      })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt()
+        .setExpirationTime(`${maxAge}s`)
+        .sign(encodedKey)
+
+      response.cookies.set('session', renewed, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        expires: newExpiresAt,
+        sameSite: 'lax',
+        path: '/',
+      })
+    }
+
+    return response
   } catch {
     const redirectResponse = NextResponse.redirect(new URL('/login', request.url))
     redirectResponse.cookies.delete('session')
