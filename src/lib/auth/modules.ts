@@ -73,7 +73,7 @@ export const modules: ModuleDefinition[] = [
     enabled: true,
     children: [
       { id: 'tareas',     label: 'Tareas',     href: '/productividad/tareas',     icon: 'CheckSquare' },
-      { id: 'negocios',   label: 'Negocios',   href: '/productividad/negocios',   icon: 'Briefcase', lockedFor: ['asesor'] },
+      { id: 'negocios',   label: 'Negocios',   href: '/productividad/negocios',   icon: 'Briefcase' },
       { id: 'contactos',  label: 'Contactos',  href: '/productividad/contactos',  icon: 'Users' },
       { id: 'calendario', label: 'Calendario', href: '/productividad/calendario', icon: 'Calendar' },
     ],
