@@ -8,6 +8,8 @@ export interface SessionPayload {
   email: string
   role: UserRole
   expiresAt: Date
+  /** Ventana original en segundos (7 o 30 días). Permite renovar con el plazo correcto. */
+  maxAge: number
 }
 
 const secretKey = process.env.SESSION_SECRET || 'freire-propiedades-secret-key-change-in-prod'
@@ -23,10 +25,15 @@ export const SESSION_MAX_AGE_DEFAULT = 7 * 24 * 60 * 60   // 7 días
 export const SESSION_MAX_AGE_REMEMBER = 30 * 24 * 60 * 60 // 30 días ("recordar cuenta")
 
 export async function encrypt(
-  payload: SessionPayload,
+  payload: { email: string; role: UserRole; expiresAt: Date },
   maxAgeSeconds: number = SESSION_MAX_AGE_DEFAULT,
 ): Promise<string> {
-  return new SignJWT({ ...payload, expiresAt: payload.expiresAt.toISOString() })
+  return new SignJWT({
+    email: payload.email,
+    role: payload.role,
+    expiresAt: payload.expiresAt.toISOString(),
+    maxAge: maxAgeSeconds,
+  })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime(`${maxAgeSeconds}s`)
@@ -42,6 +49,7 @@ export async function decrypt(session: string | undefined = ''): Promise<Session
       email: payload.email as string,
       role: payload.role as UserRole,
       expiresAt: new Date(payload.expiresAt as string),
+      maxAge: (payload.maxAge as number) ?? SESSION_MAX_AGE_DEFAULT,
     }
   } catch {
     return null
