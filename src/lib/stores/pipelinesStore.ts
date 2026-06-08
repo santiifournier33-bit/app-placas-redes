@@ -2,8 +2,14 @@
 
 import { create } from 'zustand'
 import { createClient } from '@/lib/supabase/client'
+import { getActiveUser } from '@/lib/supabase/active-user'
 import type { Tables } from '@/lib/supabase/types'
 import { DEFAULT_PIPELINES } from '@/lib/pipelines/pipeline-seed'
+
+// Shown when the Supabase Auth session can't be resolved (lapsed/refresh failed)
+// while loading pipelines. Distinct from "no pipelines exist": an empty array
+// must NOT be treated as truth when auth is the real failure.
+export const PIPELINES_AUTH_ERROR = 'No pudimos cargar tus procesos comerciales. Tu sesión pudo haber caducado.'
 
 export type Pipeline = Tables<'pipelines'>
 export type PipelineStage = Tables<'pipeline_stages'>
@@ -18,12 +24,17 @@ interface PipelinesState {
   loading: boolean
   initialized: boolean
   seeding: boolean
+  /** Background refetch in progress (realtime). Never blanks the UI. */
+  refreshing: boolean
+  /** Load failure surfaced to the UI (auth lapse / query error). null = ok. */
+  error: string | null
 
   activePipeline: () => PipelineWithStages | null
   activeStages: () => PipelineStage[]
 
   reset: () => void
   init: () => Promise<void>
+  refresh: () => Promise<void>
   setActivePipeline: (id: string) => void
 
   createPipeline: (name: string, emoji?: string) => Promise<Pipeline | null>
@@ -39,12 +50,43 @@ interface PipelinesState {
 
 const supabase = createClient()
 
+// Fetch this owner's pipelines + stages. Returns null on auth/query failure so
+// the caller can distinguish "failed" from "genuinely empty" ([] with ok:true).
+async function fetchPipelinesForUser(userId: string): Promise<PipelineWithStages[] | null> {
+  const { data: pipelines, error: pErr } = await supabase
+    .from('pipelines')
+    .select('*')
+    .eq('owner_id', userId)
+    .is('deleted_at', null)
+    .order('position')
+
+  const { data: stages, error: sErr } = await supabase
+    .from('pipeline_stages')
+    .select('*')
+    .eq('owner_id', userId)
+    .order('position')
+
+  if (pErr) console.error('pipelinesStore: pipelines query failed', pErr)
+  if (sErr) console.error('pipelinesStore: stages query failed', sErr)
+  if (pErr || sErr || !pipelines || !stages) return null
+
+  return pipelines.map(p => ({
+    ...p,
+    stages: stages.filter(s => s.pipeline_id === p.id),
+  }))
+}
+
+// Debounce realtime bursts so a flurry of row changes triggers one refetch.
+let refreshTimer: ReturnType<typeof setTimeout> | null = null
+
 export const usePipelinesStore = create<PipelinesState>((set, get) => ({
   pipelines: [],
   activePipelineId: null,
   loading: true,
   initialized: false,
   seeding: false,
+  refreshing: false,
+  error: null,
 
   activePipeline: () => {
     const { pipelines, activePipelineId } = get()
@@ -58,56 +100,34 @@ export const usePipelinesStore = create<PipelinesState>((set, get) => ({
   },
 
   reset: () => {
-    set({ pipelines: [], activePipelineId: null, loading: true, initialized: false })
+    set({ pipelines: [], activePipelineId: null, loading: true, initialized: false, refreshing: false, error: null })
   },
 
   init: async () => {
     if (get().seeding) return
     if (get().initialized) return
-    set({ initialized: true })
+    set({ initialized: true, loading: true, error: null })
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { set({ loading: false, initialized: true }); return }
-
-    const { data: pipelines, error: pErr } = await supabase
-      .from('pipelines')
-      .select('*')
-      .eq('owner_id', user.id)
-      .is('deleted_at', null)
-      .order('position')
-
-    const { data: stages, error: sErr } = await supabase
-      .from('pipeline_stages')
-      .select('*')
-      .eq('owner_id', user.id)
-      .order('position')
-
-    if (pErr) console.error('pipelinesStore: pipelines query failed', pErr)
-    if (sErr) console.error('pipelinesStore: stages query failed', sErr)
-
-    if (!pipelines || !stages) {
-      set({ loading: false, initialized: true })
+    const { user, refreshFailed } = await getActiveUser(supabase)
+    if (!user) {
+      // Supabase session lapsed (NOT "no pipelines"). Keep any prior data,
+      // surface the error, and allow a manual retry (init() runs again).
+      console.error('pipelinesStore: no Supabase session', { refreshFailed })
+      set({ loading: false, initialized: false, error: PIPELINES_AUTH_ERROR })
       return
     }
 
-    const withStages: PipelineWithStages[] = pipelines.map(p => ({
-      ...p,
-      stages: stages.filter(s => s.pipeline_id === p.id),
-    }))
+    const withStages = await fetchPipelinesForUser(user.id)
+    if (withStages === null) {
+      // Query/RLS error — do not collapse to an empty board. Show retry.
+      set({ loading: false, initialized: false, error: PIPELINES_AUTH_ERROR })
+      return
+    }
 
-    // Check if pipelines match the seed EXACTLY
-    const matchesSeed = withStages.length === DEFAULT_PIPELINES.length &&
-      DEFAULT_PIPELINES.every(dp => {
-        const existingPipeline = withStages.find(p => p.name === dp.name)
-        if (!existingPipeline) return false
-        if (existingPipeline.stages.length !== dp.stages.length) return false
-        return dp.stages.every(ds => existingPipeline.stages.some(s => s.name === ds.name))
-      })
-
-    if (!matchesSeed) {
-      set({ seeding: true })
-      await get().seedDefaultPipelines()
-      set({ seeding: false })
+    if (withStages.length === 0) {
+      // Genuinely empty: offer the manual seed button (UI). No auto-reseed —
+      // the old `!matchesSeed` branch wiped customised pipelines on every init.
+      set({ pipelines: [], activePipelineId: null, loading: false, error: null })
     } else {
       const stored = typeof window !== 'undefined'
         ? localStorage.getItem('active-pipeline-id')
@@ -116,11 +136,7 @@ export const usePipelinesStore = create<PipelinesState>((set, get) => ({
         ? stored
         : withStages[0]?.id ?? null
 
-      set({
-        pipelines: withStages,
-        activePipelineId: activeId,
-        loading: false,
-      })
+      set({ pipelines: withStages, activePipelineId: activeId, loading: false, error: null })
     }
 
     supabase.removeChannel(supabase.channel('pipelines-realtime'))
@@ -128,17 +144,35 @@ export const usePipelinesStore = create<PipelinesState>((set, get) => ({
       .channel('pipelines-realtime')
       .on('postgres_changes', {
         event: '*', schema: 'public', table: 'pipelines',
-      }, () => {
-        set({ initialized: false })
-        get().init()
-      })
+      }, () => { get().refresh() })
       .on('postgres_changes', {
         event: '*', schema: 'public', table: 'pipeline_stages',
-      }, () => {
-        set({ initialized: false })
-        get().init()
-      })
+      }, () => { get().refresh() })
       .subscribe()
+  },
+
+  // Silent background refetch driven by realtime. Never touches `loading`/
+  // `initialized` (so the board never flips to the skeleton) and only swaps
+  // data on success — a transient auth/query failure leaves the UI intact.
+  refresh: async () => {
+    if (get().seeding || get().refreshing) return
+    if (refreshTimer) clearTimeout(refreshTimer)
+    refreshTimer = setTimeout(async () => {
+      set({ refreshing: true })
+      try {
+        const { user } = await getActiveUser(supabase)
+        if (!user) return
+        const withStages = await fetchPipelinesForUser(user.id)
+        if (withStages === null) return
+        const current = get().activePipelineId
+        const activeId = (current && withStages.some(p => p.id === current))
+          ? current
+          : withStages[0]?.id ?? null
+        set({ pipelines: withStages, activePipelineId: activeId, error: null })
+      } finally {
+        set({ refreshing: false })
+      }
+    }, 300)
   },
 
   setActivePipeline: (id) => {
@@ -147,7 +181,7 @@ export const usePipelinesStore = create<PipelinesState>((set, get) => ({
   },
 
   createPipeline: async (name, emoji) => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const { user } = await getActiveUser(supabase)
     if (!user) return null
 
     const position = get().pipelines.length
@@ -186,7 +220,7 @@ export const usePipelinesStore = create<PipelinesState>((set, get) => ({
   },
 
   createStage: async (pipelineId, name, position, color, emoji) => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const { user } = await getActiveUser(supabase)
     if (!user) return
 
     const { data } = await supabase
@@ -255,7 +289,7 @@ export const usePipelinesStore = create<PipelinesState>((set, get) => ({
   },
 
   seedDefaultPipelines: async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const { user } = await getActiveUser(supabase)
     if (!user) return
 
     // 1. Delete all contact-pipeline associations for this user to avoid FK constraint errors
@@ -315,6 +349,8 @@ export const usePipelinesStore = create<PipelinesState>((set, get) => ({
       pipelines: newPipelines,
       activePipelineId: newPipelines[0]?.id ?? null,
       loading: false,
+      initialized: true,
+      error: null,
     })
 
     if (newPipelines[0]) {

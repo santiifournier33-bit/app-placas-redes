@@ -2,6 +2,7 @@
 
 import { create } from 'zustand'
 import { createClient } from '@/lib/supabase/client'
+import { getActiveUser } from '@/lib/supabase/active-user'
 import type { Tables, TablesInsert } from '@/lib/supabase/types'
 import type { PipelineStage } from './pipelinesStore'
 
@@ -116,7 +117,7 @@ export const useContactStore = create<ContactState>((set, get) => ({
     if (get().initialized) return
     set({ initialized: true })
 
-    const { data: { user } } = await supabase.auth.getUser()
+    const { user } = await getActiveUser(supabase)
     if (!user) { set({ loading: false }); return }
 
     // Keyset pagination over the unique `id`: a plain select caps at Supabase's
@@ -187,7 +188,7 @@ export const useContactStore = create<ContactState>((set, get) => ({
   },
 
   fetchKanban: async (pipelineId) => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const { user } = await getActiveUser(supabase)
     if (!user) return
 
     const { data: cps } = await supabase
@@ -219,9 +220,9 @@ export const useContactStore = create<ContactState>((set, get) => ({
   },
 
   addContact: async (data, pipelineId, stageId) => {
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const { user, refreshFailed } = await getActiveUser(supabase)
     if (!user) {
-      console.error('addContact: no auth session', authError)
+      console.error('addContact: no auth session', { refreshFailed })
       return null
     }
 
@@ -263,7 +264,7 @@ export const useContactStore = create<ContactState>((set, get) => ({
   addNote: async (contactId, body) => {
     const trimmed = body.trim()
     if (!trimmed) return null
-    const { data: { user } } = await supabase.auth.getUser()
+    const { user } = await getActiveUser(supabase)
     if (!user) return null
     const { data, error } = await supabase
       .from('contact_notes')
@@ -304,7 +305,7 @@ export const useContactStore = create<ContactState>((set, get) => ({
   },
 
   addToPipeline: async (contactId, pipelineId, stageId) => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const { user } = await getActiveUser(supabase)
     if (!user) return
 
     await supabase.from('contact_pipelines').insert({

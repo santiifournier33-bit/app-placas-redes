@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Plus, Search, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { getActiveUser } from '@/lib/supabase/active-user'
 import { usePipelinesStore } from '@/lib/stores/pipelinesStore'
 import {
   useContactStore,
@@ -96,7 +97,7 @@ export default function NegociosPage() {
     })
   }, [contactStore.kanbanContacts, activeStages, search, filterSource, filterHealth])
 
-  if (pipelinesStore.loading || !pipelinesStore.initialized) {
+  if (pipelinesStore.loading) {
     return (
       <div className="p-6">
         <div className="animate-pulse flex gap-3">
@@ -104,6 +105,22 @@ export default function NegociosPage() {
             <div key={i} className="w-72 h-64 bg-surface-overlay rounded-2xl shrink-0" />
           ))}
         </div>
+      </div>
+    )
+  }
+
+  // Load failed (auth lapse / query error). Distinct from "no pipelines exist":
+  // never offer the destructive seed here — just let the user retry.
+  if (pipelinesStore.error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh] gap-4 px-6 text-center">
+        <p className="text-text-muted text-sm max-w-xs">{pipelinesStore.error}</p>
+        <button
+          onClick={() => pipelinesStore.init()}
+          className="px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 transition-colors cursor-pointer"
+        >
+          Reintentar
+        </button>
       </div>
     )
   }
@@ -205,7 +222,7 @@ export default function NegociosPage() {
               primary_email: data.primary_email,
             })
 
-            const { data: { user } } = await sb.auth.getUser()
+            const { user } = await getActiveUser(sb)
             if (!user) {
               alert('Sesión expirada. Por favor, volvé a iniciar sesión.')
               return

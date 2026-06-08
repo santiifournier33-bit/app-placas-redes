@@ -2,6 +2,7 @@
 
 import { create } from 'zustand'
 import { createClient } from '@/lib/supabase/client'
+import { getActiveUser } from '@/lib/supabase/active-user'
 import type { Tables, TablesInsert } from '@/lib/supabase/types'
 
 export type CalendarEvent = Tables<'calendar_events'>
@@ -43,7 +44,7 @@ export const useCalendarStore = create<CalendarState>((set, get) => ({
     if (get().initialized) return
     set({ initialized: true })
 
-    const { data: { user } } = await supabase.auth.getUser()
+    const { user } = await getActiveUser(supabase)
     if (!user) { set({ loading: false }); return }
 
     // RLS enforces: own personal events + organization-scope events visible to all
@@ -85,7 +86,7 @@ export const useCalendarStore = create<CalendarState>((set, get) => ({
   },
 
   addEvent: async (data) => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const { user } = await getActiveUser(supabase)
     if (!user) return null
 
     const { data: event, error } = await supabase

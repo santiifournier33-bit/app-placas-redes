@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { createClient } from '@/lib/supabase/client'
+import { getActiveUser } from '@/lib/supabase/active-user'
 import type { Tables } from '@/lib/supabase/types'
 import { generateNextDueDate, type RecurrenceConfig } from '@/lib/productividad/recurrence'
 
@@ -73,10 +74,11 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
     if (get().initialized) return
     set({ initialized: true })
 
-    const { data: { user } } = await supabase.auth.getUser()
+    const { user } = await getActiveUser(supabase)
     if (!user) {
-      // No Supabase session → the list will be empty and every write would
-      // silently fail. Surface it so the UI can prompt re-login.
+      // Supabase session is genuinely gone (a refresh was already attempted).
+      // The list would be empty and every write would silently fail — surface
+      // it so the UI can prompt re-login.
       set({ initialized: false, error: NO_SESSION })
       return
     }
@@ -176,7 +178,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
   },
 
   addTask: async (title, sectionId = null, extra) => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const { user } = await getActiveUser(supabase)
     if (!user) { set({ error: NO_SESSION }); return null }
 
     const position = get().tasks.filter(t => t.section_id === sectionId && !t.parent_id).length
@@ -258,7 +260,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
         config
       )
       if (nextDue) {
-        const { data: { user } } = await supabase.auth.getUser()
+        const { user } = await getActiveUser(supabase)
         if (!user) return
 
         const { data: nextTask } = await supabase
@@ -347,7 +349,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
   },
 
   addSection: async (name) => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const { user } = await getActiveUser(supabase)
     if (!user) { set({ error: NO_SESSION }); return }
 
     const position = get().sections.length
@@ -398,7 +400,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
     const parent = get().tasks.find(t => t.id === parentId)
     if (!parent) return
 
-    const { data: { user } } = await supabase.auth.getUser()
+    const { user } = await getActiveUser(supabase)
     if (!user) { set({ error: NO_SESSION }); return }
 
     const position = get().tasks.filter(t => t.parent_id === parentId).length
