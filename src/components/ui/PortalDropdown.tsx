@@ -26,6 +26,15 @@ interface PortalDropdownProps {
   minWidth?: number | string
   /** Z-index. Default: 9999. */
   zIndex?: number
+  /**
+   * Portal target. Default: `document.body`. Pass a node INSIDE a modal layer
+   * (e.g. a Radix Dialog/Sheet Content) when the dropdown lives inside one —
+   * portaling to body would put the panel outside the modal, losing pointer
+   * events (body `pointer-events: none`), the focus trap, and triggering the
+   * dialog's outside-pointer close. The panel stays `position: fixed`, so it
+   * still escapes any ancestor `overflow` clipping.
+   */
+  container?: HTMLElement | null
 }
 
 /**
@@ -45,6 +54,7 @@ export function PortalDropdown({
   className = '',
   minWidth,
   zIndex = 9999,
+  container,
 }: PortalDropdownProps) {
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
   const panelRef = useRef<HTMLDivElement>(null)
@@ -113,7 +123,14 @@ export function PortalDropdown({
       if (panelRef.current && e.target instanceof Node && panelRef.current.contains(e.target)) return
       onClose()
     }
-    const handleResize = () => onClose()
+    // En móvil, abrir el teclado virtual dispara `resize`. Si el foco está dentro
+    // del panel (el usuario está escribiendo en un input del dropdown), solo
+    // reposicionar — cerrar acá desmontaría el portal y mataría la escritura.
+    // Resize "real" (rotación, redimensionar ventana) sin foco interno → cerrar.
+    const handleResize = () => {
+      if (panelRef.current?.contains(document.activeElement)) computePosition()
+      else onClose()
+    }
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
@@ -148,6 +165,6 @@ export function PortalDropdown({
     >
       {children}
     </div>,
-    document.body
+    container ?? document.body
   )
 }

@@ -144,22 +144,24 @@ export default function NegociosPage() {
   const activeFilters = [filterSource !== 'all', filterHealth !== 'all', search].filter(Boolean).length
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)]">
+    <div className="flex flex-col h-[calc(100vh-120px)] overflow-x-clip">
       {/* Pipeline selector + toolbar */}
       <div className="flex flex-col gap-2 px-4 py-3 border-b border-border-subtle shrink-0">
         <PipelineSelector />
 
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 bg-surface-overlay rounded-xl px-3 py-1.5 border border-border-subtle flex-1 max-w-xs">
+        {/* Toolbar: en móvil el buscador ocupa toda la fila (basis-full) y los filtros
+            + contador + botón envuelven debajo (flex-wrap). En sm+ va todo en una línea. */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 bg-surface-overlay rounded-xl px-3 py-1.5 border border-border-subtle basis-full sm:basis-auto sm:flex-1 sm:max-w-xs min-w-0">
             <Search size={14} className="text-text-muted shrink-0" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar lead..."
-              className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-zinc-700 outline-none"
+              className="flex-1 min-w-0 bg-transparent text-sm text-text-primary placeholder:text-zinc-700 outline-none"
             />
             {search && (
-              <button onClick={() => setSearch('')} className="cursor-pointer">
+              <button onClick={() => setSearch('')} className="cursor-pointer shrink-0">
                 <X size={14} className="text-text-muted" />
               </button>
             )}
@@ -168,7 +170,7 @@ export default function NegociosPage() {
           <select
             value={filterSource}
             onChange={(e) => setFilterSource(e.target.value as Source | 'all')}
-            className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border-subtle bg-surface-overlay text-text-secondary cursor-pointer outline-none [color-scheme:dark]"
+            className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border-subtle bg-surface-overlay text-text-secondary cursor-pointer outline-none [color-scheme:dark] shrink min-w-0"
           >
             <option value="all">Origen: Todos</option>
             {SOURCE_OPTIONS.map(s => <option key={s} value={s}>{SOURCE_LABELS[s]}</option>)}
@@ -177,7 +179,7 @@ export default function NegociosPage() {
           <select
             value={filterHealth}
             onChange={(e) => setFilterHealth(e.target.value as HealthStatus | 'all')}
-            className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border-subtle bg-surface-overlay text-text-secondary cursor-pointer outline-none [color-scheme:dark]"
+            className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border-subtle bg-surface-overlay text-text-secondary cursor-pointer outline-none [color-scheme:dark] shrink min-w-0"
           >
             <option value="all">Salud: Todos</option>
             <option value="green">Verde</option>
@@ -186,13 +188,11 @@ export default function NegociosPage() {
             <option value="gray">Gris</option>
           </select>
 
-          <div className="flex-1" />
-
-          <span className="text-xs text-text-muted tabular-nums">{filtered.length} leads</span>
+          <span className="text-xs text-text-muted tabular-nums ml-auto shrink-0">{filtered.length} leads</span>
 
           <button
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition-colors cursor-pointer shrink-0"
           >
             <Plus size={16} />
             <span className="hidden sm:inline">Nuevo lead</span>

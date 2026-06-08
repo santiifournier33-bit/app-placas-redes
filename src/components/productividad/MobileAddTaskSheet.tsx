@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
   Calendar, Clock, Flag, Bell, ChevronRight, Repeat,
   CheckSquare, MapPin, Phone, Users, PenLine, UserCircle,
@@ -13,6 +13,7 @@ import { es } from "date-fns/locale"
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/components/ui/sheet"
+import { PortalDropdown } from "@/components/ui/PortalDropdown"
 
 const PRIORITY_OPTIONS = [
   { value: 1 as const, label: "Prioridad 1", color: "text-red-400" },
@@ -63,6 +64,20 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
   const [showReminder, setShowReminder] = useState(false)
   const [showContactPicker, setShowContactPicker] = useState(false)
   const [showRecurrence, setShowRecurrence] = useState(false)
+
+  // Anchors para los popovers. Se renderizan vía PortalDropdown (a document.body)
+  // para que NO los recorte el contenedor `overflow-x-auto`/`overflow-y-auto` de la hoja.
+  const dateBtnRef = useRef<HTMLButtonElement>(null)
+  const prioBtnRef = useRef<HTMLButtonElement>(null)
+  const typeBtnRef = useRef<HTMLButtonElement>(null)
+  const reminderBtnRef = useRef<HTMLButtonElement>(null)
+  const recurrenceBtnRef = useRef<HTMLButtonElement>(null)
+  const contactBtnRef = useRef<HTMLButtonElement>(null)
+  // Los popovers se portalan DENTRO del SheetContent (no a document.body): la hoja
+  // es un Radix Dialog modal (pointer-events:none en body + focus-trap + cierre por
+  // pointerdown afuera). `position: fixed` igual escapa el clip de overflow de la fila.
+  const contentRef = useRef<HTMLDivElement>(null)
+  const PANEL = "bg-surface-2 rounded-xl border border-border-default py-1 shadow-xl"
 
   useEffect(() => {
     if (open) {
@@ -142,7 +157,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-2xl px-0 pb-0 pt-2 bg-surface-1" showClose={false}>
+      <SheetContent ref={contentRef} side="bottom" className="rounded-t-2xl px-0 pb-0 pt-2 bg-surface-1" showClose={false}>
         {/* Grabber handle (native bottom-sheet affordance) */}
         <div className="flex justify-center pt-1 pb-2">
           <div className="w-10 h-1 rounded-full bg-border-strong/40" />
@@ -173,254 +188,250 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
             />
           </div>
 
-          {/* Horizontally scrollable actions row */}
+          {/* Horizontally scrollable actions row.
+              Los popovers se renderizan vía PortalDropdown (a document.body) para que
+              el `overflow-x-auto` de esta fila (y el `overflow-y-auto` de la hoja) no los recorte. */}
           <div className="overflow-x-auto hide-scrollbar px-4 pb-2 pt-1">
             <div className="flex items-center gap-2 w-max">
               {/* Date */}
-              <div className="relative">
-                <button
-                  onClick={() => { closeAllDropdowns(); setShowDatePicker(!showDatePicker) }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
-                    dueDate ? "bg-blue-500/15 text-blue-400 border border-blue-500/20" : "text-text-muted hover:bg-surface-overlay border border-border-subtle"
-                  }`}
-                >
-                  <Calendar size={14} />
-                  {dateLabel ?? "Fecha"}
-                </button>
-                {showDatePicker && (
-                  <div className="absolute bottom-full mb-2 left-0 bg-surface-2 rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[160px]">
-                    {[
-                      { label: "Hoy", value: todayStr, sub: format(today, "EEE", { locale: es }) },
-                      { label: "Mañana", value: tomorrowStr, sub: format(addDays(today, 1), "EEE", { locale: es }) },
-                      { label: "Próx semana", value: nextWeekStr, sub: format(nextMonday(today), "d MMM", { locale: es }) },
-                    ].map((opt) => (
-                      <button
-                        key={opt.value}
-                        onClick={() => { setDueDate(opt.value); setShowDatePicker(false) }}
-                        className="flex items-center justify-between gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm text-text-secondary cursor-pointer"
-                      >
-                        <span>{opt.label}</span>
-                        <span className="text-xs text-text-muted">{opt.sub}</span>
-                      </button>
-                    ))}
-                    <div className="border-t border-border-subtle mt-1 pt-2 px-3 pb-2">
-                      <input
-                        type="date"
-                        value={dueDate ?? ""}
-                        onChange={(e) => { setDueDate(e.target.value); setShowDatePicker(false) }}
-                        className="w-full bg-transparent text-sm text-text-secondary outline-none [color-scheme:dark]"
-                      />
-                    </div>
-                    {dueDate && (
-                      <div className="border-t border-border-subtle pt-2 px-3 pb-2 flex items-center gap-2">
-                        <Clock size={14} className="text-text-muted shrink-0" />
-                        <input
-                          type="time"
-                          value={dueTime ?? ""}
-                          onChange={(e) => setDueTime(e.target.value || null)}
-                          className="flex-1 bg-transparent text-sm text-text-secondary outline-none [color-scheme:dark]"
-                        />
-                        {dueTime && (
-                          <button onClick={() => setDueTime(null)} className="text-xs text-text-muted hover:text-text-secondary cursor-pointer">Quitar</button>
-                        )}
-                      </div>
-                    )}
+              <button
+                ref={dateBtnRef}
+                onClick={() => { closeAllDropdowns(); setShowDatePicker(!showDatePicker) }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
+                  dueDate ? "bg-blue-500/15 text-blue-400 border border-blue-500/20" : "text-text-muted hover:bg-surface-overlay border border-border-subtle"
+                }`}
+              >
+                <Calendar size={14} />
+                {dateLabel ?? "Fecha"}
+              </button>
+              <PortalDropdown anchorRef={dateBtnRef} open={showDatePicker} onClose={() => setShowDatePicker(false)} placement="top-start" container={contentRef.current} className={`${PANEL} min-w-[180px]`}>
+                <>
+                  {[
+                    { label: "Hoy", value: todayStr, sub: format(today, "EEE", { locale: es }) },
+                    { label: "Mañana", value: tomorrowStr, sub: format(addDays(today, 1), "EEE", { locale: es }) },
+                    { label: "Próx semana", value: nextWeekStr, sub: format(nextMonday(today), "d MMM", { locale: es }) },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => { setDueDate(opt.value); setShowDatePicker(false) }}
+                      className="flex items-center justify-between gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm text-text-secondary cursor-pointer"
+                    >
+                      <span>{opt.label}</span>
+                      <span className="text-xs text-text-muted">{opt.sub}</span>
+                    </button>
+                  ))}
+                  <div className="border-t border-border-subtle mt-1 pt-2 px-3 pb-2">
+                    <input
+                      type="date"
+                      value={dueDate ?? ""}
+                      onChange={(e) => { setDueDate(e.target.value); setShowDatePicker(false) }}
+                      className="w-full bg-transparent text-sm text-text-secondary outline-none [color-scheme:dark]"
+                    />
                   </div>
-                )}
-              </div>
+                  {dueDate && (
+                    <div className="border-t border-border-subtle pt-2 px-3 pb-2 flex items-center gap-2">
+                      <Clock size={14} className="text-text-muted shrink-0" />
+                      <input
+                        type="time"
+                        value={dueTime ?? ""}
+                        onChange={(e) => setDueTime(e.target.value || null)}
+                        className="flex-1 bg-transparent text-sm text-text-secondary outline-none [color-scheme:dark]"
+                      />
+                      {dueTime && (
+                        <button onClick={() => setDueTime(null)} className="text-xs text-text-muted hover:text-text-secondary cursor-pointer">Quitar</button>
+                      )}
+                    </div>
+                  )}
+                </>
+              </PortalDropdown>
 
               {/* Priority */}
-              <div className="relative">
-                <button
-                  onClick={() => { closeAllDropdowns(); setShowPriority(!showPriority) }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
-                    priority < 4 ? "bg-surface-overlay-hover border border-border-subtle" : "text-text-muted hover:bg-surface-overlay border border-border-subtle"
-                  }`}
-                >
-                  <Flag size={14} className={PRIORITY_OPTIONS.find(p => p.value === priority)?.color} />
-                  {priority < 4 ? `P${priority}` : "Prioridad"}
-                </button>
-                {showPriority && (
-                  <div className="absolute bottom-full mb-2 left-0 bg-surface-2 rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[160px]">
-                    {PRIORITY_OPTIONS.map((opt) => (
-                      <button
-                        key={opt.value}
-                        onClick={() => { setPriority(opt.value); setShowPriority(false) }}
-                        className="flex items-center gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm cursor-pointer"
-                      >
-                        <Flag size={14} className={opt.color} />
-                        <span className={opt.color}>{opt.label}</span>
-                        {priority === opt.value && <span className="ml-auto text-text-muted">✓</span>}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <button
+                ref={prioBtnRef}
+                onClick={() => { closeAllDropdowns(); setShowPriority(!showPriority) }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
+                  priority < 4 ? "bg-surface-overlay-hover border border-border-subtle" : "text-text-muted hover:bg-surface-overlay border border-border-subtle"
+                }`}
+              >
+                <Flag size={14} className={PRIORITY_OPTIONS.find(p => p.value === priority)?.color} />
+                {priority < 4 ? `P${priority}` : "Prioridad"}
+              </button>
+              <PortalDropdown anchorRef={prioBtnRef} open={showPriority} onClose={() => setShowPriority(false)} placement="top-start" container={contentRef.current} className={`${PANEL} min-w-[160px]`}>
+                <>
+                  {PRIORITY_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => { setPriority(opt.value); setShowPriority(false) }}
+                      className="flex items-center gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm cursor-pointer"
+                    >
+                      <Flag size={14} className={opt.color} />
+                      <span className={opt.color}>{opt.label}</span>
+                      {priority === opt.value && <span className="ml-auto text-text-muted">✓</span>}
+                    </button>
+                  ))}
+                </>
+              </PortalDropdown>
 
               {/* Task Type */}
-              <div className="relative">
-                <button
-                  onClick={() => { closeAllDropdowns(); setShowType(!showType) }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
-                    taskType !== "tarea" ? "bg-violet-500/15 text-violet-400 border border-violet-500/20" : "text-text-muted hover:bg-surface-overlay border border-border-subtle"
-                  }`}
-                >
-                  <span className={taskType !== "tarea" ? "text-violet-400" : "text-text-muted"}>
-                    {TYPE_ICONS[taskType]}
-                  </span>
-                  {taskType !== "tarea" ? TASK_TYPES[taskType].label : "Tipo"}
-                </button>
-                {showType && (
-                  <div className="absolute bottom-full mb-2 left-0 bg-surface-2 rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[160px]">
-                    {(Object.entries(TASK_TYPES) as [TaskType, typeof TASK_TYPES[TaskType]][]).map(([key, val]) => (
-                      <button
-                        key={key}
-                        onClick={() => { setTaskType(key); setShowType(false) }}
-                        className="flex items-center gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm text-text-secondary cursor-pointer"
-                      >
-                        <span className="text-text-muted">{TYPE_ICONS[key]}</span>
-                        <span>{val.label}</span>
-                        {taskType === key && <span className="ml-auto text-text-muted">✓</span>}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <button
+                ref={typeBtnRef}
+                onClick={() => { closeAllDropdowns(); setShowType(!showType) }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
+                  taskType !== "tarea" ? "bg-violet-500/15 text-violet-400 border border-violet-500/20" : "text-text-muted hover:bg-surface-overlay border border-border-subtle"
+                }`}
+              >
+                <span className={taskType !== "tarea" ? "text-violet-400" : "text-text-muted"}>
+                  {TYPE_ICONS[taskType]}
+                </span>
+                {taskType !== "tarea" ? TASK_TYPES[taskType].label : "Tipo"}
+              </button>
+              <PortalDropdown anchorRef={typeBtnRef} open={showType} onClose={() => setShowType(false)} placement="top-start" container={contentRef.current} className={`${PANEL} min-w-[160px]`}>
+                <>
+                  {(Object.entries(TASK_TYPES) as [TaskType, typeof TASK_TYPES[TaskType]][]).map(([key, val]) => (
+                    <button
+                      key={key}
+                      onClick={() => { setTaskType(key); setShowType(false) }}
+                      className="flex items-center gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm text-text-secondary cursor-pointer"
+                    >
+                      <span className="text-text-muted">{TYPE_ICONS[key]}</span>
+                      <span>{val.label}</span>
+                      {taskType === key && <span className="ml-auto text-text-muted">✓</span>}
+                    </button>
+                  ))}
+                </>
+              </PortalDropdown>
 
               {/* Reminder */}
-              <div className="relative">
-                <button
-                  onClick={() => { if (dueDate) { closeAllDropdowns(); setShowReminder(!showReminder) } }}
-                  disabled={!dueDate}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 ${
-                    !dueDate
-                      ? "text-zinc-700 cursor-not-allowed opacity-50 border border-border-subtle"
-                      : reminderOffsetMin !== null
-                        ? "bg-amber-500/15 text-amber-400 border border-amber-500/20 cursor-pointer"
-                        : "text-text-muted hover:bg-surface-overlay border border-border-subtle cursor-pointer"
-                  }`}
-                >
-                  <Bell size={14} />
-                  {reminderOffsetMin === null
-                    ? "Recordar"
-                    : reminderOffsetMin === 0
-                      ? "A la hora"
-                      : reminderOffsetMin === 10
-                        ? "10 min"
-                        : reminderOffsetMin === 60
-                          ? "1 hora"
-                          : "1 día"}
-                </button>
-                {showReminder && (
-                  <div className="absolute bottom-full mb-2 left-0 bg-surface-2 rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[160px]">
-                    {[
-                      { value: null, label: 'Sin recordatorio' },
-                      { value: 0, label: 'A la hora' },
-                      { value: 10, label: '10 min antes' },
-                      { value: 60, label: '1 h antes' },
-                      { value: 1440, label: '1 día antes' },
-                    ].map((opt) => (
-                      <button
-                        key={opt.value ?? 'none'}
-                        onClick={() => { setReminderOffsetMin(opt.value); setShowReminder(false) }}
-                        className="flex items-center gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm text-text-secondary cursor-pointer"
-                      >
-                        {opt.label}
-                        {reminderOffsetMin === opt.value && <span className="ml-auto text-text-muted">✓</span>}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <button
+                ref={reminderBtnRef}
+                onClick={() => { if (dueDate) { closeAllDropdowns(); setShowReminder(!showReminder) } }}
+                disabled={!dueDate}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 ${
+                  !dueDate
+                    ? "text-zinc-700 cursor-not-allowed opacity-50 border border-border-subtle"
+                    : reminderOffsetMin !== null
+                      ? "bg-amber-500/15 text-amber-400 border border-amber-500/20 cursor-pointer"
+                      : "text-text-muted hover:bg-surface-overlay border border-border-subtle cursor-pointer"
+                }`}
+              >
+                <Bell size={14} />
+                {reminderOffsetMin === null
+                  ? "Recordar"
+                  : reminderOffsetMin === 0
+                    ? "A la hora"
+                    : reminderOffsetMin === 10
+                      ? "10 min"
+                      : reminderOffsetMin === 60
+                        ? "1 hora"
+                        : "1 día"}
+              </button>
+              <PortalDropdown anchorRef={reminderBtnRef} open={showReminder} onClose={() => setShowReminder(false)} placement="top-start" container={contentRef.current} className={`${PANEL} min-w-[180px]`}>
+                <>
+                  {[
+                    { value: null, label: 'Sin recordatorio' },
+                    { value: 0, label: 'A la hora' },
+                    { value: 10, label: '10 min antes' },
+                    { value: 60, label: '1 h antes' },
+                    { value: 1440, label: '1 día antes' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value ?? 'none'}
+                      onClick={() => { setReminderOffsetMin(opt.value); setShowReminder(false) }}
+                      className="flex items-center gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm text-text-secondary cursor-pointer"
+                    >
+                      {opt.label}
+                      {reminderOffsetMin === opt.value && <span className="ml-auto text-text-muted">✓</span>}
+                    </button>
+                  ))}
+                </>
+              </PortalDropdown>
 
               {/* Recurrence */}
-              <div className="relative">
-                <button
-                  onClick={() => { closeAllDropdowns(); setShowRecurrence(!showRecurrence) }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
-                    recurrenceFreq ? "bg-teal-500/15 text-teal-400 border border-teal-500/20" : "text-text-muted hover:bg-surface-overlay border border-border-subtle"
-                  }`}
-                >
-                  <Repeat size={14} />
-                  {recurrenceFreq ? { daily: 'Diario', weekly: 'Semanal', biweekly: 'Quincen.', monthly: 'Mensual' }[recurrenceFreq] ?? 'Recurr.' : 'Repetir'}
-                </button>
-                {showRecurrence && (
-                  <div className="absolute bottom-full mb-2 right-0 bg-surface-2 rounded-xl border border-border-default py-1 z-20 shadow-xl min-w-[160px]">
-                    {[
-                      { value: null, label: 'Sin repetición' },
-                      { value: 'daily', label: 'Diario' },
-                      { value: 'weekly', label: 'Semanal' },
-                      { value: 'biweekly', label: 'Quincenal' },
-                      { value: 'monthly', label: 'Mensual' },
-                    ].map((opt) => (
-                      <button
-                        key={opt.value ?? 'none'}
-                        onClick={() => { setRecurrenceFreq(opt.value); setShowRecurrence(false) }}
-                        className="flex items-center gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm text-text-secondary cursor-pointer"
-                      >
-                        {opt.label}
-                        {recurrenceFreq === opt.value && <span className="ml-auto text-text-muted">✓</span>}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <button
+                ref={recurrenceBtnRef}
+                onClick={() => { closeAllDropdowns(); setShowRecurrence(!showRecurrence) }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
+                  recurrenceFreq ? "bg-teal-500/15 text-teal-400 border border-teal-500/20" : "text-text-muted hover:bg-surface-overlay border border-border-subtle"
+                }`}
+              >
+                <Repeat size={14} />
+                {recurrenceFreq ? { daily: 'Diario', weekly: 'Semanal', biweekly: 'Quincen.', monthly: 'Mensual' }[recurrenceFreq] ?? 'Recurr.' : 'Repetir'}
+              </button>
+              <PortalDropdown anchorRef={recurrenceBtnRef} open={showRecurrence} onClose={() => setShowRecurrence(false)} placement="top-start" container={contentRef.current} className={`${PANEL} min-w-[160px]`}>
+                <>
+                  {[
+                    { value: null, label: 'Sin repetición' },
+                    { value: 'daily', label: 'Diario' },
+                    { value: 'weekly', label: 'Semanal' },
+                    { value: 'biweekly', label: 'Quincenal' },
+                    { value: 'monthly', label: 'Mensual' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value ?? 'none'}
+                      onClick={() => { setRecurrenceFreq(opt.value); setShowRecurrence(false) }}
+                      className="flex items-center gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm text-text-secondary cursor-pointer"
+                    >
+                      {opt.label}
+                      {recurrenceFreq === opt.value && <span className="ml-auto text-text-muted">✓</span>}
+                    </button>
+                  ))}
+                </>
+              </PortalDropdown>
 
               {/* Contact */}
-              <div className="relative">
-                <button
-                  onClick={() => { closeAllDropdowns(); setShowContactPicker(!showContactPicker); setContactSearch("") }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
-                    contactId ? "bg-green-500/15 text-green-400 border border-green-500/20" : "text-text-muted hover:bg-surface-overlay border border-border-subtle"
-                  }`}
-                >
-                  <UserCircle size={14} />
-                  {selectedContact ? `${selectedContact.first_name} ${selectedContact.last_name}` : "Contacto"}
-                </button>
-                {showContactPicker && (
-                  <div className="absolute bottom-full mb-2 right-0 bg-surface-2 rounded-xl border border-border-default z-20 shadow-xl w-64">
-                    <div className="p-2 border-b border-border-subtle">
-                      <input
-                        autoFocus
-                        value={contactSearch}
-                        onChange={(e) => setContactSearch(e.target.value)}
-                        placeholder="Buscar contacto..."
-                        className="w-full bg-transparent text-sm text-text-secondary placeholder:text-text-muted outline-none"
-                      />
-                    </div>
-                    <div className="max-h-60 overflow-y-auto py-1">
-                      {contactId && (
-                        <button
-                          onClick={() => { setContactId(null); setShowContactPicker(false) }}
-                          className="flex items-center gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm text-text-muted cursor-pointer"
-                        >
-                          <UserCircle size={14} />
-                          Sin contacto
-                        </button>
-                      )}
-                      {filteredContacts.map((c) => (
-                        <button
-                          key={c.id}
-                          onClick={() => { setContactId(c.id); setShowContactPicker(false) }}
-                          className="flex items-center gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm cursor-pointer"
-                        >
-                          <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center text-xs text-blue-400 font-bold shrink-0">
-                            {(c.first_name || c.last_name || "?")[0]}
-                          </div>
-                          <div className="flex-1 min-w-0 text-left">
-                            <div className="text-text-secondary truncate">{c.first_name} {c.last_name}</div>
-                            <div className="text-xs text-text-muted truncate">{c.primary_phone}</div>
-                          </div>
-                          {contactId === c.id && <span className="text-text-muted ml-auto">✓</span>}
-                        </button>
-                      ))}
-                      {filteredContacts.length === 0 && (
-                        <p className="text-sm text-text-muted text-center py-4">Sin resultados</p>
-                      )}
-                    </div>
+              <button
+                ref={contactBtnRef}
+                onClick={() => { closeAllDropdowns(); setShowContactPicker(!showContactPicker); setContactSearch("") }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
+                  contactId ? "bg-green-500/15 text-green-400 border border-green-500/20" : "text-text-muted hover:bg-surface-overlay border border-border-subtle"
+                }`}
+              >
+                <UserCircle size={14} />
+                {selectedContact ? `${selectedContact.first_name} ${selectedContact.last_name}` : "Contacto"}
+              </button>
+              <PortalDropdown anchorRef={contactBtnRef} open={showContactPicker} onClose={() => setShowContactPicker(false)} placement="top-end" container={contentRef.current} className="bg-surface-2 rounded-xl border border-border-default shadow-xl w-64">
+                <>
+                  <div className="p-2 border-b border-border-subtle">
+                    <input
+                      autoFocus
+                      value={contactSearch}
+                      onChange={(e) => setContactSearch(e.target.value)}
+                      placeholder="Buscar contacto..."
+                      className="w-full bg-transparent text-sm text-text-secondary placeholder:text-text-muted outline-none"
+                    />
                   </div>
-                )}
-              </div>
+                  <div className="max-h-60 overflow-y-auto py-1">
+                    {contactId && (
+                      <button
+                        onClick={() => { setContactId(null); setShowContactPicker(false) }}
+                        className="flex items-center gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm text-text-muted cursor-pointer"
+                      >
+                        <UserCircle size={14} />
+                        Sin contacto
+                      </button>
+                    )}
+                    {filteredContacts.map((c) => (
+                      <button
+                        key={c.id}
+                        onClick={() => { setContactId(c.id); setShowContactPicker(false) }}
+                        className="flex items-center gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm cursor-pointer"
+                      >
+                        <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center text-xs text-blue-400 font-bold shrink-0">
+                          {(c.first_name || c.last_name || "?")[0]}
+                        </div>
+                        <div className="flex-1 min-w-0 text-left">
+                          <div className="text-text-secondary truncate">{c.first_name} {c.last_name}</div>
+                          <div className="text-xs text-text-muted truncate">{c.primary_phone}</div>
+                        </div>
+                        {contactId === c.id && <span className="text-text-muted ml-auto">✓</span>}
+                      </button>
+                    ))}
+                    {filteredContacts.length === 0 && (
+                      <p className="text-sm text-text-muted text-center py-4">Sin resultados</p>
+                    )}
+                  </div>
+                </>
+              </PortalDropdown>
 
             </div>
           </div>
