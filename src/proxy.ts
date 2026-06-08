@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
 import { jwtVerify } from 'jose'
 
 const secretKey = process.env.SESSION_SECRET || 'freire-propiedades-secret-key-change-in-prod'
@@ -21,40 +20,11 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  let response = NextResponse.next({ request })
-
-  // Supabase cookie refresh — keeps auth session alive (skip if env vars missing)
-  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll()
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value }) =>
-              request.cookies.set(name, value)
-            )
-            response = NextResponse.next({ request })
-            cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options)
-            )
-          },
-        },
-      }
-    )
-    // getClaims() verifies the JWT locally using the project's asymmetric
-    // signing keys (ES256) — no network round-trip per request when the token is
-    // valid — while the setAll cookie callback above still writes refreshed
-    // tokens. getUser() always hit the Auth server, adding ~100-200ms to every
-    // protected navigation. (Do not insert code between createServerClient and
-    // this call — see Supabase SSR guidance.)
-    await supabase.auth.getClaims()
-  }
-
-  // App session JWT check
+  // App session JWT check.
+  // El refresh de la sesión Supabase se quitó a propósito: lo maneja SOLO el
+  // navegador (auto-refresh de supabase-js). Tener dos renovadores sobre el
+  // refresh-token rotatorio (proxy + cliente) causaba SIGNED_OUT intermitente.
+  // Nada server-side consume la sesión Supabase del usuario.
   const session = request.cookies.get('session')?.value
   if (!session) {
     return NextResponse.redirect(new URL('/login', request.url))
@@ -71,7 +41,7 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL('/diseno', request.url))
     }
 
-    return response
+    return NextResponse.next({ request })
   } catch {
     const redirectResponse = NextResponse.redirect(new URL('/login', request.url))
     redirectResponse.cookies.delete('session')
