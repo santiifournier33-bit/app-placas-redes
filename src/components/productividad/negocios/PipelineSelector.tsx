@@ -1,10 +1,9 @@
 'use client'
 
 import { usePipelinesStore } from '@/lib/stores/pipelinesStore'
-import { RotateCcw } from 'lucide-react'
 
 export function PipelineSelector() {
-  const { pipelines, activePipelineId, setActivePipeline, seedDefaultPipelines } = usePipelinesStore()
+  const { pipelines, activePipelineId, setActivePipeline } = usePipelinesStore()
 
   if (pipelines.length <= 1) return null
 
@@ -30,17 +29,6 @@ export function PipelineSelector() {
           </button>
         )
       })}
-      <button
-        onClick={() => {
-          if (confirm('¿Restablecer todos los procesos comerciales a los valores por defecto? Se perderán los procesos comerciales actuales.')) {
-            seedDefaultPipelines()
-          }
-        }}
-        title="Restablecer procesos comerciales por defecto"
-        className="p-1.5 rounded-lg text-text-muted hover:text-text-secondary hover:bg-surface-overlay-hover transition-colors cursor-pointer shrink-0"
-      >
-        <RotateCcw size={14} />
-      </button>
     </div>
   )
 }
