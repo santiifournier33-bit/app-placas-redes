@@ -5,7 +5,7 @@
 
 import { NextResponse } from 'next/server'
 import { analyzePropertyDocs } from '@/lib/docs/doc-analyzer'
-import { getDriveModule, getSyncConfig } from '@/lib/docs/sync-bridge'
+import { getDriveReadonly, getRootFolderId } from '@/lib/docs/drive-server'
 
 export async function GET(
   _request: Request,
@@ -13,18 +13,12 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const config = getSyncConfig()
-    const drive = getDriveModule()
-
-    if (!config.rootFolderId) {
-      return NextResponse.json({ error: 'GOOGLE_DRIVE_ROOT_FOLDER_ID no configurado' }, { status: 500 })
-    }
-
-    const driveClient = await drive.getDrive(config.oauthClientPath)
+    const rootFolderId = getRootFolderId()
+    const driveClient = await getDriveReadonly()
 
     // Search for property folder across all agent folders
     const agentFoldersRes = await driveClient.files.list({
-      q: `mimeType='application/vnd.google-apps.folder' and '${config.rootFolderId}' in parents and trashed=false`,
+      q: `mimeType='application/vnd.google-apps.folder' and '${rootFolderId}' in parents and trashed=false`,
       fields: 'files(id, name)',
       pageSize: 100,
     })
@@ -39,9 +33,10 @@ export async function GET(
         pageSize: 1,
       })
 
-      if (propRes.data.files?.length > 0) {
-        propertyFolder = propRes.data.files[0]
-        agentName = agentFolder.name
+      const found = propRes.data.files?.[0]
+      if (found) {
+        propertyFolder = { id: found.id || '', name: found.name || '' }
+        agentName = agentFolder.name || ''
         break
       }
     }
@@ -68,7 +63,10 @@ export async function GET(
     const parts = propertyFolder.name.split(' - ')
     const operationType = parts[1]?.split(' ')[0] || 'Venta'
 
-    const analysis = analyzePropertyDocs(files, operationType)
+    const analysis = analyzePropertyDocs(
+      files as unknown as Parameters<typeof analyzePropertyDocs>[0],
+      operationType,
+    )
 
     return NextResponse.json({
       id,

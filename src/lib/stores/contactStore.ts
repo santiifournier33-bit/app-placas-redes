@@ -54,6 +54,16 @@ export interface KanbanContact extends Contact {
   lastPipelineActivity: string | null
 }
 
+// Una membresía de un contacto en un proceso comercial (fila de contact_pipelines).
+// La tabla de Contactos usa este Map para mostrar/editar proceso+etapa de cada
+// contacto SIN depender del pipeline activo del kanban: un contacto puede estar
+// en varios procesos a la vez.
+export interface PipelineMembership {
+  contactPipelineId: string
+  pipelineId: string
+  stageId: string
+}
+
 export function getLeadHealth(
   lastActivity: string | null | undefined,
   stage: PipelineStage | undefined
@@ -78,12 +88,16 @@ export function getDaysSinceActivity(dateStr: string | null | undefined): number
 interface ContactState {
   contacts: Contact[]
   kanbanContacts: KanbanContact[]
+  // contactId -> membresías en procesos comerciales (todos los procesos, no solo el activo).
+  pipelineMemberships: Map<string, PipelineMembership[]>
   loading: boolean
   initialized: boolean
 
   reset: () => void
   init: () => Promise<void>
   fetchKanban: (pipelineId: string) => Promise<void>
+  // Carga las membresías de TODOS los procesos del owner (para la tabla de Contactos).
+  fetchPipelineMemberships: () => Promise<void>
 
   addContact: (data: Omit<TablesInsert<'contacts'>, 'owner_id'>, pipelineId?: string, stageId?: string) => Promise<Contact | null>
   updateContact: (id: string, updates: Partial<Contact>) => Promise<void>
@@ -105,12 +119,13 @@ const supabase = createClient()
 export const useContactStore = create<ContactState>((set, get) => ({
   contacts: [],
   kanbanContacts: [],
+  pipelineMemberships: new Map(),
   loading: true,
   initialized: false,
 
   reset: () => {
     supabase.removeChannel(supabase.channel('contacts-realtime'))
-    set({ contacts: [], kanbanContacts: [], loading: true, initialized: false })
+    set({ contacts: [], kanbanContacts: [], pipelineMemberships: new Map(), loading: true, initialized: false })
   },
 
   init: async () => {
@@ -219,6 +234,27 @@ export const useContactStore = create<ContactState>((set, get) => ({
     set({ kanbanContacts: kanban })
   },
 
+  fetchPipelineMemberships: async () => {
+    const { user } = await getActiveUser(supabase)
+    if (!user) return
+
+    // Solo las filas join (livianas), de todos los procesos. No traemos contactos:
+    // la tabla ya los tiene en `contacts`. Lookup O(1) por contactId al renderizar.
+    const { data, error } = await supabase
+      .from('contact_pipelines')
+      .select('id, contact_id, pipeline_id, stage_id')
+      .eq('owner_id', user.id)
+    if (error || !data) return
+
+    const map = new Map<string, PipelineMembership[]>()
+    for (const row of data) {
+      const list = map.get(row.contact_id) ?? []
+      list.push({ contactPipelineId: row.id, pipelineId: row.pipeline_id, stageId: row.stage_id })
+      map.set(row.contact_id, list)
+    }
+    set({ pipelineMemberships: map })
+  },
+
   addContact: async (data, pipelineId, stageId) => {
     const { user, refreshFailed } = await getActiveUser(supabase)
     if (!user) {
@@ -241,12 +277,21 @@ export const useContactStore = create<ContactState>((set, get) => ({
     set(s => ({ contacts: [contact, ...s.contacts] }))
 
     if (pipelineId && stageId) {
-      await supabase.from('contact_pipelines').insert({
+      const { data: cp } = await supabase.from('contact_pipelines').insert({
         contact_id: contact.id,
         pipeline_id: pipelineId,
         stage_id: stageId,
         owner_id: user.id,
-      })
+      }).select('id').single()
+      if (cp) {
+        set(s => {
+          const map = new Map(s.pipelineMemberships)
+          const list = [...(map.get(contact.id) ?? [])]
+          list.push({ contactPipelineId: cp.id, pipelineId, stageId })
+          map.set(contact.id, list)
+          return { pipelineMemberships: map }
+        })
+      }
     }
 
     return contact
@@ -290,13 +335,24 @@ export const useContactStore = create<ContactState>((set, get) => ({
   moveToStage: async (contactPipelineId, newStageId) => {
     const now = new Date().toISOString()
 
-    set(s => ({
-      kanbanContacts: s.kanbanContacts.map(c =>
-        c.contactPipelineId === contactPipelineId
-          ? { ...c, stageId: newStageId, lastPipelineActivity: now }
-          : c
-      ),
-    }))
+    set(s => {
+      // Sync del Map de membresías (tabla de Contactos): misma fila contactPipelineId.
+      const map = new Map(s.pipelineMemberships)
+      for (const [cid, list] of map) {
+        if (list.some(m => m.contactPipelineId === contactPipelineId)) {
+          map.set(cid, list.map(m => m.contactPipelineId === contactPipelineId ? { ...m, stageId: newStageId } : m))
+          break
+        }
+      }
+      return {
+        kanbanContacts: s.kanbanContacts.map(c =>
+          c.contactPipelineId === contactPipelineId
+            ? { ...c, stageId: newStageId, lastPipelineActivity: now }
+            : c
+        ),
+        pipelineMemberships: map,
+      }
+    })
 
     await supabase
       .from('contact_pipelines')
@@ -308,18 +364,40 @@ export const useContactStore = create<ContactState>((set, get) => ({
     const { user } = await getActiveUser(supabase)
     if (!user) return
 
-    await supabase.from('contact_pipelines').insert({
+    const { data: cp } = await supabase.from('contact_pipelines').insert({
       contact_id: contactId,
       pipeline_id: pipelineId,
       stage_id: stageId,
       owner_id: user.id,
-    })
+    }).select('id').single()
+
+    if (cp) {
+      set(s => {
+        const map = new Map(s.pipelineMemberships)
+        const list = [...(map.get(contactId) ?? [])]
+        list.push({ contactPipelineId: cp.id, pipelineId, stageId })
+        map.set(contactId, list)
+        return { pipelineMemberships: map }
+      })
+    }
   },
 
   removeFromPipeline: async (contactPipelineId) => {
-    set(s => ({
-      kanbanContacts: s.kanbanContacts.filter(c => c.contactPipelineId !== contactPipelineId),
-    }))
+    set(s => {
+      const map = new Map(s.pipelineMemberships)
+      for (const [cid, list] of map) {
+        if (list.some(m => m.contactPipelineId === contactPipelineId)) {
+          const next = list.filter(m => m.contactPipelineId !== contactPipelineId)
+          if (next.length) map.set(cid, next)
+          else map.delete(cid)
+          break
+        }
+      }
+      return {
+        kanbanContacts: s.kanbanContacts.filter(c => c.contactPipelineId !== contactPipelineId),
+        pipelineMemberships: map,
+      }
+    })
 
     await supabase.from('contact_pipelines').delete().eq('id', contactPipelineId)
   },

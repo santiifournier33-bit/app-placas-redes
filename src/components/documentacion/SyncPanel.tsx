@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { X, Play, Loader2, CheckCircle2, AlertTriangle, XCircle, FolderPlus, Upload, Sparkles } from "lucide-react"
+import { X, Play, Loader2, CheckCircle2, FolderPlus, Upload, Sparkles } from "lucide-react"
 
 interface SyncPanelProps {
   unsyncedCount: number
@@ -26,6 +26,7 @@ export function SyncPanel({ unsyncedCount, agents, onClose, onSyncComplete }: Sy
   const [progress, setProgress] = useState({ current: 0, total: 0 })
   const [done, setDone] = useState(false)
   const logRef = useRef<HTMLDivElement>(null)
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     if (logRef.current) {
@@ -33,68 +34,78 @@ export function SyncPanel({ unsyncedCount, agents, onClose, onSyncComplete }: Sy
     }
   }, [logs])
 
+  const stopPoll = () => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current)
+      pollRef.current = null
+    }
+  }
+
+  // Clean up polling on unmount.
+  useEffect(() => () => stopPoll(), [])
+
   const handleSync = async () => {
     setSyncing(true)
     setLogs([])
     setDone(false)
+    setProgress({ current: 0, total: 0 })
 
     try {
       const res = await fetch("/api/docs/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mode,
-          agent: agent || null,
-        }),
+        body: JSON.stringify({ mode, agent: agent || null }),
       })
 
       if (!res.ok) {
-        const err = await res.json()
+        const err = await res.json().catch(() => ({}))
         setLogs(prev => [...prev, { type: "error", message: err.error || "Error al sincronizar" }])
         setSyncing(false)
         return
       }
 
-      const reader = res.body?.getReader()
-      if (!reader) {
-        setLogs(prev => [...prev, { type: "error", message: "No se pudo iniciar streaming" }])
-        setSyncing(false)
-        return
-      }
+      // The sync runs in a background function; poll for progress (Netlify Blobs).
+      // Ignore any stale status from a previous run until we see this run start.
+      let seenRunning = false
+      let lastLogLen = 0
 
-      const decoder = new TextDecoder()
-      let buffer = ""
+      const poll = async () => {
+        try {
+          const sres = await fetch("/api/docs/sync/status", { cache: "no-store" })
+          const p = await sres.json()
 
-      while (true) {
-        const { done: streamDone, value } = await reader.read()
-        if (streamDone) break
+          if (p.state === "running") seenRunning = true
+          if (!seenRunning) return // skip stale "done"/"error" from a prior run
 
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split("\n")
-        buffer = lines.pop() || ""
-
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            try {
-              const entry: SyncLogEntry = JSON.parse(line.slice(6))
-              setLogs(prev => [...prev, entry])
-
-              if (entry.current && entry.total) {
-                setProgress({ current: entry.current, total: entry.total })
-              }
-              if (entry.type === "done") {
-                setDone(true)
-                onSyncComplete()
-              }
-            } catch {
-              // skip malformed lines
-            }
+          if (typeof p.current === "number" && typeof p.total === "number") {
+            setProgress({ current: p.current, total: p.total })
           }
+          if (Array.isArray(p.log) && p.log.length > lastLogLen) {
+            const fresh = p.log.slice(lastLogLen).map((m: string) => ({ type: "progress" as const, message: m }))
+            setLogs(prev => [...prev, ...fresh])
+            lastLogLen = p.log.length
+          }
+
+          if (p.state === "done") {
+            stopPoll()
+            setSyncing(false)
+            setDone(true)
+            setLogs(prev => [...prev, { type: "done", message: p.message || "Sincronización completada" }])
+            onSyncComplete()
+          } else if (p.state === "error") {
+            stopPoll()
+            setSyncing(false)
+            setLogs(prev => [...prev, { type: "error", message: p.error || p.message || "Error en la sincronización" }])
+          }
+        } catch {
+          // transient poll error — keep trying
         }
       }
+
+      pollRef.current = setInterval(poll, 2500)
+      poll()
     } catch (err) {
       setLogs(prev => [...prev, { type: "error", message: `Error de conexión: ${err}` }])
-    } finally {
       setSyncing(false)
     }
   }

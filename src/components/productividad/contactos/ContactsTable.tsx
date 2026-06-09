@@ -6,12 +6,16 @@ import { ChevronUp, ChevronDown, Check, Copy, GripVertical } from 'lucide-react'
 import {
   useContactStore,
   type Contact,
-  type KanbanContact,
 } from '@/lib/stores/contactStore'
-import { usePipelinesStore, type PipelineStage } from '@/lib/stores/pipelinesStore'
+import { usePipelinesStore } from '@/lib/stores/pipelinesStore'
 import { EditableCell } from './EditableCell'
 import { InlineSelectChip } from './InlineSelectChip'
 import { PortalDropdown } from '@/components/ui/PortalDropdown'
+import {
+  PipelineStageCell,
+  EMPTY_MEMBERSHIPS,
+  type PipelineWithStages,
+} from './PipelineStageControls'
 import {
   CIRCLE_OPTIONS,
   CATEGORY_SHORT as CATEGORY_OPTIONS,
@@ -115,82 +119,6 @@ function CopyChip({ value, kind }: { value: string; kind: 'phone' | 'email' }) {
   )
 }
 
-// Presentational only: stages + current stage come from the parent (read once
-// from the stores), so 1000s of rows don't each subscribe two zustand stores.
-function PipelineStageCell({
-  hasPipeline,
-  stages,
-  currentStage,
-  onSelectStage,
-}: {
-  hasPipeline: boolean
-  stages: PipelineStage[]
-  currentStage: PipelineStage | undefined
-  onSelectStage: (stageId: string) => void
-}) {
-  const [open, setOpen] = useState(false)
-  const buttonRef = useRef<HTMLButtonElement>(null)
-
-  const handleSelect = (stageId: string, e: React.MouseEvent) => {
-    e.stopPropagation()
-    setOpen(false)
-    onSelectStage(stageId)
-  }
-
-  if (!hasPipeline) {
-    return <span className="text-xs md:text-[11px] text-zinc-700 px-1">—</span>
-  }
-
-  return (
-    <>
-      <button
-        ref={buttonRef}
-        onClick={(e) => { e.stopPropagation(); setOpen(o => !o) }}
-        className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs md:text-[11px] cursor-pointer max-w-full"
-        style={
-          currentStage
-            ? { background: `${currentStage.color}26`, color: currentStage.color || '#a3a3a3' }
-            : { background: 'rgba(255,255,255,0.04)', color: '#71717a' }
-        }
-      >
-        <span className="truncate">{currentStage?.name || 'Sin etapa'}</span>
-        <ChevronDown size={10} className="shrink-0" />
-      </button>
-      <PortalDropdown
-        anchorRef={buttonRef}
-        open={open}
-        onClose={() => setOpen(false)}
-        className="bg-[#1e1e2c] border border-border-default rounded-xl shadow-2xl p-1.5 max-h-72 overflow-y-auto"
-        minWidth={180}
-      >
-        {stages.map(stage => {
-          const isSelected = stage.id === currentStage?.id
-          const c = stage.color || '#3b82f6'
-          return (
-            <button
-              key={stage.id}
-              onClick={(e) => handleSelect(stage.id, e)}
-              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors ${
-                isSelected ? 'bg-surface-overlay-hover' : 'hover:bg-surface-overlay'
-              }`}
-            >
-              <span
-                className="inline-flex items-center px-2 py-0.5 rounded-md text-xs md:text-[11px] font-medium"
-                style={{ background: `${c}26`, color: c }}
-              >
-                {stage.name}
-              </span>
-              {isSelected && (
-                <span className="ml-auto text-text-secondary text-xs">✓</span>
-              )}
-            </button>
-          )
-        })}
-      </PortalDropdown>
-    </>
-  )
-}
-
 export function ContactsTable({
   contacts,
   onSelectContact,
@@ -201,36 +129,16 @@ export function ContactsTable({
   allSelected,
   onToggleAll,
 }: ContactsTableProps) {
-  const { updateContact, kanbanContacts, moveToStage, addToPipeline, fetchKanban } = useContactStore()
-  const { activePipelineId, pipelines } = usePipelinesStore()
+  const { updateContact, moveToStage, addToPipeline, removeFromPipeline, pipelineMemberships } = useContactStore()
+  const { pipelines } = usePipelinesStore()
 
-  // Pipeline data read ONCE here (not per row). Build the stage list and a
-  // contactId -> kanban entry map so each row is a cheap O(1) lookup with no
-  // store subscription of its own — critical for smooth virtualized scroll.
-  const activePipeline = pipelines.find(p => p.id === activePipelineId)
-  const pipelineStages = useMemo(
-    () => (activePipeline ? [...activePipeline.stages].sort((a, b) => a.position - b.position) : []),
-    [activePipeline],
-  )
-  const kanbanByContact = useMemo(() => {
-    const m = new Map<string, KanbanContact>()
-    for (const k of kanbanContacts) {
-      if (k.pipelineId === activePipelineId) m.set(k.id, k)
-    }
-    return m
-  }, [kanbanContacts, activePipelineId])
-  const handleStageSelect = useCallback(
-    async (contactId: string, stageId: string) => {
-      if (!activePipelineId) return
-      const entry = kanbanByContact.get(contactId)
-      if (entry) {
-        await moveToStage(entry.contactPipelineId, stageId)
-      } else {
-        await addToPipeline(contactId, activePipelineId, stageId)
-        await fetchKanban(activePipelineId)
-      }
-    },
-    [activePipelineId, kanbanByContact, moveToStage, addToPipeline, fetchKanban],
+  // Procesos comerciales leídos UNA vez (no por fila). La celda usa las membresías
+  // del contacto (todos los procesos, no solo el activo) — lookup O(1) por contactId,
+  // sin suscripción zustand por fila, clave para el scroll virtualizado.
+  const pipelinesWithStages = pipelines as PipelineWithStages[]
+  const handleAssign = useCallback(
+    (contactId: string, pipelineId: string, stageId: string) => addToPipeline(contactId, pipelineId, stageId),
+    [addToPipeline],
   )
 
   const [sortKey, setSortKey] = useState<SortKey>('full_name' as unknown as SortKey)
@@ -501,10 +409,11 @@ export function ContactsTable({
                     ) : col.key === 'pipeline_stage' ? (
                       <div className="px-1">
                         <PipelineStageCell
-                          hasPipeline={!!activePipeline}
-                          stages={pipelineStages}
-                          currentStage={pipelineStages.find(s => s.id === kanbanByContact.get(contact.id)?.stageId)}
-                          onSelectStage={(stageId) => handleStageSelect(contact.id, stageId)}
+                          pipelines={pipelinesWithStages}
+                          memberships={pipelineMemberships.get(contact.id) ?? EMPTY_MEMBERSHIPS}
+                          onAssign={(pipelineId, stageId) => handleAssign(contact.id, pipelineId, stageId)}
+                          onMove={(contactPipelineId, stageId) => moveToStage(contactPipelineId, stageId)}
+                          onRemove={(contactPipelineId) => removeFromPipeline(contactPipelineId)}
                         />
                       </div>
                     ) : col.key === 'primary_phone' && contact.primary_phone ? (

@@ -57,13 +57,15 @@ export default function ContactosPage() {
     return 'table'
   })
 
-  const { contacts, init, addContact, deleteContact, fetchKanban } = useContactStore()
+  const { contacts, init, addContact, deleteContact, fetchKanban, fetchPipelineMemberships } = useContactStore()
   const pipelinesStore = usePipelinesStore()
   const { activePipelineId } = usePipelinesStore()
 
   useEffect(() => {
     init()
     pipelinesStore.init()
+    // Membresías de TODOS los procesos: la tabla edita proceso+etapa sin depender del activo.
+    fetchPipelineMemberships()
   }, [])
 
   useEffect(() => {

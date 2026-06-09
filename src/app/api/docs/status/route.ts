@@ -6,11 +6,8 @@
 
 import { NextResponse } from 'next/server'
 import { buildFullStatus } from '@/lib/docs/doc-analyzer'
-import {
-  getTokkoModule,
-  getDriveModule,
-  getSyncConfig,
-} from '@/lib/docs/sync-bridge'
+import { getDriveReadonly } from '@/lib/docs/drive-server'
+import { getAllProperties } from '@/lib/docs/tokko-server'
 
 // ── Cache ──
 let cachedStatus: ReturnType<typeof buildFullStatus> | null = null
@@ -115,28 +112,30 @@ export async function GET(request: Request) {
       return NextResponse.json({ ...cachedStatus, cached: true })
     }
 
-    const config = getSyncConfig()
-    const tokko = getTokkoModule()
-    const drive = getDriveModule()
+    const tokkoApiKey = process.env.TOKKO_API_KEY || ''
+    const rootFolderId = process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID || ''
 
-    if (!config.tokkoApiKey) {
+    if (!tokkoApiKey) {
       return NextResponse.json({ error: 'TOKKO_API_KEY no configurada' }, { status: 500 })
     }
-    if (!config.rootFolderId) {
+    if (!rootFolderId) {
       return NextResponse.json({ error: 'GOOGLE_DRIVE_ROOT_FOLDER_ID no configurado' }, { status: 500 })
     }
 
     // Fetch Tokko properties and Drive tree in parallel.
     // Status is read-only → service account (JWT). No refresh token, no 7-day expiry.
     const [properties, driveClient] = await Promise.all([
-      tokko.getAllProperties(config.tokkoApiKey),
-      drive.getDriveReadonly(config.serviceAccountPath, config.oauthClientPath),
+      getAllProperties(tokkoApiKey),
+      getDriveReadonly(),
     ])
 
-    const driveTree = await getDriveTree(driveClient, config.rootFolderId)
+    const driveTree = await getDriveTree(driveClient as unknown as DriveClient, rootFolderId)
 
     // Build full status
-    const status = buildFullStatus(properties, driveTree)
+    const status = buildFullStatus(
+      properties as unknown as Parameters<typeof buildFullStatus>[0],
+      driveTree,
+    )
 
     cachedStatus = status
     cacheTimestamp = Date.now()

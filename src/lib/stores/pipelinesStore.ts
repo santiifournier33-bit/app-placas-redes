@@ -112,7 +112,9 @@ export const usePipelinesStore = create<PipelinesState>((set, get) => ({
     if (!user) {
       // Supabase session lapsed (NOT "no pipelines"). Keep any prior data,
       // surface the error, and allow a manual retry (init() runs again).
-      console.error('pipelinesStore: no Supabase session', { refreshFailed })
+      // warn (no error): condición manejada con UI de reintento; console.error
+      // dispararía el overlay de Next dev innecesariamente.
+      console.warn('pipelinesStore: no Supabase session', { refreshFailed })
       set({ loading: false, initialized: false, error: PIPELINES_AUTH_ERROR })
       return
     }

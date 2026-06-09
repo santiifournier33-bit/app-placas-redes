@@ -4,7 +4,7 @@
  */
 
 import { NextResponse } from 'next/server'
-import { getDriveModule, getSyncConfig } from '@/lib/docs/sync-bridge'
+import { getDriveReadonly } from '@/lib/docs/drive-server'
 import mammoth from 'mammoth'
 
 export async function GET(request: Request) {
@@ -17,9 +17,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'fileId requerido' }, { status: 400 })
     }
 
-    const config = getSyncConfig()
-    const drive = getDriveModule()
-    const driveClient = await drive.getDrive(config.oauthClientPath)
+    const driveClient = await getDriveReadonly()
 
     if (action === 'preview' || action === 'download') {
       // Get file metadata

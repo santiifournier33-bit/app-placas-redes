@@ -2,12 +2,13 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { X, AlertTriangle, ChevronDown } from 'lucide-react'
-import { useContactStore, type Contact } from '@/lib/stores/contactStore'
+import { X, AlertTriangle } from 'lucide-react'
+import { useContactStore, type Contact, type PipelineMembership } from '@/lib/stores/contactStore'
 import { usePipelinesStore } from '@/lib/stores/pipelinesStore'
 import { validateContactInput, normalizePhone } from '@/lib/contacts/validation'
 import { notify } from '@/lib/stores/toastStore'
 import { InlineSelectChip } from './InlineSelectChip'
+import { ContactProcessList, type PipelineWithStages } from './PipelineStageControls'
 import {
   CIRCLE_OPTIONS,
   CATEGORY_OPTIONS,
@@ -22,7 +23,7 @@ interface AddContactPanelProps {
 }
 
 export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
-  const { addContact, addNote, findDuplicate } = useContactStore()
+  const { addContact, addNote, addToPipeline, findDuplicate } = useContactStore()
   const { pipelines } = usePipelinesStore()
 
   // Basic data
@@ -48,9 +49,9 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
   const [esInfluyente, setEsInfluyente] = useState(false)
   const [esMentor, setEsMentor] = useState(false)
 
-  // Pipeline
-  const [pipelineId, setPipelineId] = useState<string | null>(null)
-  const [stageId, setStageId] = useState<string | null>(null)
+  // Procesos comerciales pendientes (multi). El contacto aún no existe, así que la
+  // selección es local y se persiste al crear (mismo drill-down que el detalle).
+  const [pendingProcesses, setPendingProcesses] = useState<{ pipelineId: string; stageId: string }[]>([])
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -90,20 +91,12 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
     return findDuplicate(phone, email)
   }, [phone, email, findDuplicate])
 
-  // Pipeline stages
-  const selectedPipeline = pipelines.find(p => p.id === pipelineId)
-  const stageOptions = useMemo(() => {
-    if (!selectedPipeline) return []
-    return [...selectedPipeline.stages]
-      .sort((a, b) => a.position - b.position)
-      .map(s => ({ value: s.id, label: s.name, color: 'violet' as const }))
-  }, [selectedPipeline])
-
-  const pipelineOptions = pipelines.map(p => ({
-    value: p.id,
-    label: `${p.emoji ?? ''} ${p.name}`.trim(),
-    color: 'blue' as const,
-  }))
+  // Adaptador al contrato de ContactProcessList: como aún no hay fila real en
+  // contact_pipelines, usamos pipelineId como contactPipelineId sintético.
+  const pendingMemberships: PipelineMembership[] = useMemo(
+    () => pendingProcesses.map(p => ({ contactPipelineId: p.pipelineId, pipelineId: p.pipelineId, stageId: p.stageId })),
+    [pendingProcesses],
+  )
 
   // ESC to close
   useEffect(() => {
@@ -149,15 +142,15 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
         es_influyente: esInfluyente || null,
         es_mentor: esMentor || null,
       }
-      const result = await addContact(
-        payload,
-        pipelineId ?? undefined,
-        stageId ?? undefined,
-      )
+      const result = await addContact(payload)
       if (!result) {
         setError('No se pudo crear el contacto. Verificá tu sesión.')
         setSubmitting(false)
         return
+      }
+      // Procesos comerciales elegidos → mismas filas contact_pipelines que detalle/tabla.
+      for (const p of pendingProcesses) {
+        await addToPipeline(result.id, p.pipelineId, p.stageId)
       }
       // La nota inicial va al timeline (contact_notes), la fuente que muestran
       // los detalles de Contactos y Negocios — no al escalar contacts.notes.
@@ -336,33 +329,16 @@ export function AddContactPanel({ onClose, onCreated }: AddContactPanelProps) {
               </div>
             </div>
 
-            {/* Pipeline (optional) */}
+            {/* Proceso comercial (opcional) — mismo drill-down/lista expandida que el detalle */}
             <div className={`${sv(3)} pt-5 border-t border-border-subtle space-y-4`}>
               <h3 className="text-xs md:text-[10px] font-bold text-text-muted uppercase tracking-[0.15em]">Agregar a proceso comercial (opcional)</h3>
-              <div className="grid grid-cols-2 gap-3.5">
-                <Field label="Proceso comercial">
-                  <InlineSelectChip
-                    value={pipelineId}
-                    options={pipelineOptions}
-                    onChange={(v) => { setPipelineId(v); setStageId(null) }}
-                    placeholder="Elegir..."
-                  />
-                </Field>
-                <Field label="Etapa inicial">
-                  <InlineSelectChip
-                    value={stageId}
-                    options={stageOptions}
-                    onChange={setStageId}
-                    placeholder={pipelineId ? "Elegir..." : "—"}
-                  />
-                </Field>
-              </div>
-              {pipelineId && !stageId && (
-                <p className="text-xs md:text-[10px] text-brand-accent/90 flex items-center gap-1.5 mt-2 bg-brand-accent/5 p-2 rounded-lg border border-brand-accent/10">
-                  <ChevronDown size={12} />
-                  Elegí una etapa para que el contacto aparezca en el kanban
-                </p>
-              )}
+              <ContactProcessList
+                pipelines={pipelines as PipelineWithStages[]}
+                memberships={pendingMemberships}
+                onAssign={(pid, sid) => setPendingProcesses(prev => [...prev, { pipelineId: pid, stageId: sid }])}
+                onMove={(cpId, sid) => setPendingProcesses(prev => prev.map(p => p.pipelineId === cpId ? { ...p, stageId: sid } : p))}
+                onRemove={(cpId) => setPendingProcesses(prev => prev.filter(p => p.pipelineId !== cpId))}
+              />
             </div>
           </div>
         </div>

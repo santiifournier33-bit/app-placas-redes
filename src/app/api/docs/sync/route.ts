@@ -1,120 +1,53 @@
 /**
  * POST /api/docs/sync
- * Executes synchronization via an external Node.js worker process.
- * This avoids axios-cookiejar-support incompatibility with Next.js App Router runtime.
- * Returns Server-Sent Events for real-time progress.
+ * Triggers the documentation sync, which runs in a Netlify Background Function
+ * (`netlify/functions/docs-sync-background.ts`, up to 15 min). Returns immediately;
+ * the UI polls GET /api/docs/sync/status (Netlify Blobs) for progress.
  *
  * Body: { mode: "folders" | "files" | "classify", agent: string | null }
  */
 
-import { spawn } from 'child_process'
-import path from 'path'
-import { getSyncConfig } from '@/lib/docs/sync-bridge'
+import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
+    const body = await request.json().catch(() => ({}))
     const mode: string = body.mode || 'folders'
-    const agentFilter: string | null = body.agent || null
+    const agent: string | null = body.agent || null
 
-    const config = getSyncConfig()
-
-    if (!config.tokkoApiKey || !config.rootFolderId) {
-      return new Response(JSON.stringify({ error: 'Faltan variables de entorno (TOKKO_API_KEY, GOOGLE_DRIVE_ROOT_FOLDER_ID)' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      })
+    const internalSecret = process.env.DOCS_SYNC_INTERNAL_SECRET
+    if (!internalSecret) {
+      return NextResponse.json(
+        { error: 'DOCS_SYNC_INTERNAL_SECRET no configurado (requerido para disparar la sincronización)' },
+        { status: 500 },
+      )
     }
 
-    const workerPath = [process.cwd(), 'tokko-drive-sync', 'src', 'worker.js'].join(path.sep)
+    const origin = new URL(request.url).origin
+    const fnUrl = `${origin}/.netlify/functions/docs-sync-background`
 
-    const command = JSON.stringify({
-      cmd: 'sync',
-      mode,
-      agentFilter,
-      config: {
-        tokkoApiKey: config.tokkoApiKey,
-        rootFolderId: config.rootFolderId,
-        tokkoEmail: config.tokkoEmail,
-        tokkoPassword: config.tokkoPassword,
-        oauthClientPath: config.oauthClientPath,
-      },
-    })
-
-    const encoder = new TextEncoder()
-    const stream = new ReadableStream({
-      async start(controller) {
-        function send(data: Record<string, unknown>) {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`))
-        }
-
-        const child = spawn('node', [workerPath], {
-          cwd: path.join(process.cwd(), 'tokko-drive-sync'),
-          stdio: ['pipe', 'pipe', 'pipe'],
-        })
-
-        // Send the command via stdin
-        child.stdin.write(command)
-        child.stdin.end()
-
-        // Parse stdout line by line (each line is a JSON event)
-        let buffer = ''
-        child.stdout.on('data', (chunk: Buffer) => {
-          buffer += chunk.toString('utf8')
-          const lines = buffer.split('\n')
-          buffer = lines.pop() || ''
-          for (const line of lines) {
-            const trimmed = line.trim()
-            if (!trimmed) continue
-            try {
-              const event = JSON.parse(trimmed)
-              send(event)
-            } catch {
-              send({ type: 'progress', message: trimmed })
-            }
-          }
-        })
-
-        child.stderr.on('data', (chunk: Buffer) => {
-          const msg = chunk.toString('utf8').trim()
-          if (msg) {
-            // stderr is usually debug logs — only surface actual errors
-            if (msg.toLowerCase().includes('error')) {
-              send({ type: 'error', message: msg })
-            }
-          }
-        })
-
-        await new Promise<void>((resolve) => {
-          child.on('close', (code) => {
-            if (code !== 0) {
-              send({ type: 'error', message: `Worker terminó con código ${code}` })
-            }
-            resolve()
-          })
-
-          child.on('error', (err) => {
-            send({ type: 'error', message: `No se pudo iniciar el worker: ${err.message}` })
-            resolve()
-          })
-        })
-
-        controller.close()
-      },
-    })
-
-    return new Response(stream, {
+    // Background functions return 202 and keep running asynchronously.
+    // This route is admin-gated by middleware; forward a shared secret so the
+    // public function URL only accepts calls originating from here.
+    const res = await fetch(fnUrl, {
+      method: 'POST',
       headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
+        'Content-Type': 'application/json',
+        'X-Internal-Secret': internalSecret,
       },
+      body: JSON.stringify({ mode, agent }),
     })
+
+    if (res.status !== 202 && !res.ok) {
+      return NextResponse.json(
+        { error: 'No se pudo iniciar la sincronización (función no disponible). Verificá que corra en Netlify.' },
+        { status: 502 },
+      )
+    }
+
+    return NextResponse.json({ started: true })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Error desconocido'
-    return new Response(JSON.stringify({ error: message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    })
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

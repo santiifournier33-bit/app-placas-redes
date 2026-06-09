@@ -1,11 +1,13 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, Fragment } from 'react'
 import { Info } from 'lucide-react'
 import { useContactStore, type Contact } from '@/lib/stores/contactStore'
+import { usePipelinesStore } from '@/lib/stores/pipelinesStore'
 import { EditableCell } from './EditableCell'
 import { InlineSelectChip, type ChipColor } from './InlineSelectChip'
 import { InlineCreatableCombobox } from './InlineCreatableCombobox'
+import { ContactProcessList, EMPTY_MEMBERSHIPS, type PipelineWithStages } from './PipelineStageControls'
 import {
   CIRCLE_OPTIONS,
   CATEGORY_OPTIONS,
@@ -69,7 +71,9 @@ const CREATABLE_FIELDS = ['rol', 'contexto', 'ubicacion'] as const
 type CreatableKey = typeof CREATABLE_FIELDS[number]
 
 export function ContactDataTab({ contact }: ContactDataTabProps) {
-  const { updateContact, contacts } = useContactStore()
+  const { updateContact, contacts, pipelineMemberships, addToPipeline, moveToStage, removeFromPipeline } = useContactStore()
+  const pipelines = usePipelinesStore(s => s.pipelines) as PipelineWithStages[]
+  const memberships = pipelineMemberships.get(contact.id) ?? EMPTY_MEMBERSHIPS
 
   const creatableSuggestions = useMemo(() => ({
     rol:       [...new Set(contacts.map(c => c.rol).filter(Boolean) as string[])].sort(),
@@ -88,6 +92,7 @@ export function ContactDataTab({ contact }: ContactDataTabProps) {
         {FIELDS.map(field => {
           const raw = contact[field.key]
 
+          const fieldRow = (() => {
           if (field.type === 'select' && field.options) {
             const stringVal = raw != null ? String(raw) : null
             return (
@@ -139,6 +144,28 @@ export function ContactDataTab({ contact }: ContactDataTabProps) {
                 />
               </div>
             </div>
+          )
+          })()
+
+          // "Proceso comercial" va como una variable más, justo debajo de "Último contacto".
+          return (
+            <Fragment key={field.key}>
+              {fieldRow}
+              {field.key === 'last_contact_date' && (
+                <div className="flex items-start gap-3">
+                  <FieldLabel label="Proceso comercial" fieldKey="pipeline_stage" />
+                  <div className="flex-1 min-w-0">
+                    <ContactProcessList
+                      pipelines={pipelines}
+                      memberships={memberships}
+                      onAssign={(pipelineId, stageId) => addToPipeline(contact.id, pipelineId, stageId)}
+                      onMove={(cpId, stageId) => moveToStage(cpId, stageId)}
+                      onRemove={(cpId) => removeFromPipeline(cpId)}
+                    />
+                  </div>
+                </div>
+              )}
+            </Fragment>
           )
         })}
       </div>

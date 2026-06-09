@@ -15,15 +15,28 @@ import type { Database } from './types'
  * One explicit `refreshSession()` recovers the common case (valid refresh token,
  * just-expired access token). Only when that also fails is the Supabase session
  * genuinely gone, which callers signal via `refreshFailed`.
+ *
+ * Concurrency: several stores call this on mount (contacts, pipelines, pipeline
+ * memberships…). Running `refreshSession()` in parallel rotates the refresh token
+ * under each other, so all-but-one parallel call fails with a now-used token and
+ * reports a false `refreshFailed`. We coalesce truly-concurrent calls into a single
+ * in-flight promise so only ONE getUser/refresh runs; the promise is cleared on
+ * settle, so later (non-concurrent) calls still re-check freshly.
  */
-export async function getActiveUser(
+let inflight: Promise<{ user: User | null; refreshFailed: boolean }> | null = null
+
+export function getActiveUser(
   supabase: SupabaseClient<Database>,
 ): Promise<{ user: User | null; refreshFailed: boolean }> {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (user) return { user, refreshFailed: false }
+  if (inflight) return inflight
+  inflight = (async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) return { user, refreshFailed: false }
 
-  // Access token missing/expired → try to mint a new one from the refresh token.
-  const { data, error } = await supabase.auth.refreshSession()
-  if (error || !data.user) return { user: null, refreshFailed: true }
-  return { user: data.user, refreshFailed: false }
+    // Access token missing/expired → try to mint a new one from the refresh token.
+    const { data, error } = await supabase.auth.refreshSession()
+    if (error || !data.user) return { user: null, refreshFailed: true }
+    return { user: data.user, refreshFailed: false }
+  })().finally(() => { inflight = null })
+  return inflight
 }

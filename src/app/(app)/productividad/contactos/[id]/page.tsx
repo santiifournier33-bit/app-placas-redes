@@ -24,7 +24,7 @@ export default function ContactDetailPage() {
   const params = useParams<{ id: string }>()
   const contactId = params.id
 
-  const { contacts, init, deleteContact, loading } = useContactStore()
+  const { contacts, init, deleteContact, loading, fetchPipelineMemberships } = useContactStore()
   const pipelinesStore = usePipelinesStore()
   const taskStore = useTaskStore()
   const [copied, setCopied] = useState<string | null>(null)
@@ -37,6 +37,8 @@ export default function ContactDetailPage() {
     init()
     pipelinesStore.init()
     taskStore.init()
+    // Membresías de procesos comerciales: necesario al abrir el detalle por URL directa.
+    fetchPipelineMemberships()
   }, [])
 
   const contact: Contact | undefined = contacts.find(c => c.id === contactId)
