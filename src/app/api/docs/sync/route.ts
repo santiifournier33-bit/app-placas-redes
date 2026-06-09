@@ -8,9 +8,15 @@
  */
 
 import { NextResponse } from 'next/server'
+import { getApiUser } from '@/lib/auth/api-auth'
 
 export async function POST(request: Request) {
   try {
+    // Admin-only: triggering a sync writes to Drive and spends Gemini quota.
+    const user = await getApiUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 })
+    if (user.role !== 'admin') return NextResponse.json({ error: 'forbidden', code: 'FORBIDDEN' }, { status: 403 })
+
     const body = await request.json().catch(() => ({}))
     const mode: string = body.mode || 'folders'
     const agent: string | null = body.agent || null
