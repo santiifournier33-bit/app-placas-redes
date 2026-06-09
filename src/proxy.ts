@@ -23,6 +23,13 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Netlify functions are not page routes — they authenticate themselves
+  // (e.g. docs-sync-background requires DOCS_SYNC_INTERNAL_SECRET). Gating them
+  // here would 307→/login the server-side trigger fetch (no session cookie).
+  if (pathname.startsWith('/.netlify/')) {
+    return NextResponse.next()
+  }
+
   // App session JWT check.
   // El refresh de la sesión Supabase se quitó a propósito: lo maneja SOLO el
   // navegador (auto-refresh de supabase-js). Tener dos renovadores sobre el
