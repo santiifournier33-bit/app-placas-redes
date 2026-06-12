@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/client'
 import { getActiveUser, hardLogout } from '@/lib/supabase/active-user'
 import type { Tables } from '@/lib/supabase/types'
 import { generateNextDueDate, type RecurrenceConfig } from '@/lib/productividad/recurrence'
+import { taskCompleteFeedback } from '@/lib/feedback/taskComplete'
 
 export type Task = Tables<'tasks'>
 export type TaskSection = Tables<'task_sections'>
@@ -225,6 +226,9 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
           : t
       ),
     }))
+
+    // Feedback inmediato (sonido + háptico) solo al completar, en el optimista.
+    if (completing) taskCompleteFeedback()
 
     const { error } = await supabase
       .from('tasks')

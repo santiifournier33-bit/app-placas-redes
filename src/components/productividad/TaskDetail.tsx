@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { motion } from "framer-motion"
+import { motion, useAnimationControls, useReducedMotion } from "framer-motion"
 import {
   X, Flag, Trash2, Plus, AlignLeft, Bell, Calendar,
   ChevronDown, ChevronRight, ChevronUp,
@@ -50,6 +50,8 @@ interface TaskDetailProps {
 export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingIds, onNavigate }: TaskDetailProps) {
   const { updateTask, deleteTask, addSubtask, toggleTask, tasks, sections } = useTaskStore()
   const doToggle = (id: string) => onToggleTask ? onToggleTask(id) : toggleTask(id)
+  const reduceMotion = useReducedMotion()
+  const checkboxControls = useAnimationControls()
   const { contacts } = useContactStore()
   const isMobile = useIsMobile()
   // Always read live from store so sidebar reflects updates immediately
@@ -287,12 +289,33 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
             <div className="flex-1 overflow-y-auto px-6 py-5">
               {/* Title */}
               <div className="flex items-start gap-3 mb-4">
-                <button
-                  onClick={() => doToggle(task.id)}
-                  className={`mt-1.5 w-5 h-5 rounded-full border-2 shrink-0 transition-all ${
+                <motion.button
+                  animate={checkboxControls}
+                  onClick={() => {
+                    if (!task.completed && !reduceMotion) checkboxControls.start({ scale: [1, 1.25, 1] }, { duration: 0.22, ease: "easeOut" })
+                    doToggle(task.id)
+                  }}
+                  aria-label={task.completed ? "Marcar como pendiente" : "Completar tarea"}
+                  className={`mt-1.5 w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${
                     task.completed ? "bg-blue-500 border-transparent" : "border-zinc-600"
                   }`}
-                />
+                >
+                  {task.completed && (
+                    <motion.svg
+                      width="10" height="8" viewBox="0 0 10 8" fill="none"
+                      initial={reduceMotion ? false : { scale: 0.3 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 520, damping: 18 }}
+                    >
+                      <motion.path
+                        d="M1 3.5L3.5 6L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                        initial={reduceMotion ? false : { pathLength: 0 }}
+                        animate={{ pathLength: 1 }}
+                        transition={{ duration: 0.2, ease: "easeOut", delay: reduceMotion ? 0 : 0.04 }}
+                      />
+                    </motion.svg>
+                  )}
+                </motion.button>
                 {editingTitle ? (
                   <input
                     autoFocus

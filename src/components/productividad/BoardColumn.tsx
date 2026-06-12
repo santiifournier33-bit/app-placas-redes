@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { motion, useAnimationControls, useReducedMotion } from "framer-motion"
 import { Plus, MoreHorizontal, Pencil, Trash2, CheckSquare, MapPin, Phone, Users, PenLine, Coffee, Gift, Megaphone, CornerDownRight } from "lucide-react"
 import { format, isPast, isToday } from "date-fns"
 import { es } from "date-fns/locale"
@@ -223,6 +224,8 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task, subtaskCount, subtaskDone, onTap, onToggle, onDragStart, isDragging }: TaskCardProps) {
+  const reduce = useReducedMotion()
+  const circleControls = useAnimationControls()
   const dueLocal = task.due_date ? new Date(task.due_date.slice(0, 10) + "T12:00:00") : null
   const overdue = dueLocal && isPast(dueLocal) && !isToday(dueLocal) && !task.completed
   const effectiveType = (task.task_type ?? "tarea") as TaskType
@@ -245,8 +248,13 @@ export function TaskCard({ task, subtaskCount, subtaskDone, onTap, onToggle, onD
     >
       <div className="flex items-start gap-2">
         {/* Priority circle */}
-        <button
-          onClick={(e) => { e.stopPropagation(); onToggle() }}
+        <motion.button
+          animate={circleControls}
+          onClick={(e) => {
+            e.stopPropagation()
+            if (!task.completed && !reduce) circleControls.start({ scale: [1, 1.25, 1] }, { duration: 0.22, ease: "easeOut" })
+            onToggle()
+          }}
           className={`mt-0.5 w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${
             task.completed ? `${PRIORITY_BG[task.priority ?? 4]} border-transparent` : ""
           }`}
@@ -255,11 +263,21 @@ export function TaskCard({ task, subtaskCount, subtaskDone, onTap, onToggle, onD
           }}
         >
           {task.completed && (
-            <svg width="8" height="6" viewBox="0 0 10 8" fill="none">
-              <path d="M1 3.5L3.5 6L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <motion.svg
+              width="8" height="6" viewBox="0 0 10 8" fill="none"
+              initial={reduce ? false : { scale: 0.3 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 520, damping: 18 }}
+            >
+              <motion.path
+                d="M1 3.5L3.5 6L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                initial={reduce ? false : { pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 0.2, ease: "easeOut", delay: reduce ? 0 : 0.04 }}
+              />
+            </motion.svg>
           )}
-        </button>
+        </motion.button>
 
         <div className="flex-1 min-w-0">
           <p className={`text-sm leading-snug ${task.completed ? "line-through text-text-muted" : "text-text-primary"}`}>

@@ -4,7 +4,7 @@ import { useState } from "react"
 import { format, isPast, isToday } from "date-fns"
 import { es } from "date-fns/locale"
 import { ChevronRight, Flag, Check, CornerDownRight } from "lucide-react"
-import { motion, useMotionValue, useTransform, useReducedMotion } from "framer-motion"
+import { motion, useMotionValue, useTransform, useReducedMotion, useAnimationControls } from "framer-motion"
 import type { Task } from "@/lib/stores/taskStore"
 import { useTaskStore } from "@/lib/stores/taskStore"
 import { TaskScheduler } from "@/components/productividad/TaskScheduler"
@@ -36,6 +36,7 @@ export function TaskItem({ task, subtaskCount = 0, subtaskDone = 0, onTap, inden
   const toggleTask = useTaskStore((s) => s.toggleTask)
   const doToggle = (id: string) => (onToggle ? onToggle(id) : toggleTask(id))
   const reduce = useReducedMotion()
+  const circleControls = useAnimationControls()
   const [schedOpen, setSchedOpen] = useState(false)
 
   const dueLocal = task.due_date ? new Date(task.due_date.slice(0, 10) + "T12:00:00") : null
@@ -91,12 +92,14 @@ export function TaskItem({ task, subtaskCount = 0, subtaskDone = 0, onTap, inden
         <button
           onClick={(e) => {
             e.stopPropagation()
+            if (!task.completed && !reduce) circleControls.start({ scale: [1, 1.25, 1] }, { duration: 0.22, ease: "easeOut" })
             doToggle(task.id)
           }}
           aria-label={task.completed ? "Marcar como pendiente" : "Completar tarea"}
           className="-my-2.5 -ml-2 mr-0.5 shrink-0 flex items-center justify-center touch-manipulation"
         >
-          <span
+          <motion.span
+            animate={circleControls}
             className={`mt-2.5 w-[22px] h-[22px] rounded-full border-[1.5px] transition-all duration-200 flex items-center justify-center ${
               task.completed ? `${priorityBg[task.priority]} border-transparent` : priorityColors[task.priority]
             }`}
@@ -116,7 +119,7 @@ export function TaskItem({ task, subtaskCount = 0, subtaskDone = 0, onTap, inden
                 />
               </motion.svg>
             )}
-          </span>
+          </motion.span>
         </button>
 
         <div className="flex-1 min-w-0">
