@@ -2,14 +2,15 @@
 
 import { create } from 'zustand'
 import { createClient } from '@/lib/supabase/client'
-import { getActiveUser } from '@/lib/supabase/active-user'
+import { getActiveUser, hardLogout } from '@/lib/supabase/active-user'
 import type { Tables } from '@/lib/supabase/types'
 import { DEFAULT_PIPELINES } from '@/lib/pipelines/pipeline-seed'
 
-// Shown when the Supabase Auth session can't be resolved (lapsed/refresh failed)
-// while loading pipelines. Distinct from "no pipelines exist": an empty array
-// must NOT be treated as truth when auth is the real failure.
-export const PIPELINES_AUTH_ERROR = 'No pudimos cargar tus procesos comerciales. Tu sesión pudo haber caducado.'
+// Shown when the Supabase Auth session can't be resolved (refresh + recover
+// bridge both failed — soft failure) while loading pipelines. Distinct from
+// "no pipelines exist": an empty array must NOT be treated as truth when auth
+// is the real failure. Hard failures (recoverDenied) log out instead.
+export const PIPELINES_AUTH_ERROR = 'No pudimos cargar tus procesos comerciales. Reintentá; si persiste, cerrá sesión y volvé a entrar.'
 
 export type Pipeline = Tables<'pipelines'>
 export type PipelineStage = Tables<'pipeline_stages'>
@@ -108,10 +109,12 @@ export const usePipelinesStore = create<PipelinesState>((set, get) => ({
     if (get().initialized) return
     set({ initialized: true, loading: true, error: null })
 
-    const { user, refreshFailed } = await getActiveUser(supabase)
+    const { user, refreshFailed, recoverDenied } = await getActiveUser(supabase)
     if (!user) {
-      // Supabase session lapsed (NOT "no pipelines"). Keep any prior data,
-      // surface the error, and allow a manual retry (init() runs again).
+      // Señal dura (jose inválida / cuenta inactiva): logout real, no toast.
+      if (recoverDenied) { void hardLogout(); return }
+      // Fallo blando: keep any prior data, surface the error, and allow a
+      // manual retry (init() runs again).
       // warn (no error): condición manejada con UI de reintento; console.error
       // dispararía el overlay de Next dev innecesariamente.
       console.warn('pipelinesStore: no Supabase session', { refreshFailed })

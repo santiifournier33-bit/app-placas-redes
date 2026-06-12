@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { getActiveUser } from '@/lib/supabase/active-user'
 
 const supabase = createClient()
 
@@ -14,7 +15,7 @@ export function useConsultasBadge(): number {
   useEffect(() => {
     let cancelled = false
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
+      const { user } = await getActiveUser(supabase)
       if (!user || cancelled) return
       const cutoff = new Date(Date.now() - 60 * 60 * 1000).toISOString()
       const { count: c } = await supabase

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from './client'
+import { getActiveUser } from './active-user'
 import type { User } from '@supabase/supabase-js'
 
 const supabase = createClient()
@@ -11,7 +12,7 @@ export function useSupabaseUser() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    getActiveUser(supabase).then(({ user }) => {
       setUser(user)
       setLoading(false)
     })

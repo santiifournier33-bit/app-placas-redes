@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { getActiveUser } from '@/lib/supabase/active-user'
 import { marked } from 'marked'
 import DOMPurify from 'isomorphic-dompurify'
 
@@ -26,6 +27,8 @@ export function ContactNotesTab({ contactId }: { contactId: string }) {
   }, [contactId])
 
   const fetchNotes = async () => {
+    // Asegura token vigente antes del select RLS (recupera sesión si murió).
+    await getActiveUser(supabase)
     const { data } = await supabase
       .from('contact_notes')
       .select('id, body, created_at, updated_at')
@@ -41,7 +44,7 @@ export function ContactNotesTab({ contactId }: { contactId: string }) {
     if (!draft.trim()) return
     setSaving(true)
 
-    const { data: { user } } = await supabase.auth.getUser()
+    const { user } = await getActiveUser(supabase)
     if (!user) { setSaving(false); return }
 
     const { data } = await supabase

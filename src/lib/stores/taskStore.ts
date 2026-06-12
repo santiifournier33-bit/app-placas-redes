@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { createClient } from '@/lib/supabase/client'
-import { getActiveUser } from '@/lib/supabase/active-user'
+import { getActiveUser, hardLogout } from '@/lib/supabase/active-user'
 import type { Tables } from '@/lib/supabase/types'
 import { generateNextDueDate, type RecurrenceConfig } from '@/lib/productividad/recurrence'
 
@@ -44,9 +44,10 @@ export interface TaskState {
 
 const supabase = createClient()
 
-// Surfaced when the Supabase session is gone (e.g. expired) but the app shell
-// is still up via the separate app JWT. Without this, writes silently no-op.
-export const NO_SESSION = 'Tu sesión expiró. Volvé a iniciar sesión para guardar los cambios.'
+// Surfaced when the Supabase session couldn't be re-established even after the
+// jose→Supabase recover bridge (network/5xx). Soft failure: retrying re-runs
+// the whole getActiveUser ladder. Hard failures (recoverDenied) log out instead.
+export const NO_SESSION = 'No pudimos reconectar tu sesión de datos. Reintentá; si persiste, cerrá sesión y volvé a entrar.'
 
 function syncTaskToGoogle(taskId: string, action: 'push' | 'remove') {
   // Fire-and-forget — never block UI on Google sync
@@ -74,11 +75,12 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
     if (get().initialized) return
     set({ initialized: true })
 
-    const { user } = await getActiveUser(supabase)
+    const { user, recoverDenied } = await getActiveUser(supabase)
     if (!user) {
-      // Supabase session is genuinely gone (a refresh was already attempted).
-      // The list would be empty and every write would silently fail — surface
-      // it so the UI can prompt re-login.
+      // Señal dura (jose inválida / cuenta inactiva): logout real, no toast.
+      if (recoverDenied) { void hardLogout(); return }
+      // Fallo blando (refresh+recover agotados por red/5xx): la lista quedaría
+      // vacía y cada write fallaría silencioso — superficiarlo con reintento.
       set({ initialized: false, error: NO_SESSION })
       return
     }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { RefreshCw, Unlink } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { getActiveUser } from "@/lib/supabase/active-user"
 
 export function GoogleConnectButton() {
   const [status, setStatus] = useState<"loading" | "disconnected" | "connected">("loading")
@@ -16,7 +17,7 @@ export function GoogleConnectButton() {
 
   async function checkConnection() {
     const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { user } = await getActiveUser(supabase)
     if (!user) { setStatus("disconnected"); return }
 
     const { data } = await supabase
@@ -48,7 +49,7 @@ export function GoogleConnectButton() {
 
   async function handleDisconnect() {
     const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { user } = await getActiveUser(supabase)
     if (!user) return
 
     await supabase

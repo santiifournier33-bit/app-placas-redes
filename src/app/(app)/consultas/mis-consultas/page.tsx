@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { Search, MessageCircle, Check, ExternalLink, Inbox } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { getActiveUser } from '@/lib/supabase/active-user'
 import { format, formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -42,7 +43,7 @@ export default function MisConsultasPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
+      const { user } = await getActiveUser(supabase)
       if (!user) return setLoading(false)
 
       // Query inquiries owned by user + join contact + emails/phones

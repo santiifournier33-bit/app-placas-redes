@@ -3,10 +3,14 @@ import type { NextRequest } from 'next/server'
 import { SignJWT, jwtVerify } from 'jose'
 import { shouldRenewSession } from '@/lib/auth/session-renewal'
 
-const secretKey = process.env.SESSION_SECRET || 'freire-propiedades-secret-key-change-in-prod'
+// En producción el secret es obligatorio (espejo del fail-fast de session.ts).
+const secretKey = process.env.SESSION_SECRET
+  || (process.env.NODE_ENV === 'production'
+    ? (() => { throw new Error('SESSION_SECRET must be set in production') })()
+    : 'freire-propiedades-secret-key-change-in-prod')
 const encodedKey = new TextEncoder().encode(secretKey)
 // Espejo de session.ts; fallback para tokens viejos sin claim `maxAge`.
-const SESSION_MAX_AGE_DEFAULT = 7 * 24 * 60 * 60
+const SESSION_MAX_AGE_DEFAULT = 30 * 24 * 60 * 60
 
 const ADMIN_ONLY_PATHS = ['/documentacion', '/marketing', '/ventas', '/servicios']
 // '/ficha' = ficha pública "modo colegas" (sin auth, token opaco propio).

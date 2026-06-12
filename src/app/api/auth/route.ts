@@ -35,62 +35,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Ensure Supabase Auth user exists and has current password
-    const serviceClient = createServiceClient()
     const role = getUserRole(normalizedEmail)
 
-    // Try to create user first; if already exists, update password instead
-    const { data: created, error: createError } = await serviceClient.auth.admin.createUser({
-      email: normalizedEmail,
-      password,
-      email_confirm: true,
-      user_metadata: { role },
-    })
-
-    let authUserId = created?.user?.id
-
-    if (createError) {
-      // User already exists in auth — find by email and update password
-      const { data: { users } } = await serviceClient.auth.admin.listUsers()
-      const existing = users?.find(u => u.email === normalizedEmail)
-      if (existing) {
-        await serviceClient.auth.admin.updateUserById(existing.id, { password })
-        authUserId = existing.id
-      } else {
-        console.error('Supabase createUser error:', createError)
-        return NextResponse.json(
-          { error: 'Error al crear cuenta de usuario', code: 'CREATE_USER_FAILED' },
-          { status: 500 }
-        )
-      }
-    }
-
-    // Ensure profile row exists
-    if (authUserId) {
-      await serviceClient.from('profiles').upsert({
-        id: authUserId,
-        email: normalizedEmail,
-        role,
-        is_active: true,
-      }, { onConflict: 'id' })
-    }
-
     // Build response first so Supabase cookies go directly onto it.
-    // "Recordar cuenta" extends the session window from 7 to 30 days.
-    const maxAgeSeconds = remember ? SESSION_MAX_AGE_REMEMBER : SESSION_MAX_AGE_DEFAULT
-    const expiresAt = new Date(Date.now() + maxAgeSeconds * 1000)
-    const sessionToken = await encrypt({ email: normalizedEmail, role, expiresAt }, maxAgeSeconds)
-
     const response = NextResponse.json({ success: true, user: { email: normalizedEmail, role } })
-
-    // Set app session cookie on the response
-    response.cookies.set('session', sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      expires: expiresAt,
-      sameSite: 'lax',
-      path: '/',
-    })
 
     // Supabase client that sets cookies directly on the response
     const supabase = createServerClient<Database>(
@@ -108,18 +56,91 @@ export async function POST(request: NextRequest) {
       }
     )
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    // Camino feliz: el password de Supabase ya coincide con el de Tokko.
+    // Re-setear el password en cada login (comportamiento anterior) puede
+    // revocar las sesiones de otros dispositivos — solo sincronizar si falla.
+    let { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
       email: normalizedEmail,
       password,
     })
 
+    const serviceClient = createServiceClient()
+
     if (signInError) {
-      console.error('Supabase signIn error:', signInError)
-      return NextResponse.json(
-        { error: 'Error al establecer sesión', code: 'SIGNIN_FAILED' },
-        { status: 500 }
-      )
+      // Usuario nuevo o password desincronizado con Tokko.
+      const { error: createError } = await serviceClient.auth.admin.createUser({
+        email: normalizedEmail,
+        password,
+        email_confirm: true,
+        user_metadata: { role },
+      })
+
+      if (createError) {
+        // Ya existe con password viejo → resolver id sin listUsers():
+        // profiles.id === auth.users.id (mismo invariante que getApiUser).
+        const { data: profile } = await serviceClient
+          .from('profiles')
+          .select('id')
+          .eq('email', normalizedEmail)
+          .maybeSingle()
+
+        let existingId = profile?.id
+        if (!existingId) {
+          // Auth user sin profile (caso raro): generateLink devuelve el user
+          // sin enviar email.
+          const { data: link } = await serviceClient.auth.admin.generateLink({
+            type: 'magiclink',
+            email: normalizedEmail,
+          })
+          existingId = link?.user?.id
+        }
+
+        if (!existingId) {
+          console.error('Supabase createUser error:', createError)
+          return NextResponse.json(
+            { error: 'Error al crear cuenta de usuario', code: 'CREATE_USER_FAILED' },
+            { status: 500 }
+          )
+        }
+        await serviceClient.auth.admin.updateUserById(existingId, { password })
+      }
+
+      ;({ data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password,
+      }))
+      if (signInError) {
+        console.error('Supabase signIn error:', signInError)
+        return NextResponse.json(
+          { error: 'Error al establecer sesión', code: 'SIGNIN_FAILED' },
+          { status: 500 }
+        )
+      }
     }
+
+    // Ensure profile row exists (id real del signIn).
+    const authUserId = signInData?.user?.id
+    if (authUserId) {
+      await serviceClient.from('profiles').upsert({
+        id: authUserId,
+        email: normalizedEmail,
+        role,
+        is_active: true,
+      }, { onConflict: 'id' })
+    }
+
+    // App session cookie (jose). "Recordar cuenta" extiende 30 → 90 días.
+    const maxAgeSeconds = remember ? SESSION_MAX_AGE_REMEMBER : SESSION_MAX_AGE_DEFAULT
+    const expiresAt = new Date(Date.now() + maxAgeSeconds * 1000)
+    const sessionToken = await encrypt({ email: normalizedEmail, role, expiresAt }, maxAgeSeconds)
+
+    response.cookies.set('session', sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      expires: expiresAt,
+      sameSite: 'lax',
+      path: '/',
+    })
 
     return response
   } catch (error: unknown) {
