@@ -87,15 +87,29 @@ export function PushBanner() {
   }, [evaluate])
 
   const handleEnable = async () => {
+    // iOS Safari/PWA requires Notification.requestPermission() to run INSIDE the
+    // tap's user-activation, before any `await` consumes it. So request first,
+    // synchronously, then do the async SW + subscribe work. (Android is lenient,
+    // which is why the previous order only failed on iPhone.)
+    let permission: NotificationPermission = "denied"
+    try {
+      permission = await Notification.requestPermission()
+    } catch {
+      /* unsupported / throws → treat as not granted */
+    }
+
     setRegistering(true)
-    const reg = await registerServiceWorker()
-    const res = reg ? await subscribeToPush(reg) : null
+    if (permission === "granted") {
+      const reg = await registerServiceWorker()
+      // Permission already handled above; just attach the subscription.
+      if (reg) await subscribeToPush(reg, { requestPermission: false })
+    }
     setRegistering(false)
     setShow(false)
-    // If the user dismissed the OS prompt or it failed, snooze so we don't ask
-    // again on the next page load. A real grant needs no snooze (perm=granted
-    // already hides the banner forever).
-    if (!res || !res.ok) {
+
+    // Dismissed/denied/failed → snooze so we don't nag on the next load. A real
+    // grant needs no snooze (perm=granted hides the banner on its own).
+    if (permission !== "granted") {
       localStorage.setItem(SNOOZE_KEY, String(Date.now() + SNOOZE_MS))
     }
   }
