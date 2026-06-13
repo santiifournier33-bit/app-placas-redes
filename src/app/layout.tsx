@@ -34,6 +34,9 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
+  // El teclado virtual encoge el layout viewport → los bottom-sheets (fixed bottom:0)
+  // se pegan al borde del teclado sin dejar hueco (Android Chrome + iOS Safari 17.4+).
+  interactiveWidget: "resizes-content",
   themeColor: [
     { media: "(prefers-color-scheme: dark)",  color: "#002548" },
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },

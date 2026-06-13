@@ -239,6 +239,61 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
                 </>
               </PortalDropdown>
 
+              {/* Contact */}
+              <button
+                ref={contactBtnRef}
+                onClick={() => { closeAllDropdowns(); setShowContactPicker(!showContactPicker); setContactSearch("") }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
+                  contactId ? "bg-green-500/15 text-green-400 border border-green-500/20" : "text-text-muted hover:bg-surface-overlay border border-border-subtle"
+                }`}
+              >
+                <UserCircle size={14} />
+                {selectedContact ? `${selectedContact.first_name} ${selectedContact.last_name}` : "Contacto"}
+              </button>
+              <PortalDropdown anchorRef={contactBtnRef} open={showContactPicker} onClose={() => setShowContactPicker(false)} placement="top-end" container={contentRef.current} className="bg-surface-2 rounded-xl border border-border-default shadow-xl w-64">
+                <>
+                  <div className="p-2 border-b border-border-subtle">
+                    <input
+                      autoFocus
+                      value={contactSearch}
+                      onChange={(e) => setContactSearch(e.target.value)}
+                      placeholder="Buscar contacto..."
+                      className="w-full bg-transparent text-sm text-text-secondary placeholder:text-text-muted outline-none"
+                    />
+                  </div>
+                  <div className="max-h-60 overflow-y-auto py-1">
+                    {contactId && (
+                      <button
+                        onClick={() => { setContactId(null); setShowContactPicker(false) }}
+                        className="flex items-center gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm text-text-muted cursor-pointer"
+                      >
+                        <UserCircle size={14} />
+                        Sin contacto
+                      </button>
+                    )}
+                    {filteredContacts.map((c) => (
+                      <button
+                        key={c.id}
+                        onClick={() => { setContactId(c.id); setShowContactPicker(false) }}
+                        className="flex items-center gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm cursor-pointer"
+                      >
+                        <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center text-xs text-blue-400 font-bold shrink-0">
+                          {(c.first_name || c.last_name || "?")[0]}
+                        </div>
+                        <div className="flex-1 min-w-0 text-left">
+                          <div className="text-text-secondary truncate">{c.first_name} {c.last_name}</div>
+                          <div className="text-xs text-text-muted truncate">{c.primary_phone}</div>
+                        </div>
+                        {contactId === c.id && <span className="text-text-muted ml-auto">✓</span>}
+                      </button>
+                    ))}
+                    {filteredContacts.length === 0 && (
+                      <p className="text-sm text-text-muted text-center py-4">Sin resultados</p>
+                    )}
+                  </div>
+                </>
+              </PortalDropdown>
+
               {/* Task Type */}
               <button
                 ref={typeBtnRef}
@@ -300,66 +355,11 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
                 </>
               </PortalDropdown>
 
-              {/* Contact */}
-              <button
-                ref={contactBtnRef}
-                onClick={() => { closeAllDropdowns(); setShowContactPicker(!showContactPicker); setContactSearch("") }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
-                  contactId ? "bg-green-500/15 text-green-400 border border-green-500/20" : "text-text-muted hover:bg-surface-overlay border border-border-subtle"
-                }`}
-              >
-                <UserCircle size={14} />
-                {selectedContact ? `${selectedContact.first_name} ${selectedContact.last_name}` : "Contacto"}
-              </button>
-              <PortalDropdown anchorRef={contactBtnRef} open={showContactPicker} onClose={() => setShowContactPicker(false)} placement="top-end" container={contentRef.current} className="bg-surface-2 rounded-xl border border-border-default shadow-xl w-64">
-                <>
-                  <div className="p-2 border-b border-border-subtle">
-                    <input
-                      autoFocus
-                      value={contactSearch}
-                      onChange={(e) => setContactSearch(e.target.value)}
-                      placeholder="Buscar contacto..."
-                      className="w-full bg-transparent text-sm text-text-secondary placeholder:text-text-muted outline-none"
-                    />
-                  </div>
-                  <div className="max-h-60 overflow-y-auto py-1">
-                    {contactId && (
-                      <button
-                        onClick={() => { setContactId(null); setShowContactPicker(false) }}
-                        className="flex items-center gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm text-text-muted cursor-pointer"
-                      >
-                        <UserCircle size={14} />
-                        Sin contacto
-                      </button>
-                    )}
-                    {filteredContacts.map((c) => (
-                      <button
-                        key={c.id}
-                        onClick={() => { setContactId(c.id); setShowContactPicker(false) }}
-                        className="flex items-center gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm cursor-pointer"
-                      >
-                        <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center text-xs text-blue-400 font-bold shrink-0">
-                          {(c.first_name || c.last_name || "?")[0]}
-                        </div>
-                        <div className="flex-1 min-w-0 text-left">
-                          <div className="text-text-secondary truncate">{c.first_name} {c.last_name}</div>
-                          <div className="text-xs text-text-muted truncate">{c.primary_phone}</div>
-                        </div>
-                        {contactId === c.id && <span className="text-text-muted ml-auto">✓</span>}
-                      </button>
-                    ))}
-                    {filteredContacts.length === 0 && (
-                      <p className="text-sm text-text-muted text-center py-4">Sin resultados</p>
-                    )}
-                  </div>
-                </>
-              </PortalDropdown>
-
             </div>
           </div>
 
           {/* Footer: Section selector & CTA */}
-          <div className="flex items-center justify-between p-4 border-t border-border-subtle bg-surface-1">
+          <div className="flex items-center justify-between p-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-border-subtle bg-surface-1">
             <select
               value={currentSectionId ?? ""}
               onChange={(e) => setCurrentSectionId(e.target.value === "" ? null : e.target.value)}
