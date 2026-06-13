@@ -1,6 +1,7 @@
 "use client"
 
 import { type RefObject } from "react"
+import { X } from "lucide-react"
 import { useIsMobile } from "@/lib/hooks/useIsMobile"
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
@@ -60,8 +61,16 @@ export function DateTimePopover({
           className="rounded-t-2xl p-0 bg-surface-1 max-h-[85vh] overflow-y-auto hide-scrollbar"
         >
           <SheetTitle className="sr-only">{title}</SheetTitle>
-          <div className="flex justify-center pt-2 pb-1 sticky top-0 bg-surface-1 z-10">
+          <div className="relative flex justify-center pt-2 pb-1 sticky top-0 bg-surface-1 z-10">
             <div className="w-10 h-1 rounded-full bg-border-strong/40" />
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              aria-label="Cerrar"
+              className="absolute right-2 top-1 p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-overlay-hover active:scale-95 transition-all touch-manipulation cursor-pointer"
+            >
+              <X size={18} />
+            </button>
           </div>
           {panel}
         </SheetContent>
@@ -89,7 +98,6 @@ export function DateTimePopover({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="w-full max-w-[340px] p-0 sm:rounded-2xl bg-surface-1 overflow-hidden border-border-default"
-        showClose={false}
       >
         <DialogTitle className="sr-only">{title}</DialogTitle>
         <div className="px-4 pt-3">

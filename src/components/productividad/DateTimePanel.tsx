@@ -69,22 +69,6 @@ export function DateTimePanel({
     if (iso) setViewMonth(new Date(`${iso}T12:00:00`))
   }
 
-  const openTimePicker = () => {
-    const el = timeRef.current
-    if (!el) return
-    // Default 10:00 cuando aún no hay hora. Se pre-carga en el DOM ANTES de abrir
-    // el selector para que el menú nativo arranque en 10:00 (no en la hora actual).
-    if (!time) {
-      el.value = "10:00"
-      emit({ time: "10:00" })
-    }
-    if (typeof el.showPicker === "function") {
-      try { el.showPicker() } catch { el.focus() }
-    } else {
-      el.focus()
-    }
-  }
-
   return (
     <div className="flex flex-col">
       {/* Chips rápidos */}
@@ -121,55 +105,41 @@ export function DateTimePanel({
         />
       </div>
 
-      {/* Hora — reloj a la izquierda, claramente clickeable (abre selector nativo) */}
+      {/* Hora — el <input type=time> nativo ES el control: overlay transparente que
+          recibe el tap y abre el selector nativo en iOS/Android/desktop SIN showPicker
+          (un tap real sobre el input es lo único fiable en Safari iOS). El reloj,
+          "Hora" y los dígitos quedan decorativos (pointer-events-none) debajo. */}
       <div className="px-3 py-1.5 mt-0.5 border-t border-border-subtle flex items-center gap-2">
-        <button
-          type="button"
-          onClick={openTimePicker}
-          aria-label="Elegir hora"
-          className="group flex items-center gap-2 cursor-pointer active:scale-[0.98] transition-transform touch-manipulation"
-        >
-          <span className="w-8 h-8 rounded-lg bg-blue-500/15 text-blue-400 flex items-center justify-center group-hover:bg-blue-500/25 transition-colors">
+        <div className="relative flex items-center gap-2 flex-1 min-w-0 active:opacity-90 transition-opacity">
+          <span className="w-8 h-8 rounded-lg bg-blue-500/15 text-blue-400 flex items-center justify-center shrink-0 pointer-events-none">
             <Clock size={15} />
           </span>
-          <span className="text-[13px] font-semibold text-text-primary">Hora</span>
-        </button>
-        {/* Pill de dígitos = <button> accesible (teclado/lector). El <input type=time>
-            va como hermano superpuesto (opacity-0, pointer-events-none) solo para
-            disparar el selector nativo vía showPicker() y portar el valor; los dígitos
-            se muestran centrados en un <span> (WebKit no centra el input nativo). */}
-        <div className="ml-auto flex items-center gap-2">
-          <div className="relative">
-            <button
-              type="button"
-              onClick={openTimePicker}
-              aria-label={time ? `Hora: ${time}. Tocá para cambiar` : "Agregar hora"}
-              className="flex items-center justify-center min-w-[72px] px-4 py-1.5 rounded-xl bg-blue-500/15 border border-blue-500/20 hover:bg-blue-500/25 active:scale-95 transition-all cursor-pointer touch-manipulation"
-            >
-              <span className="text-base font-bold text-blue-400 tabular-nums select-none">
-                {time ?? "--:--"}
-              </span>
-            </button>
-            <input
-              ref={timeRef}
-              type="time"
-              value={time ?? ""}
-              onChange={(e) => emit({ time: e.target.value || null })}
-              tabIndex={-1}
-              aria-hidden="true"
-              className="absolute inset-0 w-full h-full opacity-0 pointer-events-none [color-scheme:dark]"
-            />
-          </div>
-          {time && (
-            <button
-              type="button"
-              onClick={() => emit({ time: null })}
-              className="text-xs text-text-muted hover:text-text-secondary active:scale-95 transition-all touch-manipulation cursor-pointer"
-            >
-              Quitar
-            </button>
-          )}
+          <span className="text-[13px] font-semibold text-text-primary pointer-events-none">Hora</span>
+          <span className="ml-auto flex items-center justify-center min-w-[72px] px-4 py-1.5 rounded-xl bg-blue-500/15 border border-blue-500/20 pointer-events-none">
+            <span className="text-base font-bold text-blue-400 tabular-nums select-none">{time ?? "--:--"}</span>
+          </span>
+          <input
+            ref={timeRef}
+            type="time"
+            value={time ?? ""}
+            onChange={(e) => emit({ time: e.target.value || null })}
+            onPointerDown={() => {
+              // Default 10:00 antes de que abra el selector nativo (DOM síncrono).
+              if (!time && timeRef.current) { timeRef.current.value = "10:00"; emit({ time: "10:00" }) }
+            }}
+            aria-label="Hora"
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer [color-scheme:dark]"
+          />
         </div>
+        {time && (
+          <button
+            type="button"
+            onClick={() => emit({ time: null })}
+            className="text-xs text-text-muted hover:text-text-secondary active:scale-95 transition-all touch-manipulation cursor-pointer shrink-0"
+          >
+            Quitar
+          </button>
+        )}
       </div>
 
       {/* Recordatorio */}
