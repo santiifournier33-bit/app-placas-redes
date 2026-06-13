@@ -37,6 +37,11 @@ const sheetVariants = cva(
         left: "inset-y-0 left-0 h-full w-3/4 border-r border-border-subtle data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm",
         right:
           "inset-y-0 right-0 h-full w-3/4 border-l border-border-subtle data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm",
+        // Pantalla completa con animación SOLO fade (sin transform): un elemento
+        // `position: fixed` con `transform` + apertura de teclado se rompe en iOS
+        // (queda fuera de pantalla). Usado por la hoja de crear tarea / contacto.
+        full:
+          "inset-0 flex flex-col data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       },
     },
     defaultVariants: {

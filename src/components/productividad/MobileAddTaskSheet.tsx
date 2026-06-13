@@ -45,12 +45,6 @@ interface MobileAddTaskSheetProps {
 export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initialDate = null }: MobileAddTaskSheetProps) {
   const { addTask, updateTask, sections } = useTaskStore()
   const { contacts } = useContactStore()
-  // Al enfocar un campo (teclado arriba) expandimos la hoja a pantalla completa
-  // anclada arriba → el campo queda sobre el teclado sin tener que medirlo. Robusto
-  // en todo iOS/scroll (el lift por JS contra visualViewport era inestable).
-  const [typing, setTyping] = useState(false)
-  const [searchFocused, setSearchFocused] = useState(false)
-
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [priority, setPriority] = useState<1 | 2 | 3 | 4>(4)
@@ -93,8 +87,6 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
       setReminderOffsetMin(null)
       setContactId(null)
       setRecurrenceFreq(null)
-      setTyping(false)
-      setSearchFocused(false)
       closeAllDropdowns()
     }
   }, [open, initialSectionId, initialDate])
@@ -161,29 +153,49 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         ref={contentRef}
-        side="bottom"
-        className={`rounded-t-2xl px-0 pb-0 pt-2 bg-surface-1 ${typing ? "top-0" : ""}`}
+        side="full"
+        className="bg-surface-1 pt-[env(safe-area-inset-top)]"
         showClose={false}
       >
-        {/* Grabber handle (native bottom-sheet affordance) */}
-        <div className="flex justify-center pt-1 pb-2">
-          <div className="w-10 h-1 rounded-full bg-border-strong/40" />
-        </div>
         <SheetHeader className="sr-only">
           <SheetTitle>Nueva tarea</SheetTitle>
           <SheetDescription>Añadir nueva tarea con opciones avanzadas</SheetDescription>
         </SheetHeader>
 
-        <div className="flex flex-col gap-3 max-h-[85vh] overflow-y-auto hide-scrollbar">
-          
+        {/* Header bar: cerrar + crear (siempre visibles, por encima del teclado) */}
+        <div className="shrink-0 flex items-center justify-between px-2 py-2 border-b border-border-subtle">
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            aria-label="Cerrar"
+            className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-overlay-hover active:scale-95 transition-all cursor-pointer"
+          >
+            <X size={20} />
+          </button>
+          <button
+            onClick={handleCreate}
+            disabled={!title.trim()}
+            aria-label="Crear tarea"
+            className={`flex items-center gap-1.5 px-4 h-9 rounded-full text-sm font-semibold transition-all active:scale-95 ${
+              title.trim()
+                ? "bg-red-500 hover:bg-red-600 text-white cursor-pointer"
+                : "bg-zinc-800 text-text-muted cursor-not-allowed opacity-50"
+            }`}
+          >
+            Crear
+            <ChevronRight size={16} strokeWidth={2.5} />
+          </button>
+        </div>
+
+        {/* Body scrolleable */}
+        <div className="flex-1 min-h-0 overflow-y-auto hide-scrollbar flex flex-col gap-3 pt-3">
+
           {/* Main inputs */}
           <div className="px-4 flex flex-col gap-1">
             <input
-              autoFocus
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               onKeyDown={handleKeyDown}
-              onFocus={() => setTyping(true)}
               placeholder="Nombre de la tarea"
               className="w-full bg-transparent text-base font-medium text-text-primary placeholder:text-text-muted outline-none caret-red-500"
             />
@@ -191,7 +203,6 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               onKeyDown={handleKeyDown}
-              onFocus={() => setTyping(true)}
               placeholder="Descripción"
               className="w-full bg-transparent text-sm text-text-muted placeholder:text-zinc-600 outline-none"
             />
@@ -255,7 +266,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
               {/* Contact (bottom-sheet en móvil: sin anclaje → inmune a la distorsión
                   de teclado iOS que rompía el PortalDropdown anclado). */}
               <button
-                onClick={() => { closeAllDropdowns(); setShowContactPicker(true); setContactSearch(""); setSearchFocused(false) }}
+                onClick={() => { closeAllDropdowns(); setShowContactPicker(true); setContactSearch("") }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
                   contactId ? "bg-green-500/15 text-green-400 border border-green-500/20" : "text-text-muted hover:bg-surface-overlay border border-border-subtle"
                 }`}
@@ -265,32 +276,31 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
               </button>
               <Sheet open={showContactPicker} onOpenChange={setShowContactPicker}>
                 <SheetContent
-                  side="bottom"
+                  side="full"
                   showClose={false}
-                  className={`rounded-t-2xl p-0 bg-surface-1 max-h-[85vh] flex flex-col overflow-hidden ${searchFocused ? "top-0 max-h-none" : ""}`}
+                  className="p-0 bg-surface-1 flex flex-col pt-[env(safe-area-inset-top)]"
                 >
                   <SheetHeader className="sr-only">
                     <SheetTitle>Elegir contacto</SheetTitle>
                     <SheetDescription>Buscar y seleccionar un contacto para la tarea</SheetDescription>
                   </SheetHeader>
-                  <div className="relative flex justify-center pt-2 pb-1 shrink-0">
-                    <div className="w-10 h-1 rounded-full bg-border-strong/40" />
+                  <div className="relative flex items-center justify-between px-2 py-2 shrink-0 border-b border-border-subtle">
+                    <span className="px-2 text-sm font-semibold text-text-primary">Elegir contacto</span>
                     <button
                       type="button"
                       onClick={() => setShowContactPicker(false)}
                       aria-label="Cerrar"
-                      className="absolute right-2 top-1 p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-overlay-hover active:scale-95 transition-all touch-manipulation cursor-pointer"
+                      className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-overlay-hover active:scale-95 transition-all touch-manipulation cursor-pointer"
                     >
-                      <X size={18} />
+                      <X size={20} />
                     </button>
                   </div>
-                  <div className="px-3 pb-2 shrink-0">
+                  <div className="px-3 py-2 shrink-0">
                     <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-2 border border-border-subtle">
                       <Search size={15} className="text-text-muted shrink-0" />
                       <input
                         value={contactSearch}
                         onChange={(e) => setContactSearch(e.target.value)}
-                        onFocus={() => setSearchFocused(true)}
                         placeholder="Buscar contacto..."
                         className="w-full bg-transparent text-sm text-text-secondary placeholder:text-text-muted outline-none"
                       />
@@ -392,39 +402,25 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
 
             </div>
           </div>
+        </div>{/* /body scrolleable */}
 
-          {/* Footer: Section selector & CTA */}
-          <div className="flex items-center justify-between p-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-border-subtle bg-surface-1">
-            <select
-              value={currentSectionId ?? ""}
-              onChange={(e) => setCurrentSectionId(e.target.value === "" ? null : e.target.value)}
-              className="bg-transparent text-sm font-medium text-text-secondary hover:text-text-primary outline-none appearance-none cursor-pointer pr-4 max-w-[60%]"
-              style={{ backgroundImage: "url(\"data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right center", backgroundSize: "14px" }}
-            >
-              <option value="" className="bg-surface-2">Bandeja de entrada</option>
-              {sections
-                .sort((a, b) => a.position - b.position)
-                .map(s => (
-                  <option key={s.id} value={s.id} className="bg-surface-2">
-                    {s.name}
-                  </option>
-                ))}
-            </select>
-
-            <button
-              onClick={handleCreate}
-              disabled={!title.trim()}
-              aria-label="Crear tarea"
-              className={`flex items-center justify-center w-11 h-11 rounded-full transition-all shadow-md active:scale-95 ${
-                title.trim()
-                  ? "bg-red-500 hover:bg-red-600 text-white cursor-pointer"
-                  : "bg-zinc-800 text-text-muted cursor-not-allowed opacity-50"
-              }`}
-            >
-              <ChevronRight size={18} strokeWidth={2.5} />
-            </button>
-          </div>
-
+        {/* Footer: selector de sección (shrink-0) */}
+        <div className="shrink-0 flex items-center justify-between p-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-border-subtle bg-surface-1">
+          <select
+            value={currentSectionId ?? ""}
+            onChange={(e) => setCurrentSectionId(e.target.value === "" ? null : e.target.value)}
+            className="bg-transparent text-sm font-medium text-text-secondary hover:text-text-primary outline-none appearance-none cursor-pointer pr-4 max-w-[80%]"
+            style={{ backgroundImage: "url(\"data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right center", backgroundSize: "14px" }}
+          >
+            <option value="" className="bg-surface-2">Bandeja de entrada</option>
+            {sections
+              .sort((a, b) => a.position - b.position)
+              .map(s => (
+                <option key={s.id} value={s.id} className="bg-surface-2">
+                  {s.name}
+                </option>
+              ))}
+          </select>
         </div>
       </SheetContent>
     </Sheet>
