@@ -15,8 +15,6 @@ import {
 } from "@/components/ui/sheet"
 import { PortalDropdown } from "@/components/ui/PortalDropdown"
 import { DateTimePopover } from "@/components/productividad/DateTimePopover"
-import { useKeyboardOffset } from "@/lib/hooks/useKeyboardOffset"
-import { KbDebugHud } from "@/components/productividad/KbDebugHud"
 
 const PRIORITY_OPTIONS = [
   { value: 1 as const, label: "Prioridad 1", color: "text-red-400" },
@@ -47,12 +45,11 @@ interface MobileAddTaskSheetProps {
 export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initialDate = null }: MobileAddTaskSheetProps) {
   const { addTask, updateTask, sections } = useTaskStore()
   const { contacts } = useContactStore()
-  // Insets del teclado virtual: apoya las hojas sobre el teclado (sin gap) y las
-  // limita al área visible (su tope no se va arriba al levantarlas). Ver hook.
-  const { keyboardHeight, viewportHeight } = useKeyboardOffset()
-  const sheetKbStyle = keyboardHeight > 0
-    ? { bottom: keyboardHeight, maxHeight: viewportHeight }
-    : undefined
+  // Al enfocar un campo (teclado arriba) expandimos la hoja a pantalla completa
+  // anclada arriba → el campo queda sobre el teclado sin tener que medirlo. Robusto
+  // en todo iOS/scroll (el lift por JS contra visualViewport era inestable).
+  const [typing, setTyping] = useState(false)
+  const [searchFocused, setSearchFocused] = useState(false)
 
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
@@ -96,6 +93,8 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
       setReminderOffsetMin(null)
       setContactId(null)
       setRecurrenceFreq(null)
+      setTyping(false)
+      setSearchFocused(false)
       closeAllDropdowns()
     }
   }, [open, initialSectionId, initialDate])
@@ -163,15 +162,9 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
       <SheetContent
         ref={contentRef}
         side="bottom"
-        className="rounded-t-2xl px-0 pb-0 pt-2 bg-surface-1"
+        className={`rounded-t-2xl px-0 pb-0 pt-2 bg-surface-1 ${typing ? "top-0" : ""}`}
         showClose={false}
-        // Apoyar la hoja sobre el teclado y limitarla al área visible. `bottom`/`maxHeight`
-        // (no `transform`) para no volver el SheetContent containing-block de los
-        // dropdowns `fixed` internos.
-        style={sheetKbStyle}
       >
-        {/* Instrumentación temporal (solo con ?kbdebug=1). */}
-        <KbDebugHud />
         {/* Grabber handle (native bottom-sheet affordance) */}
         <div className="flex justify-center pt-1 pb-2">
           <div className="w-10 h-1 rounded-full bg-border-strong/40" />
@@ -190,6 +183,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               onKeyDown={handleKeyDown}
+              onFocus={() => setTyping(true)}
               placeholder="Nombre de la tarea"
               className="w-full bg-transparent text-base font-medium text-text-primary placeholder:text-text-muted outline-none caret-red-500"
             />
@@ -197,6 +191,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               onKeyDown={handleKeyDown}
+              onFocus={() => setTyping(true)}
               placeholder="Descripción"
               className="w-full bg-transparent text-sm text-text-muted placeholder:text-zinc-600 outline-none"
             />
@@ -260,7 +255,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
               {/* Contact (bottom-sheet en móvil: sin anclaje → inmune a la distorsión
                   de teclado iOS que rompía el PortalDropdown anclado). */}
               <button
-                onClick={() => { closeAllDropdowns(); setShowContactPicker(true); setContactSearch("") }}
+                onClick={() => { closeAllDropdowns(); setShowContactPicker(true); setContactSearch(""); setSearchFocused(false) }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
                   contactId ? "bg-green-500/15 text-green-400 border border-green-500/20" : "text-text-muted hover:bg-surface-overlay border border-border-subtle"
                 }`}
@@ -272,8 +267,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
                 <SheetContent
                   side="bottom"
                   showClose={false}
-                  className="rounded-t-2xl p-0 bg-surface-1 max-h-[85vh] flex flex-col overflow-hidden"
-                  style={sheetKbStyle}
+                  className={`rounded-t-2xl p-0 bg-surface-1 max-h-[85vh] flex flex-col overflow-hidden ${searchFocused ? "top-0 max-h-none" : ""}`}
                 >
                   <SheetHeader className="sr-only">
                     <SheetTitle>Elegir contacto</SheetTitle>
@@ -296,6 +290,7 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
                       <input
                         value={contactSearch}
                         onChange={(e) => setContactSearch(e.target.value)}
+                        onFocus={() => setSearchFocused(true)}
                         placeholder="Buscar contacto..."
                         className="w-full bg-transparent text-sm text-text-secondary placeholder:text-text-muted outline-none"
                       />
