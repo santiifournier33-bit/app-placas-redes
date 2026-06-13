@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import {
   Calendar, Flag, ChevronRight, Repeat,
   CheckSquare, MapPin, Phone, Users, PenLine, UserCircle,
-  Coffee, Gift, Megaphone,
+  Coffee, Gift, Megaphone, X, Search,
 } from "lucide-react"
 import { useTaskStore, TASK_TYPES, type TaskType } from "@/lib/stores/taskStore"
 import { useContactStore } from "@/lib/stores/contactStore"
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sheet"
 import { PortalDropdown } from "@/components/ui/PortalDropdown"
 import { DateTimePopover } from "@/components/productividad/DateTimePopover"
+import { useKeyboardOffset } from "@/lib/hooks/useKeyboardOffset"
 
 const PRIORITY_OPTIONS = [
   { value: 1 as const, label: "Prioridad 1", color: "text-red-400" },
@@ -45,6 +46,8 @@ interface MobileAddTaskSheetProps {
 export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initialDate = null }: MobileAddTaskSheetProps) {
   const { addTask, updateTask, sections } = useTaskStore()
   const { contacts } = useContactStore()
+  // Altura del teclado virtual: apoya la hoja sobre él (sin gap de fondo en iOS).
+  const kbOffset = useKeyboardOffset()
 
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
@@ -70,7 +73,6 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
   const prioBtnRef = useRef<HTMLButtonElement>(null)
   const typeBtnRef = useRef<HTMLButtonElement>(null)
   const recurrenceBtnRef = useRef<HTMLButtonElement>(null)
-  const contactBtnRef = useRef<HTMLButtonElement>(null)
   // Los popovers se portalan DENTRO del SheetContent (no a document.body): la hoja
   // es un Radix Dialog modal (pointer-events:none en body + focus-trap + cierre por
   // pointerdown afuera). `position: fixed` igual escapa el clip de overflow de la fila.
@@ -153,12 +155,15 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent ref={contentRef} side="bottom" className="rounded-t-2xl px-0 pb-0 pt-2 bg-surface-1" showClose={false}>
-        {/* Relleno de superficie hacia abajo: cuando iOS "flota" el sheet al abrir el
-            teclado, el hueco que queda debajo lo cubre este bloque (mismo color que el
-            panel) en vez de dejar ver el fondo. Con teclado cerrado queda fuera de
-            pantalla. No depende de visualViewport/interactive-widget → robusto en todo iOS. */}
-        <div aria-hidden className="absolute top-full inset-x-0 h-screen bg-surface-1 pointer-events-none" />
+      <SheetContent
+        ref={contentRef}
+        side="bottom"
+        className="rounded-t-2xl px-0 pb-0 pt-2 bg-surface-1"
+        showClose={false}
+        // Apoyar la hoja sobre el teclado virtual. `bottom` (no `transform`) para no
+        // volver el SheetContent containing-block de los dropdowns `fixed` internos.
+        style={kbOffset > 0 ? { bottom: kbOffset } : undefined}
+      >
         {/* Grabber handle (native bottom-sheet affordance) */}
         <div className="flex justify-center pt-1 pb-2">
           <div className="w-10 h-1 rounded-full bg-border-strong/40" />
@@ -244,10 +249,10 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
                 </>
               </PortalDropdown>
 
-              {/* Contact */}
+              {/* Contact (bottom-sheet en móvil: sin anclaje → inmune a la distorsión
+                  de teclado iOS que rompía el PortalDropdown anclado). */}
               <button
-                ref={contactBtnRef}
-                onClick={() => { closeAllDropdowns(); setShowContactPicker(!showContactPicker); setContactSearch("") }}
+                onClick={() => { closeAllDropdowns(); setShowContactPicker(true); setContactSearch("") }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
                   contactId ? "bg-green-500/15 text-green-400 border border-green-500/20" : "text-text-muted hover:bg-surface-overlay border border-border-subtle"
                 }`}
@@ -255,24 +260,46 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
                 <UserCircle size={14} />
                 {selectedContact ? `${selectedContact.first_name} ${selectedContact.last_name}` : "Contacto"}
               </button>
-              <PortalDropdown anchorRef={contactBtnRef} open={showContactPicker} onClose={() => setShowContactPicker(false)} placement="top-end" container={contentRef.current} className="bg-surface-2 rounded-xl border border-border-default shadow-xl w-64">
-                <>
-                  <div className="p-2 border-b border-border-subtle">
-                    <input
-                      autoFocus
-                      value={contactSearch}
-                      onChange={(e) => setContactSearch(e.target.value)}
-                      placeholder="Buscar contacto..."
-                      className="w-full bg-transparent text-sm text-text-secondary placeholder:text-text-muted outline-none"
-                    />
+              <Sheet open={showContactPicker} onOpenChange={setShowContactPicker}>
+                <SheetContent
+                  side="bottom"
+                  showClose={false}
+                  className="rounded-t-2xl p-0 bg-surface-1 max-h-[85vh] flex flex-col"
+                  style={kbOffset > 0 ? { bottom: kbOffset } : undefined}
+                >
+                  <SheetHeader className="sr-only">
+                    <SheetTitle>Elegir contacto</SheetTitle>
+                    <SheetDescription>Buscar y seleccionar un contacto para la tarea</SheetDescription>
+                  </SheetHeader>
+                  <div className="relative flex justify-center pt-2 pb-1 shrink-0">
+                    <div className="w-10 h-1 rounded-full bg-border-strong/40" />
+                    <button
+                      type="button"
+                      onClick={() => setShowContactPicker(false)}
+                      aria-label="Cerrar"
+                      className="absolute right-2 top-1 p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-overlay-hover active:scale-95 transition-all touch-manipulation cursor-pointer"
+                    >
+                      <X size={18} />
+                    </button>
                   </div>
-                  <div className="max-h-60 overflow-y-auto py-1">
+                  <div className="px-3 pb-2 shrink-0">
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-2 border border-border-subtle">
+                      <Search size={15} className="text-text-muted shrink-0" />
+                      <input
+                        value={contactSearch}
+                        onChange={(e) => setContactSearch(e.target.value)}
+                        placeholder="Buscar contacto..."
+                        className="w-full bg-transparent text-sm text-text-secondary placeholder:text-text-muted outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]">
                     {contactId && (
                       <button
                         onClick={() => { setContactId(null); setShowContactPicker(false) }}
-                        className="flex items-center gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm text-text-muted cursor-pointer"
+                        className="flex items-center gap-3 px-4 py-3 w-full hover:bg-surface-overlay text-sm text-text-muted cursor-pointer"
                       >
-                        <UserCircle size={14} />
+                        <UserCircle size={16} />
                         Sin contacto
                       </button>
                     )}
@@ -280,9 +307,9 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
                       <button
                         key={c.id}
                         onClick={() => { setContactId(c.id); setShowContactPicker(false) }}
-                        className="flex items-center gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm cursor-pointer"
+                        className="flex items-center gap-3 px-4 py-3 w-full hover:bg-surface-overlay text-sm cursor-pointer"
                       >
-                        <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center text-xs text-blue-400 font-bold shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-xs text-blue-400 font-bold shrink-0">
                           {(c.first_name || c.last_name || "?")[0]}
                         </div>
                         <div className="flex-1 min-w-0 text-left">
@@ -293,11 +320,11 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
                       </button>
                     ))}
                     {filteredContacts.length === 0 && (
-                      <p className="text-sm text-text-muted text-center py-4">Sin resultados</p>
+                      <p className="text-sm text-text-muted text-center py-6">Sin resultados</p>
                     )}
                   </div>
-                </>
-              </PortalDropdown>
+                </SheetContent>
+              </Sheet>
 
               {/* Task Type */}
               <button

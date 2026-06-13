@@ -133,13 +133,19 @@ export function PortalDropdown({
       if (!closeOnScroll) { computePosition(); return }
       onClose()
     }
-    // En móvil, abrir el teclado virtual dispara `resize`. Si el foco está dentro
-    // del panel (el usuario está escribiendo en un input del dropdown), solo
-    // reposicionar — cerrar acá desmontaría el portal y mataría la escritura.
-    // Resize "real" (rotación, redimensionar ventana) sin foco interno → cerrar.
+    // Resize (teclado virtual, rotación, redimensionar): SIEMPRE reubicar, nunca
+    // cerrar. Cerrar acá provocaba una carrera en móvil — al abrir el teclado el
+    // `resize` llegaba antes de que el input del panel fuera `activeElement`, así
+    // que se cerraba el dropdown a medio abrir. El cierre queda solo en
+    // click-afuera / Escape.
     const handleResize = () => {
-      if (panelRef.current?.contains(document.activeElement)) computePosition()
-      else onClose()
+      if (readyRef.current) computePosition()
+    }
+    // El teclado virtual desplaza el viewport *visual* (visualViewport) sin disparar
+    // siempre `resize`/`scroll` de ventana. Seguir esos eventos para que el panel
+    // acompañe al ancla en vez de quedar descolocado bajo el teclado en iOS.
+    const handleVVChange = () => {
+      if (readyRef.current) computePosition()
     }
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -148,11 +154,15 @@ export function PortalDropdown({
     document.addEventListener('mousedown', handleMousedown)
     window.addEventListener('scroll', handleScroll, true)
     window.addEventListener('resize', handleResize)
+    window.visualViewport?.addEventListener('resize', handleVVChange)
+    window.visualViewport?.addEventListener('scroll', handleVVChange)
     document.addEventListener('keydown', handleKey)
     return () => {
       document.removeEventListener('mousedown', handleMousedown)
       window.removeEventListener('scroll', handleScroll, true)
       window.removeEventListener('resize', handleResize)
+      window.visualViewport?.removeEventListener('resize', handleVVChange)
+      window.visualViewport?.removeEventListener('scroll', handleVVChange)
       document.removeEventListener('keydown', handleKey)
     }
   }, [open, onClose, computePosition, anchorRef, closeOnScroll])
