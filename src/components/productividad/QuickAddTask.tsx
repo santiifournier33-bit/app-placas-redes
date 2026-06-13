@@ -2,14 +2,15 @@
 
 import { useState, useRef, useEffect } from "react"
 import {
-  Calendar, Clock, Flag, Bell, X, ChevronRight, Repeat,
+  Calendar, Flag, X, ChevronRight, Repeat,
   CheckSquare, MapPin, Phone, Users, PenLine, UserCircle,
   Coffee, Gift, Megaphone,
 } from "lucide-react"
 import { useTaskStore, TASK_TYPES, type TaskType } from "@/lib/stores/taskStore"
 import { useContactStore } from "@/lib/stores/contactStore"
 import { PortalDropdown } from "@/components/ui/PortalDropdown"
-import { format, addDays, nextMonday } from "date-fns"
+import { DateTimePopover } from "@/components/productividad/DateTimePopover"
+import { format, addDays } from "date-fns"
 import { es } from "date-fns/locale"
 
 const PRIORITY_OPTIONS = [
@@ -59,7 +60,6 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [showPriority, setShowPriority] = useState(false)
   const [showType, setShowType] = useState(false)
-  const [showReminder, setShowReminder] = useState(false)
   const [showContactPicker, setShowContactPicker] = useState(false)
   const [showRecurrence, setShowRecurrence] = useState(false)
   const [showSectionPicker, setShowSectionPicker] = useState(false)
@@ -68,7 +68,6 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
   const dateBtnRef = useRef<HTMLButtonElement>(null)
   const prioBtnRef = useRef<HTMLButtonElement>(null)
   const typeBtnRef = useRef<HTMLButtonElement>(null)
-  const reminderBtnRef = useRef<HTMLButtonElement>(null)
   const recurrenceBtnRef = useRef<HTMLButtonElement>(null)
   const contactBtnRef = useRef<HTMLButtonElement>(null)
   const sectionBtnRef = useRef<HTMLButtonElement>(null)
@@ -81,7 +80,6 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
   const today = new Date()
   const todayStr = format(today, "yyyy-MM-dd")
   const tomorrowStr = format(addDays(today, 1), "yyyy-MM-dd")
-  const nextWeekStr = format(nextMonday(today), "yyyy-MM-dd")
 
   const dateLabel = dueDate
     ? dueDate === todayStr ? "Hoy"
@@ -124,7 +122,6 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
     setShowPriority(false)
     setShowType(false)
     setShowSectionPicker(false)
-    setShowReminder(false)
     setShowContactPicker(false)
     setShowRecurrence(false)
   }
@@ -168,46 +165,19 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
             <Calendar size={13} />
             {dateLabel ?? "Fecha"}
           </button>
-          <PortalDropdown anchorRef={dateBtnRef} open={showDatePicker} onClose={() => setShowDatePicker(false)} className={`${PANEL} min-w-[160px]`}>
-            <>
-              {[
-                { label: "Hoy", value: todayStr, sub: format(today, "EEE", { locale: es }) },
-                { label: "Mañana", value: tomorrowStr, sub: format(addDays(today, 1), "EEE", { locale: es }) },
-                { label: "Próx semana", value: nextWeekStr, sub: format(nextMonday(today), "d MMM", { locale: es }) },
-              ].map((opt) => (
-                <button
-                  key={opt.value}
-                  onClick={() => { setDueDate(opt.value); setShowDatePicker(false) }}
-                  className="flex items-center justify-between gap-3 px-3 py-2 w-full hover:bg-surface-overlay text-xs text-text-secondary cursor-pointer"
-                >
-                  <span>{opt.label}</span>
-                  <span className="text-text-muted">{opt.sub}</span>
-                </button>
-              ))}
-              <div className="border-t border-border-subtle mt-1 pt-1 px-3 pb-2">
-                <input
-                  type="date"
-                  value={dueDate ?? ""}
-                  onChange={(e) => { setDueDate(e.target.value); setShowDatePicker(false) }}
-                  className="w-full bg-transparent text-xs text-text-secondary outline-none [color-scheme:dark]"
-                />
-              </div>
-              {dueDate && (
-                <div className="border-t border-border-subtle pt-1 px-3 pb-2 flex items-center gap-2">
-                  <Clock size={12} className="text-text-muted shrink-0" />
-                  <input
-                    type="time"
-                    value={dueTime ?? ""}
-                    onChange={(e) => setDueTime(e.target.value || null)}
-                    className="flex-1 bg-transparent text-xs text-text-secondary outline-none [color-scheme:dark]"
-                  />
-                  {dueTime && (
-                    <button onClick={() => setDueTime(null)} className="text-xs text-text-muted hover:text-text-secondary cursor-pointer">Quitar</button>
-                  )}
-                </div>
-              )}
-            </>
-          </PortalDropdown>
+          <DateTimePopover
+            open={showDatePicker}
+            onOpenChange={setShowDatePicker}
+            anchorRef={dateBtnRef}
+            date={dueDate}
+            time={dueTime}
+            reminderOffsetMin={reminderOffsetMin}
+            onChange={({ date, time, reminderOffsetMin }) => {
+              setDueDate(date)
+              setDueTime(time)
+              setReminderOffsetMin(reminderOffsetMin)
+            }}
+          />
         </div>
 
         {/* Priority */}
@@ -264,54 +234,6 @@ export function QuickAddTask({ initialSectionId, onClose, preselectedContactId =
                   <span className="text-text-muted">{TYPE_ICONS[key]}</span>
                   <span>{val.label}</span>
                   {taskType === key && <span className="ml-auto text-text-muted">✓</span>}
-                </button>
-              ))}
-            </>
-          </PortalDropdown>
-        </div>
-
-        {/* Reminder */}
-        <div className="relative">
-          <button
-            ref={reminderBtnRef}
-            onClick={() => { if (dueDate) { closeAllDropdowns(); setShowReminder(!showReminder) } }}
-            disabled={!dueDate}
-            title={!dueDate ? "Primero asigná una fecha a la tarea" : undefined}
-            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs md:text-[11px] font-medium transition-colors ${
-              !dueDate
-                ? "text-zinc-700 cursor-not-allowed opacity-50"
-                : reminderOffsetMin !== null
-                  ? "bg-amber-500/15 text-amber-400 border border-amber-500/20 cursor-pointer"
-                  : "text-text-muted hover:bg-surface-overlay-hover hover:text-text-secondary cursor-pointer"
-            }`}
-          >
-            <Bell size={13} />
-            {reminderOffsetMin === null
-              ? "Recordar"
-              : reminderOffsetMin === 0
-                ? "A la hora"
-                : reminderOffsetMin === 10
-                  ? "10 min antes"
-                  : reminderOffsetMin === 60
-                    ? "1 h antes"
-                    : "1 día antes"}
-          </button>
-          <PortalDropdown anchorRef={reminderBtnRef} open={showReminder} onClose={() => setShowReminder(false)} className={`${PANEL} min-w-[160px]`}>
-            <>
-              {[
-                { value: null, label: 'Sin recordatorio' },
-                { value: 0, label: 'A la hora' },
-                { value: 10, label: '10 min antes' },
-                { value: 60, label: '1 h antes' },
-                { value: 1440, label: '1 día antes' },
-              ].map((opt) => (
-                <button
-                  key={opt.value ?? 'none'}
-                  onClick={() => { setReminderOffsetMin(opt.value); setShowReminder(false) }}
-                  className="flex items-center gap-2 px-3 py-2 w-full hover:bg-surface-overlay text-xs text-text-secondary cursor-pointer"
-                >
-                  {opt.label}
-                  {reminderOffsetMin === opt.value && <span className="ml-auto text-text-muted">✓</span>}
                 </button>
               ))}
             </>

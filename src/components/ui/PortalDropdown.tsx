@@ -27,6 +27,13 @@ interface PortalDropdownProps {
   /** Z-index. Default: 9999. */
   zIndex?: number
   /**
+   * Si true (default), un scroll de ventana/ancestro cierra el dropdown. Si false,
+   * en vez de cerrar se REUBICA siguiendo el ancla (el panel queda abierto hasta
+   * click-afuera/Escape). Útil para panels que el usuario completa mientras la
+   * página detrás puede scrollear (ej: el panel de Fecha de las tareas).
+   */
+  closeOnScroll?: boolean
+  /**
    * Portal target. Default: `document.body`. Pass a node INSIDE a modal layer
    * (e.g. a Radix Dialog/Sheet Content) when the dropdown lives inside one —
    * portaling to body would put the panel outside the modal, losing pointer
@@ -55,6 +62,7 @@ export function PortalDropdown({
   minWidth,
   zIndex = 9999,
   container,
+  closeOnScroll = true,
 }: PortalDropdownProps) {
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
   const panelRef = useRef<HTMLDivElement>(null)
@@ -121,6 +129,8 @@ export function PortalDropdown({
       // Scrolling inside the panel itself (e.g. a long, scrollable list) must
       // not close it — only reposition/close on ancestor or window scroll.
       if (panelRef.current && e.target instanceof Node && panelRef.current.contains(e.target)) return
+      // closeOnScroll=false: seguir al ancla y quedarse abierto en vez de cerrar.
+      if (!closeOnScroll) { computePosition(); return }
       onClose()
     }
     // En móvil, abrir el teclado virtual dispara `resize`. Si el foco está dentro
@@ -145,7 +155,7 @@ export function PortalDropdown({
       window.removeEventListener('resize', handleResize)
       document.removeEventListener('keydown', handleKey)
     }
-  }, [open, onClose, computePosition, anchorRef])
+  }, [open, onClose, computePosition, anchorRef, closeOnScroll])
 
   if (!open || typeof window === 'undefined') return null
 

@@ -17,19 +17,25 @@ interface MonthCalendarProps {
   onMonthChange?: (d: Date) => void
   /** iso date → array of dot colors to render under the day. */
   dots?: Record<string, string[]>
+  /** First day of week: 0 = domingo (default), 1 = lunes. */
+  weekStartsOn?: 0 | 1
+  /** Sin card externa (border/rounded/padding grande) — para anidar en otro panel. */
+  bare?: boolean
 }
 
-const WEEKDAYS = ["D", "L", "M", "M", "J", "V", "S"]
+const WEEKDAYS_SUN = ["D", "L", "M", "M", "J", "V", "S"]
+const WEEKDAYS_MON = ["L", "M", "M", "J", "V", "S", "D"]
 
-export function MonthCalendar({ month, selected, onSelectDate, onMonthChange, dots }: MonthCalendarProps) {
-  const gridStart = startOfWeek(startOfMonth(month), { weekStartsOn: 0 })
-  const gridEnd = endOfWeek(endOfMonth(month), { weekStartsOn: 0 })
+export function MonthCalendar({ month, selected, onSelectDate, onMonthChange, dots, weekStartsOn = 0, bare = false }: MonthCalendarProps) {
+  const gridStart = startOfWeek(startOfMonth(month), { weekStartsOn })
+  const gridEnd = endOfWeek(endOfMonth(month), { weekStartsOn })
   const days = eachDayOfInterval({ start: gridStart, end: gridEnd })
+  const weekdays = weekStartsOn === 1 ? WEEKDAYS_MON : WEEKDAYS_SUN
 
   return (
-    <div className="rounded-2xl border border-border-subtle bg-surface-1 p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-bold text-text-primary capitalize">
+    <div className={bare ? "" : "rounded-2xl border border-border-subtle bg-surface-1 p-4"}>
+      <div className={`flex items-center justify-between ${bare ? "mb-2" : "mb-3"}`}>
+        <h3 className={`font-bold text-text-primary capitalize ${bare ? "text-[13px]" : "text-sm"}`}>
           {format(month, "MMMM yyyy", { locale: es })}
         </h3>
         {onMonthChange && (
@@ -54,9 +60,9 @@ export function MonthCalendar({ month, selected, onSelectDate, onMonthChange, do
         )}
       </div>
 
-      <div className="grid grid-cols-7 gap-1 mb-1">
-        {WEEKDAYS.map((d, i) => (
-          <div key={i} className="text-center text-[10px] font-bold text-text-muted uppercase py-1">{d}</div>
+      <div className={`grid grid-cols-7 gap-1 ${bare ? "mb-0.5" : "mb-1"}`}>
+        {weekdays.map((d, i) => (
+          <div key={i} className={`text-center text-[10px] font-bold text-text-muted uppercase ${bare ? "py-0.5" : "py-1"}`}>{d}</div>
         ))}
       </div>
 
@@ -72,7 +78,9 @@ export function MonthCalendar({ month, selected, onSelectDate, onMonthChange, do
               type="button"
               onClick={() => onSelectDate?.(iso)}
               disabled={!onSelectDate}
-              className={`relative aspect-square rounded-lg flex flex-col items-center justify-center text-xs transition-colors ${
+              className={`relative rounded-lg flex flex-col items-center justify-center transition-colors ${
+                bare ? "h-8 text-[13px]" : "aspect-square text-xs"
+              } ${
                 onSelectDate ? "cursor-pointer" : "cursor-default"
               } ${
                 isSelected

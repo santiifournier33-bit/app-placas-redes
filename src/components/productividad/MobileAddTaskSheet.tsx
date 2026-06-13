@@ -2,18 +2,19 @@
 
 import { useState, useEffect, useRef } from "react"
 import {
-  Calendar, Clock, Flag, Bell, ChevronRight, Repeat,
+  Calendar, Flag, ChevronRight, Repeat,
   CheckSquare, MapPin, Phone, Users, PenLine, UserCircle,
   Coffee, Gift, Megaphone,
 } from "lucide-react"
 import { useTaskStore, TASK_TYPES, type TaskType } from "@/lib/stores/taskStore"
 import { useContactStore } from "@/lib/stores/contactStore"
-import { format, addDays, nextMonday } from "date-fns"
+import { format, addDays } from "date-fns"
 import { es } from "date-fns/locale"
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/components/ui/sheet"
 import { PortalDropdown } from "@/components/ui/PortalDropdown"
+import { DateTimePopover } from "@/components/productividad/DateTimePopover"
 
 const PRIORITY_OPTIONS = [
   { value: 1 as const, label: "Prioridad 1", color: "text-red-400" },
@@ -61,16 +62,13 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [showPriority, setShowPriority] = useState(false)
   const [showType, setShowType] = useState(false)
-  const [showReminder, setShowReminder] = useState(false)
   const [showContactPicker, setShowContactPicker] = useState(false)
   const [showRecurrence, setShowRecurrence] = useState(false)
 
   // Anchors para los popovers. Se renderizan vía PortalDropdown (a document.body)
   // para que NO los recorte el contenedor `overflow-x-auto`/`overflow-y-auto` de la hoja.
-  const dateBtnRef = useRef<HTMLButtonElement>(null)
   const prioBtnRef = useRef<HTMLButtonElement>(null)
   const typeBtnRef = useRef<HTMLButtonElement>(null)
-  const reminderBtnRef = useRef<HTMLButtonElement>(null)
   const recurrenceBtnRef = useRef<HTMLButtonElement>(null)
   const contactBtnRef = useRef<HTMLButtonElement>(null)
   // Los popovers se portalan DENTRO del SheetContent (no a document.body): la hoja
@@ -98,7 +96,6 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
   const today = new Date()
   const todayStr = format(today, "yyyy-MM-dd")
   const tomorrowStr = format(addDays(today, 1), "yyyy-MM-dd")
-  const nextWeekStr = format(nextMonday(today), "yyyy-MM-dd")
 
   const dateLabel = dueDate
     ? dueDate === todayStr ? "Hoy"
@@ -144,7 +141,6 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
     setShowDatePicker(false)
     setShowPriority(false)
     setShowType(false)
-    setShowReminder(false)
     setShowContactPicker(false)
     setShowRecurrence(false)
   }
@@ -195,7 +191,6 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
             <div className="flex items-center gap-2 w-max">
               {/* Date */}
               <button
-                ref={dateBtnRef}
                 onClick={() => { closeAllDropdowns(); setShowDatePicker(!showDatePicker) }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
                   dueDate ? "bg-blue-500/15 text-blue-400 border border-blue-500/20" : "text-text-muted hover:bg-surface-overlay border border-border-subtle"
@@ -204,46 +199,18 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
                 <Calendar size={14} />
                 {dateLabel ?? "Fecha"}
               </button>
-              <PortalDropdown anchorRef={dateBtnRef} open={showDatePicker} onClose={() => setShowDatePicker(false)} placement="top-start" container={contentRef.current} className={`${PANEL} min-w-[180px]`}>
-                <>
-                  {[
-                    { label: "Hoy", value: todayStr, sub: format(today, "EEE", { locale: es }) },
-                    { label: "Mañana", value: tomorrowStr, sub: format(addDays(today, 1), "EEE", { locale: es }) },
-                    { label: "Próx semana", value: nextWeekStr, sub: format(nextMonday(today), "d MMM", { locale: es }) },
-                  ].map((opt) => (
-                    <button
-                      key={opt.value}
-                      onClick={() => { setDueDate(opt.value); setShowDatePicker(false) }}
-                      className="flex items-center justify-between gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm text-text-secondary cursor-pointer"
-                    >
-                      <span>{opt.label}</span>
-                      <span className="text-xs text-text-muted">{opt.sub}</span>
-                    </button>
-                  ))}
-                  <div className="border-t border-border-subtle mt-1 pt-2 px-3 pb-2">
-                    <input
-                      type="date"
-                      value={dueDate ?? ""}
-                      onChange={(e) => { setDueDate(e.target.value); setShowDatePicker(false) }}
-                      className="w-full bg-transparent text-sm text-text-secondary outline-none [color-scheme:dark]"
-                    />
-                  </div>
-                  {dueDate && (
-                    <div className="border-t border-border-subtle pt-2 px-3 pb-2 flex items-center gap-2">
-                      <Clock size={14} className="text-text-muted shrink-0" />
-                      <input
-                        type="time"
-                        value={dueTime ?? ""}
-                        onChange={(e) => setDueTime(e.target.value || null)}
-                        className="flex-1 bg-transparent text-sm text-text-secondary outline-none [color-scheme:dark]"
-                      />
-                      {dueTime && (
-                        <button onClick={() => setDueTime(null)} className="text-xs text-text-muted hover:text-text-secondary cursor-pointer">Quitar</button>
-                      )}
-                    </div>
-                  )}
-                </>
-              </PortalDropdown>
+              <DateTimePopover
+                open={showDatePicker}
+                onOpenChange={setShowDatePicker}
+                date={dueDate}
+                time={dueTime}
+                reminderOffsetMin={reminderOffsetMin}
+                onChange={({ date, time, reminderOffsetMin }) => {
+                  setDueDate(date)
+                  setDueTime(time)
+                  setReminderOffsetMin(reminderOffsetMin)
+                }}
+              />
 
               {/* Priority */}
               <button
@@ -296,51 +263,6 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
                       <span className="text-text-muted">{TYPE_ICONS[key]}</span>
                       <span>{val.label}</span>
                       {taskType === key && <span className="ml-auto text-text-muted">✓</span>}
-                    </button>
-                  ))}
-                </>
-              </PortalDropdown>
-
-              {/* Reminder */}
-              <button
-                ref={reminderBtnRef}
-                onClick={() => { if (dueDate) { closeAllDropdowns(); setShowReminder(!showReminder) } }}
-                disabled={!dueDate}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 ${
-                  !dueDate
-                    ? "text-zinc-700 cursor-not-allowed opacity-50 border border-border-subtle"
-                    : reminderOffsetMin !== null
-                      ? "bg-amber-500/15 text-amber-400 border border-amber-500/20 cursor-pointer"
-                      : "text-text-muted hover:bg-surface-overlay border border-border-subtle cursor-pointer"
-                }`}
-              >
-                <Bell size={14} />
-                {reminderOffsetMin === null
-                  ? "Recordar"
-                  : reminderOffsetMin === 0
-                    ? "A la hora"
-                    : reminderOffsetMin === 10
-                      ? "10 min"
-                      : reminderOffsetMin === 60
-                        ? "1 hora"
-                        : "1 día"}
-              </button>
-              <PortalDropdown anchorRef={reminderBtnRef} open={showReminder} onClose={() => setShowReminder(false)} placement="top-start" container={contentRef.current} className={`${PANEL} min-w-[180px]`}>
-                <>
-                  {[
-                    { value: null, label: 'Sin recordatorio' },
-                    { value: 0, label: 'A la hora' },
-                    { value: 10, label: '10 min antes' },
-                    { value: 60, label: '1 h antes' },
-                    { value: 1440, label: '1 día antes' },
-                  ].map((opt) => (
-                    <button
-                      key={opt.value ?? 'none'}
-                      onClick={() => { setReminderOffsetMin(opt.value); setShowReminder(false) }}
-                      className="flex items-center gap-3 px-3 py-3 w-full hover:bg-surface-overlay text-sm text-text-secondary cursor-pointer"
-                    >
-                      {opt.label}
-                      {reminderOffsetMin === opt.value && <span className="ml-auto text-text-muted">✓</span>}
                     </button>
                   ))}
                 </>

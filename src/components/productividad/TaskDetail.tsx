@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { motion, useAnimationControls, useReducedMotion } from "framer-motion"
 import {
-  X, Flag, Trash2, Plus, AlignLeft, Bell, Calendar,
+  X, Flag, Trash2, Plus, AlignLeft, Calendar,
   ChevronDown, ChevronRight, ChevronUp,
   CheckSquare, MapPin, Phone, Users, PenLine, UserCircle,
   Coffee, Gift, Megaphone, MoreHorizontal, Link2, Pencil,
@@ -16,7 +16,6 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { useIsMobile } from "@/lib/hooks/useIsMobile"
 import { TaskScheduler } from "@/components/productividad/TaskScheduler"
-import { ReminderPresetPicker } from "@/components/productividad/ReminderPresetPicker"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 
@@ -71,12 +70,10 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
   const [showDesc, setShowDesc] = useState(!!task.description)
   const [subtasksOpen, setSubtasksOpen] = useState(true)
   const [showMenu, setShowMenu] = useState(false)
-  const [showReminder, setShowReminder] = useState(false)
   // Mobile bottom-sheet height: false = half (peek), true = near-full.
   const [expanded, setExpanded] = useState(false)
   const [schedOpen, setSchedOpen] = useState(false)
   const menuBtnRef = useRef<HTMLButtonElement>(null)
-  const reminderBtnRef = useRef<HTMLButtonElement>(null)
   const prioBtnRef = useRef<HTMLButtonElement>(null)
   const typeBtnRef = useRef<HTMLButtonElement>(null)
   const contactBtnRef = useRef<HTMLButtonElement>(null)
@@ -110,31 +107,12 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
     return () => document.removeEventListener("keydown", handler)
   }, [prevId, nextId, editingTitle, showDesc])
 
-  // Reminder presets (mirrors QuickAddTask)
+  // Offset actual del recordatorio (minutos antes del vencimiento) para el TaskScheduler.
   const reminderOffsetMin: number | null = (() => {
     if (!task.reminder_at || !task.due_date) return null
     const due = new Date(`${task.due_date}T${task.due_time ?? "09:00"}:00`).getTime()
     const r = new Date(task.reminder_at).getTime()
     return Math.round((due - r) / 60000)
-  })()
-
-  const setReminderPreset = (offsetMin: number | null) => {
-    if (offsetMin === null || !task.due_date) {
-      updateTask(task.id, { reminder_at: null, reminder_sent_at: null })
-      return
-    }
-    const due = new Date(`${task.due_date}T${task.due_time ?? "09:00"}:00`).getTime()
-    const reminderAt = new Date(due - offsetMin * 60 * 1000).toISOString()
-    updateTask(task.id, { reminder_at: reminderAt, reminder_sent_at: null })
-  }
-
-  const reminderLabel = (() => {
-    if (reminderOffsetMin === null) return "Sin recordatorio"
-    if (reminderOffsetMin === 0) return "A la hora"
-    if (reminderOffsetMin === 10) return "10 min antes"
-    if (reminderOffsetMin === 60) return "1 h antes"
-    if (reminderOffsetMin === 1440) return "1 día antes"
-    return "Personalizado"
   })()
 
   const handleCopyLink = () => {
@@ -201,7 +179,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
           </div>
         </SheetContent>
       </Sheet>
-      <TaskScheduler taskId={task.id} currentDate={task.due_date} currentTime={task.due_time} open={schedOpen} onOpenChange={setSchedOpen} />
+      <TaskScheduler taskId={task.id} currentDate={task.due_date} currentTime={task.due_time} currentReminderOffsetMin={reminderOffsetMin} open={schedOpen} onOpenChange={setSchedOpen} />
       </>
     )
   }
@@ -416,16 +394,6 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                 )}
               </div>
 
-              {/* Comment field (bottom) */}
-              <div className="ml-8 mt-6 flex items-center gap-3 border border-border-subtle rounded-xl px-3 py-2.5 bg-surface-overlay">
-                <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                  S
-                </div>
-                <input
-                  placeholder="Comentar"
-                  className="flex-1 bg-transparent text-sm text-text-secondary placeholder:text-text-muted outline-none"
-                />
-              </div>
             </div>
 
             {/* Right: metadata sidebar */}
@@ -504,52 +472,6 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
                     </>
                   </PortalDropdown>
                 </div>
-              </MetaRow>
-
-              {/* Recordatorio */}
-              <MetaRow label="Recordatorio">
-                <button
-                  ref={reminderBtnRef}
-                  onClick={() => {
-                    if (!task.due_date) return
-                    setShowReminder(!showReminder)
-                  }}
-                  disabled={!task.due_date}
-                  title={!task.due_date ? "Asigná una fecha primero" : undefined}
-                  className={`flex items-center gap-1.5 text-xs cursor-pointer w-full text-left ${
-                    !task.due_date
-                      ? "text-zinc-700 cursor-not-allowed"
-                      : reminderOffsetMin !== null
-                        ? "text-amber-400"
-                        : "text-text-muted hover:text-text-secondary"
-                  }`}
-                >
-                  <Bell size={13} className="shrink-0" />
-                  {reminderLabel}
-                </button>
-                <PortalDropdown
-                  anchorRef={reminderBtnRef}
-                  open={showReminder}
-                  onClose={() => setShowReminder(false)}
-                  className="bg-surface-2 border border-border-default rounded-xl shadow-2xl py-1 min-w-[160px]"
-                >
-                  {[
-                    { value: null, label: "Sin recordatorio" },
-                    { value: 0, label: "A la hora" },
-                    { value: 10, label: "10 min antes" },
-                    { value: 60, label: "1 h antes" },
-                    { value: 1440, label: "1 día antes" },
-                  ].map((opt) => (
-                    <button
-                      key={opt.value ?? "none"}
-                      onClick={() => { setReminderPreset(opt.value); setShowReminder(false) }}
-                      className="flex items-center gap-2 px-3 py-2 w-full hover:bg-surface-overlay text-xs text-text-secondary cursor-pointer"
-                    >
-                      {opt.label}
-                      {reminderOffsetMin === opt.value && <span className="ml-auto text-text-muted">✓</span>}
-                    </button>
-                  ))}
-                </PortalDropdown>
               </MetaRow>
 
               {/* Contacto */}
@@ -636,7 +558,7 @@ export function TaskDetail({ task: initialTask, onClose, onToggleTask, siblingId
           </div>
       </DialogContent>
     </Dialog>
-    <TaskScheduler taskId={task.id} currentDate={task.due_date} currentTime={task.due_time} open={schedOpen} onOpenChange={setSchedOpen} />
+    <TaskScheduler taskId={task.id} currentDate={task.due_date} currentTime={task.due_time} currentReminderOffsetMin={reminderOffsetMin} open={schedOpen} onOpenChange={setSchedOpen} />
     </>
   )
 }
@@ -755,9 +677,6 @@ function TaskBody({
           </div>
         )}
       </div>
-
-      {/* Reminder (unified on reminder_at) */}
-      <ReminderPresetPicker task={task} updateTask={updateTask} />
 
       {/* Description */}
       {showDesc ? (
