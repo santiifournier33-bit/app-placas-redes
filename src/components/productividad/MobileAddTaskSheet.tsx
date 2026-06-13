@@ -154,6 +154,11 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent ref={contentRef} side="bottom" className="rounded-t-2xl px-0 pb-0 pt-2 bg-surface-1" showClose={false}>
+        {/* Relleno de superficie hacia abajo: cuando iOS "flota" el sheet al abrir el
+            teclado, el hueco que queda debajo lo cubre este bloque (mismo color que el
+            panel) en vez de dejar ver el fondo. Con teclado cerrado queda fuera de
+            pantalla. No depende de visualViewport/interactive-widget → robusto en todo iOS. */}
+        <div aria-hidden className="absolute top-full inset-x-0 h-screen bg-surface-1 pointer-events-none" />
         {/* Grabber handle (native bottom-sheet affordance) */}
         <div className="flex justify-center pt-1 pb-2">
           <div className="w-10 h-1 rounded-full bg-border-strong/40" />
