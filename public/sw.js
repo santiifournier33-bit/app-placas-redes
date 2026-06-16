@@ -1,4 +1,4 @@
-const CACHE_NAME = "freire-v4"
+const CACHE_NAME = "freire-v5"
 const SHELL_URLS = ["/dashboard", "/productividad/tareas"]
 
 self.addEventListener("install", (event) => {

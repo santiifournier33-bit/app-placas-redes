@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sheet"
 import { PortalDropdown } from "@/components/ui/PortalDropdown"
 import { DateTimePopover } from "@/components/productividad/DateTimePopover"
+import { useKeyboardInset } from "@/lib/hooks/useKeyboardInset"
 
 const PRIORITY_OPTIONS = [
   { value: 1 as const, label: "Prioridad 1", color: "text-red-400" },
@@ -45,6 +46,9 @@ interface MobileAddTaskSheetProps {
 export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initialDate = null }: MobileAddTaskSheetProps) {
   const { addTask, updateTask, sections } = useTaskStore()
   const { contacts } = useContactStore()
+  // Alto del teclado: apoya la barra inferior (Bandeja + enviar) justo sobre el
+  // teclado (estilo Todoist). Sin transform → estable en iOS.
+  const kbInset = useKeyboardInset()
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [priority, setPriority] = useState<1 | 2 | 3 | 4>(4)
@@ -153,60 +157,38 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         ref={contentRef}
-        side="full"
-        className="bg-surface-1 pt-[env(safe-area-inset-top)]"
+        side="bottomFade"
+        className="bg-surface-1 px-0 pb-0 pt-2"
+        style={{ bottom: kbInset }}
         showClose={false}
       >
+        {/* Grabber */}
+        <div className="flex justify-center pb-1">
+          <div className="w-10 h-1 rounded-full bg-border-strong/40" />
+        </div>
         <SheetHeader className="sr-only">
           <SheetTitle>Nueva tarea</SheetTitle>
           <SheetDescription>Añadir nueva tarea con opciones avanzadas</SheetDescription>
         </SheetHeader>
 
-        {/* Header bar: cerrar + crear (siempre visibles, por encima del teclado) */}
-        <div className="shrink-0 flex items-center justify-between px-2 py-2 border-b border-border-subtle">
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            aria-label="Cerrar"
-            className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-overlay-hover active:scale-95 transition-all cursor-pointer"
-          >
-            <X size={20} />
-          </button>
-          <button
-            onClick={handleCreate}
-            disabled={!title.trim()}
-            aria-label="Crear tarea"
-            className={`flex items-center gap-1.5 px-4 h-9 rounded-full text-sm font-semibold transition-all active:scale-95 ${
-              title.trim()
-                ? "bg-red-500 hover:bg-red-600 text-white cursor-pointer"
-                : "bg-zinc-800 text-text-muted cursor-not-allowed opacity-50"
-            }`}
-          >
-            Crear
-            <ChevronRight size={16} strokeWidth={2.5} />
-          </button>
+        {/* Main inputs (título con autofocus → el teclado abre solo) */}
+        <div className="px-4 flex flex-col gap-1 pt-1">
+          <input
+            autoFocus
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Nombre de la tarea"
+            className="w-full bg-transparent text-base font-medium text-text-primary placeholder:text-text-muted outline-none caret-red-500"
+          />
+          <input
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Descripción"
+            className="w-full bg-transparent text-sm text-text-muted placeholder:text-zinc-600 outline-none"
+          />
         </div>
-
-        {/* Body scrolleable */}
-        <div className="flex-1 min-h-0 overflow-y-auto hide-scrollbar flex flex-col gap-3 pt-3">
-
-          {/* Main inputs */}
-          <div className="px-4 flex flex-col gap-1">
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Nombre de la tarea"
-              className="w-full bg-transparent text-base font-medium text-text-primary placeholder:text-text-muted outline-none caret-red-500"
-            />
-            <input
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Descripción"
-              className="w-full bg-transparent text-sm text-text-muted placeholder:text-zinc-600 outline-none"
-            />
-          </div>
 
           {/* Horizontally scrollable actions row.
               Los popovers se renderizan vía PortalDropdown (a document.body) para que
@@ -402,14 +384,13 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
 
             </div>
           </div>
-        </div>{/* /body scrolleable */}
 
-        {/* Footer: selector de sección (shrink-0) */}
-        <div className="shrink-0 flex items-center justify-between p-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-border-subtle bg-surface-1">
+        {/* Barra inferior estilo Todoist: destino + enviar (queda sobre el teclado) */}
+        <div className="flex items-center justify-between gap-3 px-4 py-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] border-t border-border-subtle bg-surface-1">
           <select
             value={currentSectionId ?? ""}
             onChange={(e) => setCurrentSectionId(e.target.value === "" ? null : e.target.value)}
-            className="bg-transparent text-sm font-medium text-text-secondary hover:text-text-primary outline-none appearance-none cursor-pointer pr-4 max-w-[80%]"
+            className="bg-transparent text-sm font-medium text-text-secondary hover:text-text-primary outline-none appearance-none cursor-pointer pr-5 min-w-0 flex-1 truncate"
             style={{ backgroundImage: "url(\"data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right center", backgroundSize: "14px" }}
           >
             <option value="" className="bg-surface-2">Bandeja de entrada</option>
@@ -421,6 +402,18 @@ export function MobileAddTaskSheet({ open, onOpenChange, initialSectionId, initi
                 </option>
               ))}
           </select>
+          <button
+            onClick={handleCreate}
+            disabled={!title.trim()}
+            aria-label="Crear tarea"
+            className={`flex items-center justify-center w-10 h-10 rounded-full shrink-0 shadow-md transition-all active:scale-95 ${
+              title.trim()
+                ? "bg-red-500 hover:bg-red-600 text-white cursor-pointer"
+                : "bg-zinc-800 text-text-muted cursor-not-allowed opacity-50"
+            }`}
+          >
+            <ChevronRight size={18} strokeWidth={2.5} />
+          </button>
         </div>
       </SheetContent>
     </Sheet>

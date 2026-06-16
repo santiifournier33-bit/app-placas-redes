@@ -42,6 +42,11 @@ const sheetVariants = cva(
         // (queda fuera de pantalla). Usado por la hoja de crear tarea / contacto.
         full:
           "inset-0 flex flex-col data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+        // Bottom-sheet anclado abajo SOLO con fade (sin slide/transform): para
+        // apoyarlo sobre el teclado con `style={{ bottom: kbInset }}` sin el bug
+        // de iOS. Look Todoist (la lista se ve detrás).
+        bottomFade:
+          "inset-x-0 bottom-0 rounded-t-2xl border-t border-border-subtle data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       },
     },
     defaultVariants: {
