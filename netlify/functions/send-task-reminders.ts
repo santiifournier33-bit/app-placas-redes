@@ -93,6 +93,6 @@ export default async () => {
 }
 
 export const config = {
-  // Every minute — reminders should fire promptly after their due time.
-  schedule: "* * * * *",
+  // Every 5 minutes — keeps Netlify Functions usage low (was every minute).
+  schedule: "*/5 * * * *",
 }
