@@ -8,8 +8,10 @@
 [build.environment]
   # Workaround for Next.js build crash with @react-pdf and similar large deps.
   NODE_OPTIONS = "--max-old-space-size=8192"
-  # Ensure consistent Node.js version with local dev.
-  NODE_VERSION = "20"
+  # Node 22+ requerido: @supabase/supabase-js 2.105 falla en Node 20 con
+  # "Node.js 20 detected without native WebSocket support" al crear el cliente,
+  # lo que rompia send-task-reminders y sync-google-calendars (100% errores).
+  NODE_VERSION = "22"
   # Used by Sentry to detect CI environment (enables source map upload)
   CI = "true"
 
